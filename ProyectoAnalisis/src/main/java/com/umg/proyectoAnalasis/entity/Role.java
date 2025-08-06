@@ -1,22 +1,18 @@
 package com.umg.proyectoAnalasis.entity;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name="ROLE")
+@Table(name = "ROLE")
 @Data
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdRole")
+    @Column(name = "IdRole", nullable = false)
     private Integer idRole;
 
     @Column(name = "Nombre", nullable = false, length = 50)
@@ -33,5 +29,4 @@ public class Role {
 
     @Column(name = "UsuarioModificacion", length = 100)
     private String usuarioModificacion;
-
 }
