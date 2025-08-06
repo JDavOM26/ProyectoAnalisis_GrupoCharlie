@@ -30,3 +30,4 @@ public class Role {
     @Column(name = "UsuarioModificacion", length = 100)
     private String usuarioModificacion;
 }
+
