@@ -1,8 +1,8 @@
 package com.umg.proyectoAnalasis.entity;
 
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,7 +20,7 @@ public class Usuario {
 	un usuario puede cambiar su username y eso hace que no sea confiable identificar la entidad con el username
 	*/
     @Id
-    @Column(name = "IdUsuario", length = 100)
+    @Column(name = "Idusuario", length = 100, nullable = false)
     private String idUsuario;
 
     @Column(name = "Nombre", length = 100, nullable = false)
@@ -29,40 +29,40 @@ public class Usuario {
     @Column(name = "Apellido", length = 100, nullable = false)
     private String apellido;
 
-    @Column(name = "FechaNacimiento", nullable = true)
+    @Column(name = "Fechanacimiento", nullable = true)
     private LocalDate fechaNacimiento;
 
-    @Column(name = "IdStatusUsuario", nullable = false)
+    @Column(name = "Idstatususuario", nullable = false)
     private Integer idStatusUsuario;
 
     @Column(name = "Password", length = 100, nullable = false)
     private String password;
 
-    @Column(name = "IdGenero", nullable = false)
+    @Column(name = "Idgenero", nullable = false)
     private Integer idGenero;
 
-    @Column(name = "UltimaFechaIngreso")
+    @Column(name = "UltimafechaIngreso")
     private LocalDateTime ultimaFechaIngreso;
 
-    @Column(name = "IntentosDeAcceso")
+    @Column(name = "Intentosdeacceso")
     private Integer intentosDeAcceso;
 
-    @Column(name = "SesionActual", length = 100)
+    @Column(name = "Sesionactual", length = 100)
     private String sesionActual;
 
-    @Column(name = "UltimaFechaCambioPassword")
+    @Column(name = "Ultimafechacambiopassword")
     private LocalDateTime ultimaFechaCambioPassword;
 
-    @Column(name = "CorreoElectronico", length = 100)
+    @Column(name = "Correoelectronico", length = 100)
     private String correoElectronico;
 
-    @Column(name = "RequiereCambiarPassword")
+    @Column(name = "Requierecambiarpassword")
     private Integer requiereCambiarPassword;
 
     @Column(name = "Fotografia", columnDefinition = "mediumblob")
     private byte[] fotografia;
 
-    @Column(name = "TelefonoMovil", length = 30)
+    @Column(name = "Telefonomovil", length = 30)
     private String telefonoMovil;
 
     @Column(name = "IdSucursal", nullable = false)
@@ -74,17 +74,22 @@ public class Usuario {
     @Column(name = "Respuesta", length = 200, nullable = true)
     private String respuesta;
 
-    @Column(name = "FechaCreacion", nullable = true)
+    @Column(name = "Fechacreacion", nullable = true)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "UsuarioCreacion", length = 100, nullable = true)
+    @Column(name = "Usuariocreacion", length = 100, nullable = true)
     private String usuarioCreacion;
 
-    @Column(name = "FechaModificacion")
+    @Column(name = "Fechamodificacion")
     private LocalDateTime fechaModificacion;
+    
+    @Column(name = "Fechabloqueo")
+    private LocalDateTime fechabloqueo;
 
-    @Column(name = "UsuarioModificacion", length = 100)
+    @Column(name = "Usuariomodificacion", length = 100)
     private String usuarioModificacion;
+    
+   
 
     
 }
