@@ -1,3 +1,5 @@
+/* Etapa 1 */
+
 drop schema if exists ProyectoAnalisis;
 
 create schema if not exists ProyectoAnalisis;
@@ -97,59 +99,6 @@ INSERT INTO GENERO (
 VALUES
     ('Masculino', NOW(), 'system', NULL, null),
     ('Femenino', NOW(), 'system', NULL, null);
-   
-create table USUARIO(
-	IdUsuario varchar(100) not null,
-	Nombre varchar(100) not null,
-	Apellido varchar(100) not null,
-	FechaNacimiento date not null,
-	IdStatusUsuario int not null,
-	Password varchar(100) not null,
-	IdGenero int not null,
-	UltimaFechaIngreso datetime,
-	IntentosDeAcceso int,
-	SesionActual varchar(100),
-	UltimaFechaCambioPassword datetime,
-	CorreoElectronico varchar(100),
-	RequiereCambiarPassword int,
-	Fotografia mediumblob,
-	TelefonoMovil varchar(30),
-	IdSucursal int not null,
-	Pregunta varchar(200) not null,
-	Respuesta varchar(200) not null,
-	FechaCreacion datetime not null,
-	UsuarioCreacion varchar(100) not null,
-	FechaModificacion datetime,
-	UsuarioModificacion varchar(100),
-	primary key (IdUsuario),
-	foreign key (IdStatusUsuario) references STATUS_USUARIO(IdStatusUsuario),
-	foreign key (IdGenero) references GENERO(IdGenero),
-	foreign key (IdSucursal) references SUCURSAL(IdSucursal)
-);
-
-INSERT INTO USUARIO (
-    IdUsuario, Nombre, Apellido, FechaNacimiento, IdStatusUsuario,
-    Password, IdGenero, UltimaFechaIngreso, IntentosDeAcceso,
-    SesionActual, UltimaFechaCambioPassword, CorreoElectronico,
-    RequiereCambiarPassword, Fotografia, TelefonoMovil,
-    IdSucursal, FechaCreacion, UsuarioCreacion,
-    FechaModificacion, UsuarioModificacion, Pregunta, Respuesta
-)
-VALUES 
-(
-    'system', 'Nologin', 'Nologin', '1990-05-15', 1,
-    MD5('erpwijoeli'), 1, NULL, 0,
-    NULL, NULL, 'system@example.com',
-    1, NULL, '555-1234567',
-    1, NOW(), 'system', NULL, NULL, '¿Nombre de tu primera mascota?', 'Rex'
-),
-(
-    'Administrador', 'Administrador', 'IT', '1990-05-15', 1,
-    MD5('ITAdmin'), 1, NULL, 0,
-    NULL, NULL, 'itadmin@example.com',
-    1, NULL, '555-1234567',
-    1, NOW(), 'system', NULL, NULL, '¿Nombre de tu curso preferido?', 'Analisis de Sistemas II'
-);
 
 create table ROLE(
 	IdRole int not null auto_increment,
@@ -173,29 +122,59 @@ VALUES
     'Sin Opciones', NOW(), 'system', NULL, NULL
 );
 
-
-create table USUARIO_ROLE(
+create table USUARIO(
 	IdUsuario varchar(100) not null,
-	IdRole int not null,
+	Nombre varchar(100) not null,
+	Apellido varchar(100) not null,
+	FechaNacimiento date not null,
+	IdStatusUsuario int not null,
+	Password varchar(100) not null,
+	IdGenero int not null,
+	UltimaFechaIngreso datetime,
+	IntentosDeAcceso int,
+	SesionActual varchar(100),
+	UltimaFechaCambioPassword datetime,
+	CorreoElectronico varchar(100),
+	RequiereCambiarPassword int,
+	Fotografia mediumblob,
+	TelefonoMovil varchar(30),
+	IdSucursal int not null,
+	Pregunta varchar(200) not null,
+	Respuesta varchar(200) not null,
+    IdRole int not null,
 	FechaCreacion datetime not null,
 	UsuarioCreacion varchar(100) not null,
 	FechaModificacion datetime,
 	UsuarioModificacion varchar(100),
-	primary key (IdUsuario, IdRole),
-	foreign key (IdUsuario) references USUARIO(IdUsuario),
-	foreign key (IdRole) references ROLE(IdRole)
+	primary key (IdUsuario),
+	foreign key (IdStatusUsuario) references STATUS_USUARIO(IdStatusUsuario),
+	foreign key (IdGenero) references GENERO(IdGenero),
+	foreign key (IdSucursal) references SUCURSAL(IdSucursal),
+    foreign key (IdRole) references ROLE(IdRole)
 );
 
-INSERT INTO USUARIO_ROLE (
-    IdUsuario, IdRole, FechaCreacion,
-    UsuarioCreacion, FechaModificacion, UsuarioModificacion
+INSERT INTO USUARIO (
+    IdUsuario, Nombre, Apellido, FechaNacimiento, IdStatusUsuario,
+    Password, IdGenero, UltimaFechaIngreso, IntentosDeAcceso,
+    SesionActual, UltimaFechaCambioPassword, CorreoElectronico,
+    RequiereCambiarPassword, Fotografia, TelefonoMovil,
+    IdSucursal, FechaCreacion, UsuarioCreacion,
+    FechaModificacion, UsuarioModificacion, Pregunta, Respuesta, IdRole
 )
-VALUES
+VALUES 
 (
-    'Administrador', 1, NOW(), 'system', NULL, NULL
+    'system', 'Nologin', 'Nologin', '1990-05-15', 1,
+    '$2a$12$7vjd0WyuwlqoqbLRYnHYEO9XYwUyceRQ8MM3edszdAF2Mczyr5Nbu', 1, NULL, 0,
+    NULL, NULL, 'system@example.com',
+    1, NULL, '555-1234567',
+    1, NOW(), 'system', NULL, NULL, '¿Nombre de tu primera mascota?', 'Rex', 2
 ),
 (
-    'system', 2, NOW(), 'system', NULL, NULL
+    'Administrador', 'Administrador', 'IT', '1990-05-15', 1,
+    '$2a$12$5hk0cbX8NjF4xkJjVC8tHuJaa9ckrgajUr7aywMPF6qvcSbHsdTkC', 1, NULL, 0,
+    NULL, NULL, 'itadmin@example.com',
+    1, NULL, '555-1234567',
+    1, NOW(), 'system', NULL, NULL, '¿Nombre de tu curso preferido?', 'Analisis de Sistemas II', 1
 );
 
 create table MODULO( 
@@ -266,37 +245,34 @@ INSERT INTO OPCION (
 )
 VALUES
 (
-    1, 'Empresas', 1, 'empresa.php', NOW(), 'system'
+    1, 'Empresas', 1, 'empresa.php', NOW(), 'system'  /*   idOpcion = 1   */
 ),
 (
-    1, 'Sucursales', 2, 'sucursal.php', NOW(), 'system'
+    1, 'Sucursales', 2, 'sucursal.php', NOW(), 'system'  /*   idOpcion = 2   */
 ),
 (
-    1, 'Generos', 3, 'genero.php', NOW(), 'system'
+    1, 'Generos', 3, 'genero.php', NOW(), 'system'   /*   idOpcion = 3   */
 ),
 (
-    1, 'Estatus Usuario', 4, 'status_usuario.php', NOW(), 'system'
+    1, 'Estatus Usuario', 4, 'status_usuario.php', NOW(), 'system'  /*   idOpcion = 4   */
 ),
 (
-    1, 'Roles', 5, 'role.php', NOW(), 'system'
+    1, 'Roles', 5, 'role.php', NOW(), 'system'  /*   idOpcion = 5   */
 ),
 (
-    1, 'Modulos', 6, 'modulo.php', NOW(), 'system'
+    1, 'Modulos', 6, 'modulo.php', NOW(), 'system'   /*   idOpcion = 6   */
 ),
 (
-    1, 'Menus', 7, 'menu.php', NOW(), 'system'
+    1, 'Menus', 7, 'menu.php', NOW(), 'system'   /*   idOpcion = 7   */
 ),
 (
-    1, 'Opciones', 3, 'opcion.php', NOW(), 'system'
+    1, 'Opciones', 3, 'opcion.php', NOW(), 'system'   /*   idOpcion = 8   */
 ),
 (
-    2, 'Usuarios', 3, 'usuario.php', NOW(), 'system'
+    2, 'Usuarios', 3, 'usuario.php', NOW(), 'system'   /*   idOpcion = 9   */
 ),
 (
-    2, 'Asignar Roles a un Usuario', 3, 'asignacion_role_usuario.php', NOW(), 'system'
-),
-(
-    2, 'Asignar Opciones a un Role', 3, 'asignacion_opcion_role.php', NOW(), 'system'
+    2, 'Asignar Opciones a un Role', 3, 'asignacion_opcion_role.php', NOW(), 'system'   /*   idOpcion = 10   */
 );
 
 create table ROLE_OPCION(
@@ -316,7 +292,20 @@ create table ROLE_OPCION(
 	foreign key (IdOpcion) references OPCION(IdOpcion)
 );
 
-create table TIPO_ACCESO(
+insert into role_opcion (IdRole, IdOpcion, Alta, Baja, Cambio, Imprimir, Exportar, FechaCreacion, UsuarioCreacion )
+values
+(1,1,true,true,true,true,true,now(),'system'),
+(1,2,true,true,true,true,true,now(),'system'),
+(1,3,true,true,true,true,true,now(),'system'),
+(1,4,true,true,true,true,true,now(),'system'),
+(1,5,true,true,true,true,true,now(),'system'),
+(1,6,true,true,true,true,true,now(),'system'),
+(1,7,true,true,true,true,true,now(),'system'),
+(1,8,true,true,true,true,true,now(),'system'),
+(1,9,true,true,true,true,true,now(),'system'),
+(1,10,true,true,true,true,true,now(),'system');
+
+create table TIPO_ACCESO( 
 	IdTipoAcceso int not null auto_increment,
 	Nombre varchar(100) not null,
 	FechaCreacion datetime not null,
@@ -359,6 +348,10 @@ create table BITACORA_ACCESO(
 	primary key (IdBitacoraAcceso),
 	foreign key (IdTipoAcceso) references TIPO_ACCESO(IdTipoAcceso)
 );
+
+/* Fin etapa 1 */
+
+
 
 /*Las inserciones de usuarios de la DB que dio en ingeniero encriptan la contraseña en MD5
   pero en el backend estoy encriptando con Bcrypt así que en lo que definimos esto aqui dejo unos cambios

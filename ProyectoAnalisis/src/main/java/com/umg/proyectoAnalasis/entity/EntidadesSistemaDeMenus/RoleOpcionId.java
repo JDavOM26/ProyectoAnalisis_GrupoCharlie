@@ -1,4 +1,5 @@
-package com.umg.proyectoAnalasis.entity;
+package com.umg.proyectoAnalasis.entity.EntidadesSistemaDeMenus;
+
 
 import java.io.Serializable;
 import lombok.Data;

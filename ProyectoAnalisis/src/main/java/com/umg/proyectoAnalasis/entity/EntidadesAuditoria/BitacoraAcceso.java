@@ -1,4 +1,4 @@
-package com.umg.proyectoAnalasis.entity;
+package com.umg.proyectoAnalasis.entity.EntidadesAuditoria;
 
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
@@ -8,44 +8,40 @@ import lombok.Data;
 @Table(name = "BITACORA_ACCESO")
 @Data
 public class BitacoraAcceso {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdBitacoraAcceso", nullable = false)
+    @Column(name = "Idbitacoraacceso")
     private Integer idBitacoraAcceso;
-    
-    @Column(name = "IdUsuario", length = 100, nullable = false)
+
+    @Column(name = "Idusuario", nullable = false, length = 100)
     private String idUsuario;
-    
-    @Column(name = "IdTipoAcceso", nullable = false)
-    private Integer idTipoAcceso;
-    
-    @Column(name = "FechaAcceso", nullable = false)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Idtipoacceso", nullable = false)
+    private TipoAcceso tipoAcceso;
+
+    @Column(name = "Fechaacceso", nullable = false)
     private LocalDateTime fechaAcceso;
-    
-    @Column(name = "HttpUserAgent", length = 200)
+
+    @Column(name = "Httpuseragent", length = 200)
     private String httpUserAgent;
-    
-    @Column(name = "DireccionIp", length = 50)
+
+    @Column(name = "Direccionip", length = 50)
     private String direccionIp;
-    
+
     @Column(name = "Accion", length = 100)
     private String accion;
-    
-    @Column(name = "SistemaOperativo", length = 50)
+
+    @Column(name = "Sistemaoperativo", length = 50)
     private String sistemaOperativo;
-    
+
     @Column(name = "Dispositivo", length = 50)
     private String dispositivo;
-    
+
     @Column(name = "Browser", length = 50)
     private String browser;
-    
+
     @Column(name = "Sesion", length = 100)
     private String sesion;
-    
-    // Relación
-    @ManyToOne
-    @JoinColumn(name = "IdTipoAcceso", insertable = false, updatable = false)
-    private TipoAcceso tipoAcceso;
 }

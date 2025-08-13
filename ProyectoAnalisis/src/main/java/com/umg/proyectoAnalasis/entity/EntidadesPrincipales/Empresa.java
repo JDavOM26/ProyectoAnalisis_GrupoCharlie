@@ -1,14 +1,8 @@
-package com.umg.proyectoAnalasis.entity;
+package com.umg.proyectoAnalasis.entity.EntidadesPrincipales;
 
 import java.time.LocalDateTime;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
-
 
 @Entity
 @Table(name = "EMPRESA")
@@ -17,7 +11,7 @@ public class Empresa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdEmpresa")
+    @Column(name = "Idempresa")
     private Integer idEmpresa;
 
     @Column(name = "Nombre", nullable = false, length = 100)
@@ -29,40 +23,39 @@ public class Empresa {
     @Column(name = "Nit", nullable = false, length = 20)
     private String nit;
 
-    @Column(name = "PasswordCantidadMayusculas")
+    @Column(name = "Passwordcantidadmayusculas")
     private Integer passwordCantidadMayusculas;
 
-    @Column(name = "PasswordCantidadMinusculas")
+    @Column(name = "Passwordcantidadminusculas")
     private Integer passwordCantidadMinusculas;
 
-    @Column(name = "PasswordCantidadCaracteresEspeciales")
+    @Column(name = "Passwordcantidadcaracteresespeciales")
     private Integer passwordCantidadCaracteresEspeciales;
 
-    @Column(name = "PasswordCantidadCaducidadDias")
+    @Column(name = "Passwordcantidadcaducidaddias")
     private Integer passwordCantidadCaducidadDias;
 
-    @Column(name = "PasswordLargo")
+    @Column(name = "Passwordlargo")
     private Integer passwordLargo;
 
-    @Column(name = "PasswordIntentosAntesDeBloquear")
+    @Column(name = "Passwordintentosantesdebloquear")
     private Integer passwordIntentosAntesDeBloquear;
 
-    @Column(name = "PasswordCantidadNumeros")
+    @Column(name = "Passwordcantidadnumeros")
     private Integer passwordCantidadNumeros;
 
-    @Column(name = "PasswordCantidadPreguntasValidar")
+    @Column(name = "Passwordcantidadpreguntasvalidar")
     private Integer passwordCantidadPreguntasValidar;
 
-    @Column(name = "FechaCreacion", nullable = false)
+    @Column(name = "Fechacreacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "UsuarioCreacion", nullable = false, length = 100)
+    @Column(name = "Usuariocreacion", nullable = false, length = 100)
     private String usuarioCreacion;
 
-    @Column(name = "FechaModificacion")
+    @Column(name = "Fechamodificacion")
     private LocalDateTime fechaModificacion;
 
-    @Column(name = "UsuarioModificacion", length = 100)
+    @Column(name = "Usuariomodificacion", length = 100)
     private String usuarioModificacion;
-
 }

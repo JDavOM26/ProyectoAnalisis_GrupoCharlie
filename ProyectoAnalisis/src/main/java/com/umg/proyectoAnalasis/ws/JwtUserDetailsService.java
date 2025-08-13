@@ -6,12 +6,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import com.umg.proyectoAnalasis.entity.Usuario;
-import com.umg.proyectoAnalasis.repository.UserRepository;
+import com.umg.proyectoAnalasis.entity.EntidadesPrincipales.Usuario;
+import com.umg.proyectoAnalasis.repository.RepositoriosPrincipales.UsuarioRepository;
 @Service
 public class JwtUserDetailsService  implements UserDetailsService {
     @Autowired
-    private UserRepository userRepository;
+    private UsuarioRepository userRepository;
     
     @Override
     public UserDetails loadUserByUsername(String idUsuario){
