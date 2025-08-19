@@ -8,7 +8,7 @@ import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
 @Component({
-  selector: 'app-usuarios',
+  selector: 'usuario',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './usuario.html',
