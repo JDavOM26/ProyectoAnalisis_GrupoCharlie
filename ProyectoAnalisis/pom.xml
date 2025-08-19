@@ -11,7 +11,7 @@
 	<groupId>com.umg</groupId>
 	<artifactId>proyectoAnalasis</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ProyectoAnalasisBackend</name>
+	<name>ProyectoAnalisisBackend</name>
 	<description>Proyecto de Analisis de Sistemas 2 </description>
 	<url/>
 	<licenses>
@@ -81,7 +81,10 @@
         <version>0.12.6</version>
         <scope>runtime</scope>
     </dependency>
-    <!-- BCrypt para hashear contraseñas -->
+    <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
     <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-crypto</artifactId>
