@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Usuario } from '../Models/usuario.model';
+import { provideHttpClient } from '@angular/common/http';
 
 // ajusta tu base URL (o usa environment)
 const BASE = 'http://localhost:8080/api/usuarios';
