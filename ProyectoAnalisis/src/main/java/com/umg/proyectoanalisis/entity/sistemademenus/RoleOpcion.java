@@ -1,11 +1,9 @@
 package com.umg.proyectoanalisis.entity.sistemademenus;
 import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.umg.proyectoanalisis.entity.principales.Role;
-
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "ROLE_OPCION")
@@ -23,12 +21,12 @@ public class RoleOpcion {
    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Idrole", insertable = false, updatable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Idopcion", insertable = false, updatable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Opcion opcion;
 
     @Column(name = "Alta", nullable = false)
