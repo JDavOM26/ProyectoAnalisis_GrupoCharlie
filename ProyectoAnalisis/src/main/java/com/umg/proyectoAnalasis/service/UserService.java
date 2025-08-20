@@ -110,6 +110,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 		    );
 		    return npjt.getJdbcTemplate().update(query);
 		}
+		
 		/*
 		 * 1 = activo
 		 * 2 = Bloqueado
