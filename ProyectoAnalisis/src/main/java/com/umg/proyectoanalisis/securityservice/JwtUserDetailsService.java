@@ -1,4 +1,4 @@
-package com.umg.proyectoanalisis.ws;
+package com.umg.proyectoanalisis.securityservice;
 
 import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;

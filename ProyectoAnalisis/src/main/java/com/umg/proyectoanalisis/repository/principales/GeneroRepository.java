@@ -7,4 +7,5 @@ import com.umg.proyectoanalisis.entity.principales.Genero;
 
 @Repository("generoRepository")
 public interface GeneroRepository extends JpaRepository<Genero, Integer> {
+   
 }
