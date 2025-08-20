@@ -1,9 +1,14 @@
 package com.umg.proyectoanalisis.controller.principales;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.umg.proyectoanalisis.entity.principales.Empresa;
+import com.umg.proyectoanalisis.service.EmpresaService;
 
 @RestController
-@RequestMapping("/api/noauth")
+@RequestMapping("/api/noauth/empresa")
 public class EmpresaController {
-  
+
 }
