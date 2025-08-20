@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { UsuarioService } from '../../Service/usuario.service';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -16,6 +17,7 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
+    private usuarioService: UsuarioService,
     private router: Router) {
   }
 
@@ -29,11 +31,21 @@ export class LoginComponent {
   onLogin(): void {
     const { username, password } = this.loginForm.value;
 
-    if (username === 'admin' && password === 'admin') {
-      this.router.navigate(['/home']);
-    } else {
-      console.log('Usuario o contraseña incorrectos');
-    }
+    console.log(username, password);
+    
+    this.usuarioService.login(
+      this.loginForm.value.username, 
+      this.loginForm.value.password
+    ).subscribe({
+      next: (response: any) => { 
+        console.log('Inicio de sesión exitoso', response);
+        this.router.navigate(['/home']);
+      }, 
+      error: (error) => {
+        console.error('Error al iniciar sesión', error);
+        alert('Usuario o contraseña incorrectos');
+      } 
+    }) ;
   }
 
   onSubmit() {
