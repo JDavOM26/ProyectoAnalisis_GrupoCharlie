@@ -5,7 +5,7 @@ import { Usuario } from '../Models/usuario.model';
 import { provideHttpClient } from '@angular/common/http';
 
 // ajusta tu base URL (o usa environment)
-const BASE = 'http://localhost:8080/api/usuarios';
+const BASE = 'http://localhost:8080/api/noauth/login';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -113,5 +113,22 @@ export class UsuarioService {
     });
     fd.append('Fotografia', file, file.name);
     return fd;
+  }
+
+  login(username: string, password: string) {
+    const body = { idUsuario: username, password };
+    return this.http.post('http://localhost:8080/api/noauth/login', body, { responseType: 'text' as 'json' }).pipe(
+      map((response: any) => {
+        // El backend responde: "token: eyJhbGciOiJIUzI1NiJ9..."
+        let token = '';
+        if (typeof response === 'string') {
+          const match = response.match(/token:\s*(.+)/i);
+          token = match ? match[1] : response;
+        }
+        if (!token) throw new Error('No se recibió token');
+        localStorage.setItem('token', token);
+        return { username, token };
+      })
+    );
   }
 }
