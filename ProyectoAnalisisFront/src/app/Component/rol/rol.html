@@ -1,0 +1,52 @@
+<div class="container-fluid py-3">
+
+  <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+    <h5 class="m-0">Roles</h5>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-success" (click)="nuevo()">Nuevo</button>
+      <button class="btn btn-sm btn-primary" (click)="guardar()" [disabled]="mode()==='idle' || mode()==='ver'">Guardar</button>
+      <button class="btn btn-sm btn-secondary" (click)="cancelar()" [disabled]="mode()==='idle'">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form [formGroup]="form" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Nombre *</label>
+          <input class="form-control" formControlName="nombre" />
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LISTADO -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of (roles$ | async)">
+              <td>{{r.Nombre}}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(r)">Ver</button>
+                <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(r)">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(r)">Eliminar</button>
+              </td>
+            </tr>
+            <tr *ngIf="!(roles$ | async)?.length">
+              <td colspan="6" class="text-center text-muted py-4">Sin registros</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
