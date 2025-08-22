@@ -1,5 +1,8 @@
 package com.umg.proyectoAnalasis.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,14 +14,16 @@ import org.springframework.web.bind.annotation.*;
 import com.umg.proyectoAnalasis.entity.EntidadesPrincipales.Usuario;
 import com.umg.proyectoAnalasis.repository.RepositoriosPrincipales.UsuarioRepository;
 import com.umg.proyectoAnalasis.security.JwtTokenUtil;
+import com.umg.proyectoAnalasis.service.BitacoraAccesoService;
 import com.umg.proyectoAnalasis.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/api/noauth")
 public class JwtAuthenticationController {
 
-  
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
@@ -30,62 +35,138 @@ public class JwtAuthenticationController {
     @Autowired
     UserService userService;
 
-  
-    
+    //Importar para la bitácora de acceso
+    @Autowired
+    BitacoraAccesoService bitacoraAccesoService;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
+
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Usuario user) {
-    	 Usuario usr = userRepository.findByIdUsuario(user.getIdUsuario());
-    	 
-    	 if (usr == null) {
-    	   
-    	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-    	                .body("Usuario o password inválido");
-    	    }
-    	   
+        Usuario usr = userRepository.findByIdUsuario(user.getIdUsuario());
 
-    	    if (usr.getStatusUsuario().getIdStatusUsuario()==2 && usr.getStatusUsuario() != null) {
-    	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-    	                .body("Cuenta bloqueada por demasiados intentos fallidos");
-    	    }
-    	    
-    	    if (usr.getStatusUsuario().getIdStatusUsuario()==3) {
-    	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-    	                .body("Cuenta inactiva");
-    	    }
-    	    
+        if (usr == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Usuario o password inválido");
+        }
+
+        // Validación del estado del usuario
+        if (usr.getStatusUsuario() != null) {
+            int estado = usr.getStatusUsuario().getIdStatusUsuario();
+
+            if (estado == 2) { // ESTADO_BLOQUEADO
+                return ResponseEntity.status(HttpStatus.LOCKED)
+                        .body("Cuenta bloqueada por demasiados intentos fallidos");
+            }
+            if (estado == 3) { // ESTADO_INACTIVO
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Cuenta inactiva");
+            }
+        }
+
         try {
             Authentication authentication = authenticationManager.authenticate(
-           
-                new UsernamePasswordAuthenticationToken(
-                    user.getIdUsuario(),
-                    user.getPassword()
-                )
-            );
-            
+                    new UsernamePasswordAuthenticationToken(
+                            user.getIdUsuario(),
+                            user.getPassword()));
+
+            // LOGIN EXITOSO
+            userService.manejarIntentoExitoso(user.getIdUsuario());
+
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String jwt = jwtUtils.generateToken(userDetails.getUsername());
-            
-            return ResponseEntity.ok("token: "+jwt);
-            
-        /*DENTRO DEL CATCH SE ESTARÁ ACTUALIZANDO intentosDeAcceso hasta llegar a la cantidad
-          definida en Empresa (De momento puse 5), despues de 5 se actualiza el estado del usuario
-          por lo que en el siguiente intento se detendrá el intenot de inicio de sesión 
-          por el estatus (usr.getIdStatusUsuario()==2)
-        */
+
+            Integer idRol = usr.getRole() != null ? usr.getRole().getIdRole() : null;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", jwt);
+            response.put("idRol", idRol);
+            response.put("mensaje", "Login exitoso");
+
+            //Registrar en la bitácora acceso exitoso
+            String usuario = usr.getIdUsuario();
+            String tipoAcceso = "Acceso concedido";
+            String direccionIp = httpServletRequest.getRemoteAddr();
+            String httpUserAgent = httpServletRequest.getHeader("User-agent");
+            String accion = "LOGIN_EXITOSO";    
+            String sesion = httpServletRequest.getSession().getId();
+
+            bitacoraAccesoService.RegistrarAcceso(usuario, tipoAcceso, direccionIp, httpUserAgent, accion, sesion);
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-        	if(usr.getIntentosDeAcceso()<5) {
-        	userService.actualizarUsuarioEstado(user.getIdUsuario(), 1);
-        	}else {
-        		
-        		userService.actualizarEstatus(user.getIdUsuario(), 2);
-        		
-        	}
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Usuario o password inválido");
+            // LOGIN FALLIDO
+            try {
+                int nuevosIntentos = userService.manejarIntentoFallido(user.getIdUsuario());
+                int maxIntentos = userService.obtenerMaxIntentosFallidos(user.getIdUsuario());
+
+                String mensaje = String.format("Credenciales inválidas. Intentos: %d/%d",
+                        nuevosIntentos, maxIntentos);
+
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(mensaje);
+
+            } catch (RuntimeException ex) {
+                // En caso de error al manejar el intento fallido
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error en el servidor: " + ex.getMessage());
+            }
         }
     }
-    
-  
-    
-   
+    /*
+     * if (usr == null) {
+     * 
+     * return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+     * .body("Usuario o password inválido");
+     * }
+     * 
+     * 
+     * if (usr.getStatusUsuario().getIdStatusUsuario()==2 && usr.getStatusUsuario()
+     * != null) {
+     * return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+     * .body("Cuenta bloqueada por demasiados intentos fallidos");
+     * }
+     * 
+     * if (usr.getStatusUsuario().getIdStatusUsuario()==3) {
+     * return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+     * .body("Cuenta inactiva");
+     * }
+     * 
+     * try {
+     * Authentication authentication = authenticationManager.authenticate(
+     * 
+     * new UsernamePasswordAuthenticationToken(
+     * user.getIdUsuario(),
+     * user.getPassword()
+     * )
+     * );
+     * 
+     * UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+     * String jwt = jwtUtils.generateToken(userDetails.getUsername());
+     * 
+     * return ResponseEntity.ok("token: "+jwt);
+     * 
+     * /*DENTRO DEL CATCH SE ESTARÁ ACTUALIZANDO intentosDeAcceso hasta llegar a la
+     * cantidad
+     * definida en Empresa (De momento puse 5), despues de 5 se actualiza el estado
+     * del usuario
+     * por lo que en el siguiente intento se detendrá el intenot de inicio de sesión
+     * por el estatus (usr.getIdStatusUsuario()==2)
+     */
+    /*
+     * } catch (Exception e) {
+     * if(usr.getIntentosDeAcceso()<5) {
+     * userService.actualizarUsuarioEstado(user.getIdUsuario(), 1);
+     * }else {
+     * 
+     * userService.actualizarEstatus(user.getIdUsuario(), 2);
+     * 
+     * }
+     * return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+     * .body("Usuario o password inválido");
+     * }
+     */
 }
