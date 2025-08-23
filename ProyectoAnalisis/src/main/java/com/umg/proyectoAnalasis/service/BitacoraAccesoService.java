@@ -35,7 +35,7 @@ public class BitacoraAccesoService {
         bitacora.setHttpUserAgent(httpUserAgent);
         bitacora.setSesion(sesion);
 
-        // Extraer información del User-Agent (simplificado por ahora)
+        // Extraer información del User-Agent
         Map<String, String> userAgentInfo = parseUserAgentSimple(httpUserAgent);
         bitacora.setSistemaOperativo(userAgentInfo.get("sistemaOperativo"));
         bitacora.setDispositivo(userAgentInfo.get("dispositivo"));

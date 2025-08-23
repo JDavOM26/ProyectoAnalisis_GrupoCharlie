@@ -87,13 +87,11 @@ public class JwtAuthenticationController {
 
             //Registrar en la bitácora acceso exitoso
             String usuario = usr.getIdUsuario();
-            String tipoAcceso = "Acceso concedido";
             String direccionIp = httpServletRequest.getRemoteAddr();
             String httpUserAgent = httpServletRequest.getHeader("User-agent");
-            String accion = "LOGIN_EXITOSO";    
             String sesion = httpServletRequest.getSession().getId();
 
-            bitacoraAccesoService.RegistrarAcceso(usuario, tipoAcceso, direccionIp, httpUserAgent, accion, sesion);
+            bitacoraAccesoService.registrarAccesoExitoso(usuario, direccionIp, httpUserAgent, sesion);
 
             return ResponseEntity.ok(response);
 
