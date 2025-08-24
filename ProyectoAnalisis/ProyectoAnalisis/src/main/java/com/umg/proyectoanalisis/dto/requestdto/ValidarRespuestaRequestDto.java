@@ -3,6 +3,8 @@ package com.umg.proyectoanalisis.dto.requestdto;
 import lombok.Data;
 
 @Data
-public class PasswordRecoveryRequestDto {
+public class ValidarRespuestaRequestDto {
 private String idUsuario;
+private String respuesta;
+
 }
