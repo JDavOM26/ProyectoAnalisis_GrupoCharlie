@@ -35,19 +35,31 @@ public class JwtAuthenticationController {
     @Autowired
     UserService userService;
 
-    //Importar para la bitácora de acceso
+    // Importar para la bitácora de acceso
     @Autowired
     BitacoraAccesoService bitacoraAccesoService;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
 
-
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Usuario user) {
+        String direccionIp = httpServletRequest.getRemoteAddr();
+        String httpUserAgent = httpServletRequest.getHeader("User-agent");
+        String sesion = httpServletRequest.getSession().getId();
+
         Usuario usr = userRepository.findByIdUsuario(user.getIdUsuario());
 
         if (usr == null) {
+            String usuarioInexistente = "Usuario no registrado";
+            // Registrar en la bitácora intento fallido, es el mismo método para password incorrecto
+                bitacoraAccesoService.registrarIntentoFallido(
+                        usuarioInexistente,
+                        direccionIp,
+                        httpUserAgent,
+                        "USUARIO_INEXISTENTE",
+                        sesion);
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Usuario o password inválido");
         }
@@ -56,11 +68,27 @@ public class JwtAuthenticationController {
         if (usr.getStatusUsuario() != null) {
             int estado = usr.getStatusUsuario().getIdStatusUsuario();
 
-            if (estado == 2) { // ESTADO_BLOQUEADO
+            if (estado == 2) { // ESTADO_BLOQUEADO  
+                // Registrar en la bitácora intento fallido, es el mismo método para password incorrecto
+                bitacoraAccesoService.registrarIntentoFallido(
+                        user.getIdUsuario(),
+                        direccionIp,
+                        httpUserAgent,
+                        "PASSWORD_INCORRECTO",
+                        sesion);
+
                 return ResponseEntity.status(HttpStatus.LOCKED)
                         .body("Cuenta bloqueada por demasiados intentos fallidos");
             }
             if (estado == 3) { // ESTADO_INACTIVO
+                //Registrar en tabla de bitácora
+                bitacoraAccesoService.registrarIntentoFallido(
+                        user.getIdUsuario(),
+                        direccionIp,
+                        httpUserAgent,
+                        "USUARIO_INACTIVO",
+                        sesion);
+
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Cuenta inactiva");
             }
@@ -85,12 +113,8 @@ public class JwtAuthenticationController {
             response.put("idRol", idRol);
             response.put("mensaje", "Login exitoso");
 
-            //Registrar en la bitácora acceso exitoso
+            // Registrar en la bitácora acceso exitoso
             String usuario = usr.getIdUsuario();
-            String direccionIp = httpServletRequest.getRemoteAddr();
-            String httpUserAgent = httpServletRequest.getHeader("User-agent");
-            String sesion = httpServletRequest.getSession().getId();
-
             bitacoraAccesoService.registrarAccesoExitoso(usuario, direccionIp, httpUserAgent, sesion);
 
             return ResponseEntity.ok(response);
@@ -100,6 +124,14 @@ public class JwtAuthenticationController {
             try {
                 int nuevosIntentos = userService.manejarIntentoFallido(user.getIdUsuario());
                 int maxIntentos = userService.obtenerMaxIntentosFallidos(user.getIdUsuario());
+
+                // Registrar en la bitácora intento fallido
+                bitacoraAccesoService.registrarIntentoFallido(
+                        user.getIdUsuario(),
+                        direccionIp,
+                        httpUserAgent,
+                        "PASSWORD_INCORRECTO",
+                        sesion);
 
                 String mensaje = String.format("Credenciales inválidas. Intentos: %d/%d",
                         nuevosIntentos, maxIntentos);

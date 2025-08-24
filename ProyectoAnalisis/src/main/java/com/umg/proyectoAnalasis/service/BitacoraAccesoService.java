@@ -118,7 +118,7 @@ public class BitacoraAccesoService {
         String tipoAcceso;
         switch (motivo) {
             case "PASSWORD_INCORRECTO":
-                tipoAcceso = "Bloqueado - Password incorrecto/Numero de intentos excedidos";
+                tipoAcceso = "Bloqueado - Password incorrecto/Numero de intentos exedidos";
                 break;
             case "USUARIO_INEXISTENTE":
                 tipoAcceso = "Usuario ingresado no existe";
@@ -127,7 +127,7 @@ public class BitacoraAccesoService {
                 tipoAcceso = "Usuario Inactivo";
                 break;
             default:
-                tipoAcceso = "Bloqueado - Password incorrecto/Numero de intentos excedidos";
+                tipoAcceso = "Bloqueado - Password incorrecto/Numero de intentos exedidos";
         }
 
         RegistrarAcceso(idUsuario, tipoAcceso, direccionIp,
