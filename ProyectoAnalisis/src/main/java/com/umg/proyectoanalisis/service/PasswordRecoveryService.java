@@ -1,26 +1,34 @@
 package com.umg.proyectoanalisis.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 import org.springframework.beans.factory.annotation.Value;
 import com.umg.proyectoanalisis.dto.EmailDTO;
 import com.umg.proyectoanalisis.dto.requestdto.ValidarRespuestaRequestDto;
 import com.umg.proyectoanalisis.entity.principales.Usuario;
 import com.umg.proyectoanalisis.repository.principales.UsuarioRepository;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 
 @Service
 public class PasswordRecoveryService {
+
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
-    private String email;
+    @Autowired
+    private TemplateEngine templateEngine;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -28,16 +36,35 @@ public class PasswordRecoveryService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public void sendEmail(EmailDTO emailDto) {
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(emailDto.getPara());
-        message.setSubject(emailDto.getAsunto());
-        message.setText(emailDto.getCuerpo());
-        message.setFrom(email);
-        mailSender.send(message);
+    private String loginUrl = "https://localhost:4200/login";
+
+    public void sendEmail(EmailDTO emailDto, String passwordTemporal) throws MessagingException {
+        try {
+            // Procesar la plantilla Thymeleaf
+            Context context = new Context();
+            context.setVariable("idUsuario", emailDto.getIdUsuario());
+            context.setVariable("passwordTemporal", passwordTemporal);
+            context.setVariable("year", LocalDateTime.now().getYear());
+            context.setVariable("loginUrl", loginUrl);
+            String cuerpoHtml = templateEngine.process("password_recovery_email", context);
+
+            // Crear mensaje MIME para HTML
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(emailDto.getPara());
+            helper.setSubject(emailDto.getAsunto());
+            helper.setText(cuerpoHtml, true); // true indica que el contenido es HTML
+            helper.setFrom(fromEmail);
+
+            // Enviar correo
+            mailSender.send(message);
+        } catch (MailException | MessagingException e) {
+            throw new MessagingException("Error al enviar el correo: " + e.getMessage(), e);
+        }
     }
-
     public boolean verificarRespuesta(ValidarRespuestaRequestDto answerDto) {
         try {
 

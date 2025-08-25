@@ -14,9 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdto.RoleOpcionPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.RoleOpcion;
 import com.umg.proyectoanalisis.entity.sistemademenus.RoleOpcionId;
 import com.umg.proyectoanalisis.repository.sistemademenus.RoleOpcionRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,15 +44,20 @@ public class RoleOpcionController {
 
    
    @PostMapping("/asignar-opcion-rol")
-   public ResponseEntity<RoleOpcion> crearOpcionRol(@RequestBody RoleOpcion roleOpcion) {
+   public ResponseEntity<String> crearOpcionRol(@Valid @RequestBody RoleOpcionPostDto roleOpcionDto) {
       try {
-         if (roleOpcion.getIdRole() == null || roleOpcion.getIdOpcion() == null) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
-         }
+         RoleOpcion roleOpcion = new RoleOpcion();
+         roleOpcion.setIdOpcion(roleOpcionDto.getIdOpcion());
+         roleOpcion.setIdRole(roleOpcionDto.getIdRole());
+         roleOpcion.setAlta(roleOpcionDto.getAlta());
+         roleOpcion.setBaja(roleOpcionDto.getBaja());
+         roleOpcion.setCambio(roleOpcionDto.getCambio());
+         roleOpcion.setImprimir(roleOpcionDto.getImprimir());
+         roleOpcion.setExportar(roleOpcionDto.getExportar());
          roleOpcion.setFechaCreacion(LocalDateTime.now());
-         roleOpcion.setUsuarioCreacion("Administrador");
-         RoleOpcion roleOpcionGuardada = roleOpcionRepository.save(roleOpcion);
-         return new ResponseEntity<>(roleOpcionGuardada, HttpStatus.CREATED); 
+         roleOpcion.setUsuarioCreacion(roleOpcionDto.getIdUsuario());
+         roleOpcionRepository.save(roleOpcion);
+         return new ResponseEntity<>(HttpStatus.CREATED); 
       } catch (Exception e) {
          return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR); 
       }

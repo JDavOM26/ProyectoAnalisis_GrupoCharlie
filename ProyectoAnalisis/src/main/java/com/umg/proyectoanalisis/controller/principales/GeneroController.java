@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.umg.proyectoanalisis.dto.requestdto.postdto.NombreIdUsuarioDto;
 import com.umg.proyectoanalisis.entity.principales.Genero;
 import com.umg.proyectoanalisis.repository.principales.GeneroRepository;
 
@@ -26,7 +27,7 @@ public class GeneroController {
    GeneroRepository generoRepository;
 
    @GetMapping("/generos")
-   public ResponseEntity<List<Genero>> getAllGeneros() {
+   public ResponseEntity<List<Genero>> obtenerGeneros() {
       try {
          List<Genero> generos = generoRepository.findAll();
          if (generos.isEmpty()) {
@@ -39,17 +40,18 @@ public class GeneroController {
    }
 
    @PostMapping("/crear-genero")
-   public ResponseEntity<Genero> crearGenero(@RequestBody Genero genero) {
+   public ResponseEntity<?> crearGenero(@RequestBody NombreIdUsuarioDto generoDto) {
       try {
-         if (genero.getNombre() == null || genero.getNombre().isEmpty()) {
+         if (generoDto.getNombre() == null || generoDto.getNombre().isEmpty()
+          && generoDto.getIdUsuario() == null || generoDto.getIdUsuario().isEmpty()) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
          }
          Genero nuevoGenero = new Genero();
-         nuevoGenero.setNombre(genero.getNombre());
+         nuevoGenero.setNombre(generoDto.getNombre());
          nuevoGenero.setFechaCreacion(LocalDateTime.now());
-         nuevoGenero.setUsuarioCreacion("Administrador");
-         Genero generoGuardado = generoRepository.save(nuevoGenero);
-         return new ResponseEntity<>(generoGuardado, HttpStatus.CREATED); 
+         nuevoGenero.setUsuarioCreacion(generoDto.getIdUsuario());
+         generoRepository.save(nuevoGenero);
+         return new ResponseEntity<>(HttpStatus.CREATED); 
       } catch (Exception e) {
          return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR); 
       }

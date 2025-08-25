@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdto.NombreIdUsuarioDto;
 import com.umg.proyectoanalisis.entity.principales.StatusUsuario;
 import com.umg.proyectoanalisis.repository.principales.StatusUsuarioRepository;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +26,7 @@ public class StatusUsuarioController {
     StatusUsuarioRepository statusUsuarioRepository;
 
     @GetMapping("/status")
-    public ResponseEntity<List<StatusUsuario>> getStatusUsuario() {
+    public ResponseEntity<List<StatusUsuario>> obtenerStatusUsuario() {
         try {
             List<StatusUsuario> estados = statusUsuarioRepository.findAll();
             if (estados.isEmpty()) {
@@ -38,13 +40,16 @@ public class StatusUsuarioController {
 
     
     @PostMapping("/crear-status")
-    public ResponseEntity<StatusUsuario> crearStatusUsuario(@RequestBody StatusUsuario statusUsuario) {
+    public ResponseEntity<StatusUsuario> crearStatusUsuario(@RequestBody NombreIdUsuarioDto statusUsuarioDto) {
         try {
-            if (statusUsuario.getNombre() == null || statusUsuario.getNombre().isEmpty()) {
+            if (statusUsuarioDto.getNombre() == null || statusUsuarioDto.getNombre().isEmpty()
+            && statusUsuarioDto.getIdUsuario() == null || statusUsuarioDto.getIdUsuario().isEmpty()) {
                 return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
             }
+            StatusUsuario statusUsuario = new StatusUsuario();
+            statusUsuario.setNombre(statusUsuarioDto.getNombre());
             statusUsuario.setFechaCreacion(LocalDateTime.now());
-            statusUsuario.setUsuarioCreacion("Administrador");
+            statusUsuario.setUsuarioCreacion(statusUsuarioDto.getIdUsuario());
             StatusUsuario estadoGuardado = statusUsuarioRepository.save(statusUsuario);
             return new ResponseEntity<>(estadoGuardado, HttpStatus.CREATED); 
         } catch (Exception e) {

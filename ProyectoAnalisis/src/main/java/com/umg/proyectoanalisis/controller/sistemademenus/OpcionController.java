@@ -13,8 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdto.OpcionPostDto;
+import com.umg.proyectoanalisis.entity.sistemademenus.Menu;
 import com.umg.proyectoanalisis.entity.sistemademenus.Opcion;
+import com.umg.proyectoanalisis.repository.sistemademenus.MenuRepository;
 import com.umg.proyectoanalisis.repository.sistemademenus.OpcionRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,6 +28,8 @@ public class OpcionController {
     @Autowired
     OpcionRepository opcionRepository;
 
+    @Autowired
+    MenuRepository menuRepository;
    
     @GetMapping("/opcion")
     public ResponseEntity<List<Opcion>> obtenerOpciones() {
@@ -38,16 +46,20 @@ public class OpcionController {
 
     
     @PostMapping("/crear-opcion")
-    public ResponseEntity<Opcion> crearOpcion(@RequestBody Opcion opcion) {
+    public ResponseEntity<?> crearOpcion(@Valid @RequestBody OpcionPostDto opcionDto) {
         try {
-            if (opcion.getNombre() == null || opcion.getNombre().isEmpty() ||
-                    opcion.getOrdenMenu() == null || opcion.getPagina() == null || opcion.getPagina().isEmpty()) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
-            }
+            Opcion opcion = new Opcion();
+            Menu menu = menuRepository.findById(opcionDto.getIdMenu())
+             .orElseThrow(() -> new RuntimeException("Menú no encontrado con id: " + opcionDto.getIdMenu()));
+
+            opcion.setNombre(opcionDto.getNombre());
+            opcion.setMenu(menu);
+            opcion.setOrdenMenu(opcionDto.getOrdenMenu());
             opcion.setFechaCreacion(LocalDateTime.now());
-            opcion.setUsuarioCreacion("Administrador");
-            Opcion opcionGuardada = opcionRepository.save(opcion);
-            return new ResponseEntity<>(opcionGuardada, HttpStatus.CREATED); 
+            opcion.setPagina(opcionDto.getPagina());
+            opcion.setUsuarioCreacion(opcionDto.getIdUsuario());
+            opcionRepository.save(opcion);
+            return new ResponseEntity<>(HttpStatus.CREATED); 
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR); 
         }

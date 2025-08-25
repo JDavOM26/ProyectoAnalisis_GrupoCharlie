@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdto.NombreIdUsuarioDto;
 import com.umg.proyectoanalisis.entity.principales.Role;
 import com.umg.proyectoanalisis.repository.principales.RoleRepository;
 
@@ -39,13 +41,16 @@ public class RoleController {
 
 
   @PostMapping("/crear-rol")
-  public ResponseEntity<Role> crearRol(@RequestBody Role role) {
+  public ResponseEntity<Role> crearRol(@RequestBody NombreIdUsuarioDto roleDto) {
     try {
-      if (role.getNombre() == null || role.getNombre().isEmpty()) {
+      if (roleDto.getNombre() == null || roleDto.getNombre().isEmpty() && 
+      roleDto.getIdUsuario() == null || roleDto.getIdUsuario().isEmpty()) {
         return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
       }
+      Role role = new Role();
+      role.setNombre(roleDto.getNombre());
       role.setFechaCreacion(LocalDateTime.now());
-      role.setUsuarioCreacion("Administrador");
+      role.setUsuarioCreacion(roleDto.getIdUsuario());
       Role rolGuardado = roleRepository.save(role);
       return new ResponseEntity<>(rolGuardado, HttpStatus.CREATED); 
     } catch (Exception e) {

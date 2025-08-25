@@ -2,9 +2,16 @@ package com.umg.proyectoanalisis.controller.sistemademenus;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdto.MenuPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.Menu;
+import com.umg.proyectoanalisis.entity.sistemademenus.Modulo;
 import com.umg.proyectoanalisis.repository.sistemademenus.MenuRepository;
+import com.umg.proyectoanalisis.repository.sistemademenus.ModuloRepository;
 import com.umg.proyectoanalisis.service.UserRoleOptionsService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -26,9 +33,11 @@ public class MenuController {
     UserRoleOptionsService userRoleOptionsService;
     @Autowired
     MenuRepository menuRepository;
+    @Autowired
+    ModuloRepository moduloRepository;
 
     @GetMapping("/menus")
-    public ResponseEntity<List<Menu>> getMenus() {
+    public ResponseEntity<List<Menu>> obtenerMenus() {
         try {
             List<Menu> menus = menuRepository.findAll();
             if (menus.isEmpty()) {
@@ -41,14 +50,16 @@ public class MenuController {
     }
 
     @PostMapping("/crear-menu")
-    public ResponseEntity<Menu> crearMenu(@RequestBody Menu menu) {
+    public ResponseEntity<Menu> crearMenu(@Valid @RequestBody MenuPostDto menuDto) {
         try {
-            if (menu.getNombre() == null || menu.getNombre().isEmpty() ||
-                    menu.getOrdenMenu() == null || menu.getModulo() == null) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
+            Menu menu = new Menu();
+            Modulo modulo = moduloRepository.findById(menuDto.getIdModulo())
+            .orElseThrow(() -> new RuntimeException("Módulo con ID " + menuDto.getIdModulo() + " no encontrado"));
+            menu.setNombre(menuDto.getNombre());
+            menu.setOrdenMenu(menuDto.getOrdenMenu());
+            menu.setModulo(modulo);
             menu.setFechaCreacion(LocalDateTime.now());
-            menu.setUsuarioCreacion("Administrador");
+            menu.setUsuarioCreacion(menuDto.getIdUsuario());
             Menu menuGuardado = menuRepository.save(menu);
             return new ResponseEntity<>(menuGuardado, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -93,7 +104,7 @@ public class MenuController {
     }
 
     @GetMapping("/opciones")
-    public ResponseEntity<List<Map<String, Object>>> getOpciones(@RequestParam String idUsuario) {
+    public ResponseEntity<List<Map<String, Object>>> obtenerOpciones(@RequestParam String idUsuario) {
         try {
             List<Map<String, Object>> opciones = userRoleOptionsService.obtenerRoleOptions(idUsuario);
             if (opciones.isEmpty()) {

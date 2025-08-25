@@ -14,8 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdto.ModuloPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.Modulo;
 import com.umg.proyectoanalisis.repository.sistemademenus.ModuloRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -37,14 +41,13 @@ public class ModuloController {
     }
 
     @PostMapping("/crear-modulo")
-    public ResponseEntity<Modulo> crearModulo(@RequestBody Modulo modulo) {
+    public ResponseEntity<Modulo> crearModulo(@Valid @RequestBody ModuloPostDto moduloDto) {
         try {
-            if (modulo.getNombre() == null || modulo.getNombre().isEmpty() ||
-                    modulo.getOrdenMenu() == null) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
+            Modulo modulo = new Modulo();
+            modulo.setNombre(moduloDto.getNombre());
+            modulo.setOrdenMenu(moduloDto.getOrdenMenu());
             modulo.setFechaCreacion(LocalDateTime.now());
-            modulo.setUsuarioCreacion("Administrador");
+            modulo.setUsuarioCreacion(moduloDto.getIdUsuario());
             Modulo moduloGuardado = moduloRepository.save(modulo);
             return new ResponseEntity<>(moduloGuardado, HttpStatus.CREATED);
         } catch (Exception e) {
