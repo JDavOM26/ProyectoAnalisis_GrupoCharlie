@@ -1,4 +1,4 @@
-package com.umg.proyectoanalisis.dto.requestdto.postdto;
+package com.umg.proyectoanalisis.dto.requestdto.postdtos;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

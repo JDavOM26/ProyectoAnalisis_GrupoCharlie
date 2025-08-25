@@ -3,7 +3,7 @@ package com.umg.proyectoanalisis.controller.sistemademenus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.umg.proyectoanalisis.dto.requestdto.postdto.MenuPostDto;
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.MenuPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.Menu;
 import com.umg.proyectoanalisis.entity.sistemademenus.Modulo;
 import com.umg.proyectoanalisis.repository.sistemademenus.MenuRepository;
@@ -13,6 +13,7 @@ import com.umg.proyectoanalisis.service.UserRoleOptionsService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -67,22 +68,22 @@ public class MenuController {
         }
     }
 
-    @PutMapping("/actualizar-menu")
-    public ResponseEntity<Menu> actualizarMenu(@RequestBody Menu menu) {
+    @PutMapping("/actualizar-menu/{idMenu}")
+    public ResponseEntity<Menu> actualizarMenu(@PathVariable Integer idMenu, @Valid @RequestBody MenuPostDto menuDto) {
         try {
-            Menu menuExistente = menuRepository.findById(menu.getIdMenu())
-                    .orElseThrow(() -> new RuntimeException("Menú no encontrado con id: " + menu.getIdMenu()));
-            if (menu.getNombre() == null || menu.getNombre().isEmpty() ||
-                    menu.getOrdenMenu() == null || menu.getModulo() == null) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
-            menuExistente.setNombre(menu.getNombre());
-            menuExistente.setOrdenMenu(menu.getOrdenMenu());
-            menuExistente.setModulo(menu.getModulo());
+            Menu menuExistente = menuRepository.findById(idMenu)
+                    .orElseThrow(() -> new RuntimeException("Menú no encontrado con id"));
+            
+            Modulo moduloExistente = moduloRepository.findById(menuDto.getIdModulo())
+                    .orElseThrow(() -> new RuntimeException("Modulo no encontrado con id"));
+                    
+            menuExistente.setNombre(menuDto.getNombre());
+            menuExistente.setOrdenMenu(menuDto.getOrdenMenu());
+            menuExistente.setModulo(moduloExistente);
             menuExistente.setFechaModificacion(LocalDateTime.now());
-            menuExistente.setUsuarioModificacion("Administrador");
-            Menu menuActualizado = menuRepository.save(menuExistente);
-            return new ResponseEntity<>(menuActualizado, HttpStatus.OK);
+            menuExistente.setUsuarioModificacion(menuDto.getIdUsuario());
+             Menu menuGuardado = menuRepository.save(menuExistente);
+            return new ResponseEntity<>(menuGuardado, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {

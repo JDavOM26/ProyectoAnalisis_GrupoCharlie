@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.umg.proyectoanalisis.dto.requestdto.postdto.ModuloPostDto;
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.ModuloPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.Modulo;
 import com.umg.proyectoanalisis.repository.sistemademenus.ModuloRepository;
 
@@ -55,21 +56,18 @@ public class ModuloController {
         }
     }
 
-    @PutMapping("/actualizar-modulo")
-    public ResponseEntity<Modulo> actualizarModulo(@RequestBody Modulo modulo) {
+    @PutMapping("/actualizar-modulo/{idModulo}")
+    public ResponseEntity<Modulo> actualizarModulo(@PathVariable Integer idModulo, @Valid @RequestBody ModuloPostDto moduloDto) {
         try {
-            Modulo moduloExistente = moduloRepository.findById(modulo.getIdModulo())
-                    .orElseThrow(() -> new RuntimeException("Módulo no encontrado con id: " + modulo.getIdModulo()));
-            if (modulo.getNombre() == null || modulo.getNombre().isEmpty() ||
-                    modulo.getOrdenMenu() == null) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
-            moduloExistente.setNombre(modulo.getNombre());
-            moduloExistente.setOrdenMenu(modulo.getOrdenMenu());
+            Modulo moduloExistente = moduloRepository.findById(idModulo)
+                    .orElseThrow(() -> new RuntimeException("Módulo no encontrado con id"));
+          
+            moduloExistente.setNombre(moduloDto.getNombre());
+            moduloExistente.setOrdenMenu(moduloDto.getOrdenMenu());
             moduloExistente.setFechaModificacion(LocalDateTime.now());
-            moduloExistente.setUsuarioModificacion("Administrador");
-            Modulo moduloActualizado = moduloRepository.save(moduloExistente);
-            return new ResponseEntity<>(moduloActualizado, HttpStatus.OK);
+            moduloExistente.setUsuarioModificacion(moduloDto.getIdUsuario());
+             Modulo moduloGuardado = moduloRepository.save(moduloExistente);
+            return new ResponseEntity<>(moduloGuardado, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {

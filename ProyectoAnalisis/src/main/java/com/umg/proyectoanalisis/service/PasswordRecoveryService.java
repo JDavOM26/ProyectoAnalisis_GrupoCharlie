@@ -28,6 +28,7 @@ public class PasswordRecoveryService {
     private JavaMailSender mailSender;
 
     @Autowired
+    
     private TemplateEngine templateEngine;
 
     @Autowired
