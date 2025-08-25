@@ -28,7 +28,7 @@ public class PasswordRecoveryService {
     private JavaMailSender mailSender;
 
     @Autowired
-    
+
     private TemplateEngine templateEngine;
 
     @Autowired
@@ -40,7 +40,7 @@ public class PasswordRecoveryService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    private String loginUrl = "https://localhost:4200/login";
+    private String loginUrl = "http://localhost:4200/login";
 
     public void sendEmail(EmailDTO emailDto, String passwordTemporal) throws MessagingException {
         try {
@@ -66,28 +66,29 @@ public class PasswordRecoveryService {
             throw new MessagingException("Error al enviar el correo: " + e.getMessage(), e);
         }
     }
+
     public boolean verificarRespuesta(ValidarRespuestaRequestDto answerDto) {
-        try {
-
-            if (answerDto == null || answerDto.getIdUsuario() == null || answerDto.getIdUsuario().isEmpty() ||
-                    answerDto.getRespuesta() == null || answerDto.getRespuesta().isEmpty()) {
-                return false;
-            }
-
-            Usuario usuario = usuarioRepository.findById(answerDto.getIdUsuario())
-                    .orElseThrow(
-                            () -> new RuntimeException("Credenciales invalidas"));
-
-            String respuestaUsuario = usuario.getRespuesta().trim().toLowerCase();
-            String respuestaIngresada = answerDto.getRespuesta().trim().toLowerCase();
-            return respuestaUsuario.equals(respuestaIngresada);
-        } catch (RuntimeException e) {
-
-            return false;
-        } catch (Exception e) {
-
-            return false;
+        // Validaciones iniciales
+        if (answerDto == null || answerDto.getIdUsuario() == null || answerDto.getIdUsuario().isEmpty() ||
+                answerDto.getRespuesta() == null || answerDto.getRespuesta().isEmpty()) {
+            throw new RuntimeException("Datos de respuesta inválidos");
         }
+
+        Usuario usuario = usuarioRepository.findById(answerDto.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Credenciales invalidas"));
+
+        String respuestaUsuario = usuario.getRespuesta().trim().toLowerCase();
+        String respuestaIngresada = answerDto.getRespuesta().trim().toLowerCase();
+
+        boolean esRespuestaCorrecta = respuestaUsuario.equals(respuestaIngresada);
+
+        if (!esRespuestaCorrecta) {
+            // IMPORTANTE: Lanzar excepción para que el controlador maneje los intentos
+            // fallidos
+            throw new RuntimeException("Respuesta incorrecta");
+        }
+
+        return true; // Solo se llega aquí si la respuesta es correcta
     }
 
     public String actualizarContrasenaTemporal(String idUsuario) {
