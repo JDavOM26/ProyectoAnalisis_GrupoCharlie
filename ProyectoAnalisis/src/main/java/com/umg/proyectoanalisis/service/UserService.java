@@ -236,7 +236,7 @@ public class UserService {
 		StatusUsuario status = statusUsuarioRepository.findById(1)
 				.orElseThrow(() -> new RuntimeException("StatusUsuario no encontrado"));
 
-		user.setStatusUsuario(status);
+		user.setIdStatusUsuario(status.getIdStatusUsuario());
 		user.setUltimaFechaCambioPassword(LocalDateTime.now());
 		usuarioRepository.save(user);
 		return true;

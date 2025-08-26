@@ -75,8 +75,8 @@ public class PasswordRecoveryController {
         }
 
         // Validación del estado del usuario
-        if (usr.getStatusUsuario() != null) {
-            int estado = usr.getStatusUsuario().getIdStatusUsuario();
+        if (usr.getIdStatusUsuario() != null) {
+            int estado = usr.getIdStatusUsuario();
 
             if (estado == 2) { // ESTADO_BLOQUEADO
                 // Registrar en la bitácora intento fallido, es el mismo método para password
@@ -169,8 +169,8 @@ public class PasswordRecoveryController {
         }
 
         // Validación del estado del usuario
-        if (usr.getStatusUsuario() != null) {
-            int estado = usr.getStatusUsuario().getIdStatusUsuario();
+        if (usr.getIdStatusUsuario() != null) {
+            int estado = usr.getIdStatusUsuario();
 
             if (estado == 2) { // ESTADO_BLOQUEADO
                 // Registrar en la bitácora intento fallido, es el mismo método para password

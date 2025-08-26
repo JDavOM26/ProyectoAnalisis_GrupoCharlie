@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.umg</groupId>
-	<artifactId>proyectoAnalasis</artifactId>
+	<artifactId>proyectoAnalisis</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ProyectoAnalisisBackend</name>
 	<description>Proyecto de Analisis de Sistemas 2 </description>

@@ -70,8 +70,8 @@ public class JwtAuthenticationController {
         }
 
         // Validación del estado del usuario
-        if (usr.getStatusUsuario() != null) {
-            int estado = usr.getStatusUsuario().getIdStatusUsuario();
+        if (usr.getIdStatusUsuario() != null) {
+            int estado = usr.getIdStatusUsuario();
 
             if (estado == 2) { // ESTADO_BLOQUEADO  
                 // Registrar en la bitácora intento fallido, es el mismo método para password incorrecto
@@ -111,11 +111,11 @@ public class JwtAuthenticationController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String jwt = jwtUtils.generateToken(userDetails.getUsername());
 
-            Integer idRol = usr.getRole() != null ? usr.getRole().getIdRole() : null;
+            
 
             Map<String, Object> response = new HashMap<>();
             response.put("token", jwt);
-            response.put("idRol", idRol);
+            response.put("idRol",  usr.getIdRole());
             response.put("mensaje", "Login exitoso");
 
             // Registrar en la bitácora acceso exitoso

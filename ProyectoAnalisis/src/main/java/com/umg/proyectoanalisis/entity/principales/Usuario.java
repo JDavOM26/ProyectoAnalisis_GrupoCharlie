@@ -1,4 +1,5 @@
 package com.umg.proyectoanalisis.entity.principales;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
@@ -22,16 +23,14 @@ public class Usuario {
     @Column(name = "Fechanacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
-    @ManyToOne(fetch = FetchType.LAZY)  
-    @JoinColumn(name = "Idstatususuario", nullable = false)
-    private StatusUsuario statusUsuario;
+    @Column(name = "Idstatususuario", nullable = false)
+    private Integer idStatusUsuario;
 
     @Column(name = "Password", nullable = false, length = 100)
     private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY)  
-    @JoinColumn(name = "Idgenero", nullable = false)
-    private Genero genero;
+    @Column(name = "Idgenero", nullable = false)
+    private Integer idGenero;
 
     @Column(name = "Ultimafechaingreso")
     private LocalDateTime ultimaFechaIngreso;
@@ -58,9 +57,8 @@ public class Usuario {
     @Column(name = "Telefonomovil", length = 30)
     private String telefonoMovil;
 
-    @ManyToOne(fetch = FetchType.LAZY)  
-    @JoinColumn(name = "Idsucursal", nullable = false)
-    private Sucursal sucursal;
+    @Column(name = "Idsucursal", nullable = false)
+    private Integer idSucursal;
 
     @Column(name = "Pregunta", nullable = false, length = 200)
     private String pregunta;
@@ -68,9 +66,8 @@ public class Usuario {
     @Column(name = "Respuesta", nullable = false, length = 200)
     private String respuesta;
 
-    @ManyToOne(fetch = FetchType.LAZY)   
-    @JoinColumn(name = "Idrole", nullable = false)
-    private Role role;
+    @Column(name = "Idrole", nullable = false)
+    private Integer idRole;
 
     @Column(name = "Fechacreacion", nullable = false)
     private LocalDateTime fechaCreacion;
