@@ -35,8 +35,6 @@ public class UserService {
 
 	@Autowired
 	NamedParameterJdbcTemplate npjt;
-	private LocalDateTime fechaModificacion;
-	private String usuarioModificacion;
 	private String usuarioCreacion;
 
 	// Asignar valores de la tabla de estatus.
@@ -164,29 +162,8 @@ public class UserService {
 			throw new RuntimeException("Usuario no encontrado: " + idUsuario);
 		}
 	}
+	
 
-	public int actualizarIntentosDeAcceso(String idUsuario, int valor) {
-		usuarioModificacion = "system";
-		fechaModificacion = LocalDateTime.now();
-		String query = """
-				UPDATE USUARIO SET IntentosDeAcceso = IntentosDeAcceso + ?, FechaModificacion = ?, usuarioModificacion = ? WHERE IdUsuario = ?""";
-		return npjt.getJdbcTemplate().update(query, valor, fechaModificacion, usuarioModificacion, idUsuario);
-	}
-
-	/*
-	 * 1 = activo
-	 * 2 = Bloqueado
-	 * 3 = inactivo
-	 * Validar en la DB
-	 */
-	public int actualizarEstatus(String idUsuario, int valor) {
-		usuarioModificacion = "system";
-		fechaModificacion = LocalDateTime.now();
-		String query = """
-				    UPDATE USUARIO SET IdStatusUsuario = ?, FechaModificacion = ?, usuarioModificacion = ? WHERE IdUsuario = ?
-				""";
-		return npjt.getJdbcTemplate().update(query, valor, fechaModificacion, usuarioModificacion, idUsuario);
-	}
 
 	// Validación de contraseña basada en Empresa: ahora solo devuelve true/false
 	private boolean validarPassword(String password, Empresa empresa) {

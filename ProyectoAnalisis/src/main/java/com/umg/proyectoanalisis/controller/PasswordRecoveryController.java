@@ -3,12 +3,14 @@ package com.umg.proyectoanalisis.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.umg.proyectoanalisis.dto.EmailDTO;
-import com.umg.proyectoanalisis.dto.requestdto.PasswordRecoveryRequestDto;
 import com.umg.proyectoanalisis.dto.requestdto.ValidarRespuestaRequestDto;
 import com.umg.proyectoanalisis.dto.responsedto.PasswordRecoveryResponseDto;
 import com.umg.proyectoanalisis.entity.principales.Usuario;
@@ -23,6 +25,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/noauth")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class PasswordRecoveryController {
 
     @Autowired
@@ -40,11 +43,18 @@ public class PasswordRecoveryController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/send-email")
-    public ResponseEntity<String> sendEmail(@Valid @RequestBody EmailDTO emailDto) {
+    @PostMapping("/send-email/{idUsuario}")
+    public ResponseEntity<String> sendEmail(@PathVariable String idUsuario) {
+    	
+    	Usuario usuario = usuarioRepository.findById(idUsuario)
+    			.orElseThrow(
+                        () -> new RuntimeException("Credenciales invalidas"));
         try {
-            String passwordTemporal = passwordRecoveryService.actualizarContrasenaTemporal(emailDto.getIdUsuario());
+        	EmailDTO emailDto = new EmailDTO();
+            String passwordTemporal = passwordRecoveryService.actualizarContrasenaTemporal(idUsuario);
+            emailDto.setIdUsuario(idUsuario);
             emailDto.setAsunto("Restablecer contraseña");
+            emailDto.setPara(usuario.getCorreoElectronico());
             passwordRecoveryService.sendEmail(emailDto, passwordTemporal);
             return new ResponseEntity<>("Correo enviado exitosamente", HttpStatus.OK);
         } catch (MessagingException e) {
@@ -53,12 +63,12 @@ public class PasswordRecoveryController {
         }
     }
 
-    @PostMapping("/obtener-pregunta")
-    public ResponseEntity<?> getPregunta(@Valid @RequestBody PasswordRecoveryRequestDto credenciales) {
+    @GetMapping("/obtener-pregunta/{idUsuario}")
+    public ResponseEntity<?> getPregunta(@PathVariable String idUsuario) {
         String direccionIp = httpServletRequest.getRemoteAddr();
         String httpUserAgent = httpServletRequest.getHeader("User-agent");
         String sesion = httpServletRequest.getSession().getId();
-        Usuario usr = usuarioRepository.findByIdUsuario(credenciales.getIdUsuario());
+        Usuario usr = usuarioRepository.findByIdUsuario(idUsuario);
 
         if (usr == null) {
             String usuarioInexistente = "Usuario no registrado";
@@ -82,7 +92,7 @@ public class PasswordRecoveryController {
                 // Registrar en la bitácora intento fallido, es el mismo método para password
                 // incorrecto
                 bitacoraAccesoService.registrarIntentoFallido(
-                        credenciales.getIdUsuario(),
+                		idUsuario,
                         direccionIp,
                         httpUserAgent,
                         "RESPUESTA_INCORRECTA",
@@ -94,7 +104,7 @@ public class PasswordRecoveryController {
             if (estado == 3) { // ESTADO_INACTIVO
                 // Registrar en tabla de bitácora
                 bitacoraAccesoService.registrarIntentoFallido(
-                        credenciales.getIdUsuario(),
+                		idUsuario,
                         direccionIp,
                         httpUserAgent,
                         "USUARIO_INACTIVO",
@@ -106,23 +116,23 @@ public class PasswordRecoveryController {
         }
         try {
 
-            Usuario usuario = usuarioRepository.findById(credenciales.getIdUsuario())
+            Usuario usuario = usuarioRepository.findById(idUsuario)
                     .orElseThrow(
                             () -> new RuntimeException("Credenciales invalidas"));
 
-            userService.manejarIntentoExitoso(credenciales.getIdUsuario());
+            userService.manejarIntentoExitoso(idUsuario);
             PasswordRecoveryResponseDto respuesta = new PasswordRecoveryResponseDto();
             respuesta.setPregunta(usuario.getPregunta());
             return new ResponseEntity<>(respuesta, HttpStatus.OK);
         } catch (Exception e) {
         
             try {
-                int nuevosIntentos = userService.manejarIntentoFallido(credenciales.getIdUsuario());
-                int maxIntentos = userService.obtenerMaxIntentosFallidos(credenciales.getIdUsuario());
+                int nuevosIntentos = userService.manejarIntentoFallido(idUsuario);
+                int maxIntentos = userService.obtenerMaxIntentosFallidos(idUsuario);
 
              
                 bitacoraAccesoService.registrarIntentoFallido(
-                        credenciales.getIdUsuario(),
+                		idUsuario,
                         direccionIp,
                         httpUserAgent,
                         "USUARIO_INCORRECTO",

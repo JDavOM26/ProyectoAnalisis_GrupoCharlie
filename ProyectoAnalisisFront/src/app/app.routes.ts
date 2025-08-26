@@ -7,8 +7,10 @@ import { GenerocComponent } from './Component/genero/genero';
 import { RolComponent } from './Component/rol/rol';
 import { EstatusUsuarioComponent } from './Component/estatususuario/estatususuario';
 import { OpcionComponent } from './Component/opcion/opcion';
+import { PasswordRecovery } from './Component/password-recovery/password-recovery';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'recover', component: PasswordRecovery },
    {
     path: 'home',
     component: HomeComponent,
@@ -20,7 +22,8 @@ export const routes: Routes = [
        { path: 'roles', loadComponent: () => import('./Component/rol/rol').then(m => m.RolComponent) },
        { path: 'estatus-usuario', loadComponent: () => import('./Component/estatususuario/estatususuario').then(m => m.EstatusUsuarioComponent) },
        { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) }
-    ]
+       
+      ]
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }

@@ -54,7 +54,7 @@ public class JwtAuthenticationController {
         String sesion = httpServletRequest.getSession().getId();
 
         Usuario usr = userRepository.findByIdUsuario(user.getIdUsuario());
-
+       
         if (usr == null) {
             String usuarioInexistente = "Usuario no registrado";
             // Registrar en la bitácora intento fallido, es el mismo método para password incorrecto
