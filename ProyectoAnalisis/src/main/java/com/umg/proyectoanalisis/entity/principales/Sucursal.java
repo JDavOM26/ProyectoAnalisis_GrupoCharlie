@@ -1,4 +1,5 @@
 package com.umg.proyectoanalisis.entity.principales;
+
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -19,9 +20,8 @@ public class Sucursal {
     @Column(name = "Direccion", nullable = false, length = 200)
     private String direccion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Idempresa", nullable = false)
-    private Empresa empresa;
+    @Column(name = "Idempresa", nullable = false)
+    private Integer idEmpresa;
 
     @Column(name = "Fechacreacion", nullable = false)
     private LocalDateTime fechaCreacion;

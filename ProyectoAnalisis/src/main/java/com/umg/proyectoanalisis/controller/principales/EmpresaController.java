@@ -19,7 +19,7 @@ public class EmpresaController {
     EmpresaRepository empresaRepository;
 
     // Obtener todas las empresas
-    @GetMapping("/Getempresas")
+    @GetMapping("/GetEmpresas")
     public ResponseEntity<List<Empresa>> getAllEmpresas() {
         try {
             List<Empresa> empresas = empresaRepository.findAll();
@@ -33,7 +33,7 @@ public class EmpresaController {
     }
 
     // Crear empresa
-    @PostMapping("/crear-empresa")
+    @PostMapping("/CrearEmpresa")
     public ResponseEntity<Empresa> crearEmpresa(@RequestBody Empresa empresa) {
         try {
             if (empresa.getNombre() == null || empresa.getNombre().isEmpty()
@@ -53,7 +53,7 @@ public class EmpresaController {
     }
 
     // Actualizar empresa
-    @PutMapping("/actualizarEmpresa")
+    @PutMapping("/ActualizarEmpresa")
     public ResponseEntity<Empresa> actualizarEmpresa(@RequestBody Empresa empresa) {
         try {
             Empresa empresaExistente = empresaRepository.findById(empresa.getIdEmpresa())
@@ -89,7 +89,7 @@ public class EmpresaController {
     }
 
     // Eliminar empresa
-    @DeleteMapping("/borrarEmpresa")
+    @DeleteMapping("/BorrarEmpresa")
     public ResponseEntity<String> borrarEmpresa(@RequestParam Integer idEmpresa) {
         try {
             if (!empresaRepository.existsById(idEmpresa)) {
