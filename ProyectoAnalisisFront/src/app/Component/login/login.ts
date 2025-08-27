@@ -38,7 +38,16 @@ export class LoginComponent {
       this.loginForm.value.password
     ).subscribe({
       next: (response: any) => { 
-        console.log('Inicio de sesión exitoso', response);
+        const data = response.token;
+        const pIniRol = response.token.indexOf('"idRol":') + 8;
+        const pFinRol = response.token.indexOf(',"');
+        const rolRsp = data.substring(pIniRol, pFinRol);
+        const pIniTkn = response.token.indexOf('"token":') + 9;
+        const pFinTkn = response.token.indexOf('"}');
+        const tokenRsp = data.substring(pIniTkn, pFinTkn);
+        console.log('Login exitoso:', tokenRsp);
+        localStorage.setItem('token', tokenRsp);
+        localStorage.setItem('rol', rolRsp);
         this.router.navigate(['/home']);
       }, 
       error: (error) => {

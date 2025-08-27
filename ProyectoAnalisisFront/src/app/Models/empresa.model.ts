@@ -1,0 +1,31 @@
+// src/app/models/empresa.model.ts
+export interface Empresa {
+  idEmpresa: string;
+  nombre: string;
+  direccion: string;
+  nit: string;
+  passwordCantidadMayusculas: number;
+  passwordCantidadMinusculas: number;
+  passwordCantidadCaracteresEspeciales: number;
+  passwordCantidadCaducidadDias: number;
+  passwordLargo: number;
+  passwordIntentosAntesDeBloquear: number;
+  passwordCantidadNumeros: number;
+  passwordCantidadPreguntasValidar: number;
+  fechaCreacion: Date;
+  usuarioCreacion: string;
+  fechaModificacion: Date;
+  usuarioModificacion: string;
+  fecha_creacion: Date;
+  fecha_modificacion: Date;
+  password_cantidad_caducidad_dias: number;
+  password_cantidad_caracteres_especiales: number;
+  password_cantidad_mayusculas: number;
+  password_cantidad_minusculas: number;
+  password_cantidad_numeros: number;
+  password_cantidad_preguntas_validar: number;
+  password_intentos_antes_de_bloquear: number;
+  password_largo: number;
+  usuario_creacion: string;
+  usuario_modificacion: string;
+}

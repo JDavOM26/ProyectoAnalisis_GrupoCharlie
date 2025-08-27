@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UsuarioService } from '../../Service/usuario.service';
 import { Usuario } from '../../Models/usuario.model';
-import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
+import { Observable, BehaviorSubject, switchMap, startWith, catchError, of } from 'rxjs';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -18,20 +18,15 @@ export class UsuariosComponent implements OnInit {
   form!: FormGroup;
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
-  
-  constructor(private fb: FormBuilder, private svc: UsuarioService) {}
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   usuarios$!: Observable<Usuario[]>;
 
-  //generos$ = this.svc.getGeneros();
-  //estatus$ = this.svc.getEstatus();
-  //sucursales$ = this.svc.getSucursales();
-
   fotoFile?: File;
 
+  constructor(private fb: FormBuilder, private svc: UsuarioService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -54,9 +49,14 @@ export class UsuariosComponent implements OnInit {
       respuesta: ['']
     });
 
+    // carga inicial/recarga; si no hay token, el service lanzará error
     this.usuarios$ = this.refresh$.pipe(
       startWith(undefined),
-      switchMap(() => this.svc.list({ search: this.search() }))
+      switchMap(() => this.svc.list({ search: this.search() })),
+      catchError(err => {
+        console.error('Error cargando usuarios', err);
+        return of([] as Usuario[]);
+      })
     );
   }
 

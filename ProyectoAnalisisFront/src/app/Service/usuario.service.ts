@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Usuario } from '../Models/usuario.model';
 import { provideHttpClient } from '@angular/common/http';
+import { catchError, throwError } from 'rxjs';
 
 // ajusta tu base URL (o usa environment)
 const BASE = 'http://localhost:8080/api/noauth/login';
+const USERS_URL = 'http://localhost:8080/api/auth/getAllUsers';
+const USERS_LIST_URL = 'http://localhost:8080/api/auth/getAllUsers';
+
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -14,12 +18,56 @@ export class UsuarioService {
   list(q?: { search?: string; page?: number; size?: number }): Observable<Usuario[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
-    if (q?.page != null) params = params.set('page', q.page);
-    if (q?.size != null) params = params.set('size', q.size);
+    if (q?.page   != null) params = params.set('page',  q.page);
+    if (q?.size   != null) params = params.set('size',  q.size);
 
-    return this.http.get<any[]>(BASE, { params }).pipe(
-      map(rows => rows.map(this.toFront))
+    // 1) Intento con Bearer (igual que Postman)
+    return this.http.get<any>(USERS_LIST_URL, {
+      params,
+      headers: this.authHeaders(true)
+    }).pipe(
+      map(resp => {
+        // DEBUG
+        console.log('Respuesta cruda getAllUsers:', resp);
+
+        // 2) Normaliza: si es array -> úsalo; si viene como { data: [...] } úsalo; si no, array vacío
+        const rows = Array.isArray(resp) ? resp
+                  : Array.isArray(resp?.data) ? resp.data
+                  : [];
+
+        return rows.map(this.toFront);
+      }),
+      // 3) Si devuelve 401 (o falla) intentamos SIN Bearer (por si ese endpoint no lo requiere)
+      catchError(err => {
+        if (err?.status === 401) {
+          console.warn('401 con Bearer; reintentando sin Bearer…');
+          return this.http.get<any>(USERS_LIST_URL, {
+            params,
+            headers: this.authHeaders(false)
+          }).pipe(
+            map(resp => {
+              console.log('Respuesta cruda (sin Bearer):', resp);
+              const rows = Array.isArray(resp) ? resp
+                        : Array.isArray(resp?.data) ? resp.data
+                        : [];
+              return rows.map(this.toFront);
+            })
+          );
+        }
+        console.error('Error en getAllUsers:', err);
+        return throwError(() => err);
+      })
     );
+  }
+
+  private authHeaders(multipart = false): HttpHeaders {
+    const token = localStorage.getItem('token');
+    console.log('Token retrieved from localStorage:', token);
+    if (!token) throw new Error('No hay token en localStorage. Inicia sesión primero.');
+
+    let headers = new HttpHeaders({ Authorization: `Bearer ${token}`  });
+    console.log('Autorizacion:', headers);
+    return headers;
   }
 
   getById(id: string): Observable<Usuario> {
