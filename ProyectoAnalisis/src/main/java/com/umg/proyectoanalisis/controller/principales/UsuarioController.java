@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,9 +19,24 @@ import org.springframework.web.bind.annotation.RestController;
 import com.umg.proyectoanalisis.entity.principales.Usuario;
 import com.umg.proyectoanalisis.repository.principales.UsuarioRepository;
 import com.umg.proyectoanalisis.service.UserService;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(
+    origins = "http://localhost:4200",
+    allowedHeaders = {"Authorization", "Content-Type"},
+    methods = {
+        RequestMethod.GET,
+        RequestMethod.POST,
+        RequestMethod.PUT,
+        RequestMethod.DELETE,
+        RequestMethod.OPTIONS
+    },
+    allowCredentials = "true",
+    maxAge = 3600
+)
 
 public class UsuarioController {
 
