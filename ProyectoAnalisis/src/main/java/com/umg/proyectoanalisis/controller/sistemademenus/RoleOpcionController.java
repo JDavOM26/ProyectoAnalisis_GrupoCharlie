@@ -8,15 +8,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.RoleOpcionPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.RoleOpcion;
 import com.umg.proyectoanalisis.entity.sistemademenus.RoleOpcionId;
 import com.umg.proyectoanalisis.repository.sistemademenus.RoleOpcionRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,39 +45,44 @@ public class RoleOpcionController {
 
    
    @PostMapping("/asignar-opcion-rol")
-   public ResponseEntity<RoleOpcion> crearOpcionRol(@RequestBody RoleOpcion roleOpcion) {
+   public ResponseEntity<RoleOpcion> crearOpcionRol(@Valid @RequestBody RoleOpcionPostDto roleOpcionDto) {
       try {
-         if (roleOpcion.getIdRole() == null || roleOpcion.getIdOpcion() == null) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
-         }
+         RoleOpcion roleOpcion = new RoleOpcion();
+         roleOpcion.setIdOpcion(roleOpcionDto.getIdOpcion());
+         roleOpcion.setIdRole(roleOpcionDto.getIdRole());
+         roleOpcion.setAlta(roleOpcionDto.getAlta());
+         roleOpcion.setBaja(roleOpcionDto.getBaja());
+         roleOpcion.setCambio(roleOpcionDto.getCambio());
+         roleOpcion.setImprimir(roleOpcionDto.getImprimir());
+         roleOpcion.setExportar(roleOpcionDto.getExportar());
          roleOpcion.setFechaCreacion(LocalDateTime.now());
-         roleOpcion.setUsuarioCreacion("Administrador");
-         RoleOpcion roleOpcionGuardada = roleOpcionRepository.save(roleOpcion);
-         return new ResponseEntity<>(roleOpcionGuardada, HttpStatus.CREATED); 
+         roleOpcion.setUsuarioCreacion(roleOpcionDto.getIdUsuario());
+         RoleOpcion roleOpcionCreado = roleOpcionRepository.save(roleOpcion);
+         return new ResponseEntity<>(roleOpcionCreado, HttpStatus.CREATED); 
       } catch (Exception e) {
          return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR); 
       }
    }
 
   
-   @PutMapping("/actualizar-opcion-rol")
-   public ResponseEntity<RoleOpcion> actualizarOpcionRol(@RequestBody RoleOpcion roleOpcion) {
+   @PutMapping("/actualizar-opcion-rol/{idOpcionRol}")
+   public ResponseEntity<RoleOpcion> actualizarOpcionRol(@PathVariable Integer idOpcionRol, @Valid @RequestBody RoleOpcionPostDto roleOpcionDto) {
       try {
          RoleOpcionId id = new RoleOpcionId();
-         id.setIdRole(roleOpcion.getIdRole());
-         id.setIdOpcion(roleOpcion.getIdOpcion());
+         id.setIdRole(roleOpcionDto.getIdRole());
+         id.setIdOpcion(roleOpcionDto.getIdOpcion());
 
          RoleOpcion roleOpcionExistente = roleOpcionRepository.findById(id)
-               .orElseThrow(() -> new RuntimeException("Rol-Opción no encontrado con id: " + id));
-         roleOpcionExistente.setAlta(roleOpcion.getAlta());
-         roleOpcionExistente.setBaja(roleOpcion.getBaja());
-         roleOpcionExistente.setCambio(roleOpcion.getCambio());
-         roleOpcionExistente.setExportar(roleOpcion.getExportar());
-         roleOpcionExistente.setImprimir(roleOpcion.getImprimir());
+               .orElseThrow(() -> new RuntimeException("Rol-Opción no encontrado con id"));
+         roleOpcionExistente.setAlta(roleOpcionDto.getAlta());
+         roleOpcionExistente.setBaja(roleOpcionDto.getBaja());
+         roleOpcionExistente.setCambio(roleOpcionDto.getCambio());
+         roleOpcionExistente.setExportar(roleOpcionDto.getExportar());
+         roleOpcionExistente.setImprimir(roleOpcionDto.getImprimir());
          roleOpcionExistente.setFechaModificacion(LocalDateTime.now());
-         roleOpcionExistente.setUsuarioModificacion("Administrador");
-         RoleOpcion roleOpcionActualizada = roleOpcionRepository.save(roleOpcionExistente);
-         return new ResponseEntity<>(roleOpcionActualizada, HttpStatus.OK); 
+         roleOpcionExistente.setUsuarioModificacion(roleOpcionDto.getIdUsuario());
+          RoleOpcion roleOpcionCreado = roleOpcionRepository.save(roleOpcionExistente);
+         return new ResponseEntity<>(roleOpcionCreado, HttpStatus.OK); 
       } catch (RuntimeException e) {
          return new ResponseEntity<>(null, HttpStatus.NOT_FOUND); 
       } catch (Exception e) {

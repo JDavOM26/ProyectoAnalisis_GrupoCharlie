@@ -7,14 +7,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.OpcionPostDto;
+import com.umg.proyectoanalisis.entity.sistemademenus.Menu;
 import com.umg.proyectoanalisis.entity.sistemademenus.Opcion;
+import com.umg.proyectoanalisis.repository.sistemademenus.MenuRepository;
 import com.umg.proyectoanalisis.repository.sistemademenus.OpcionRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,6 +29,8 @@ public class OpcionController {
     @Autowired
     OpcionRepository opcionRepository;
 
+    @Autowired
+    MenuRepository menuRepository;
    
     @GetMapping("/opcion")
     public ResponseEntity<List<Opcion>> obtenerOpciones() {
@@ -38,38 +47,39 @@ public class OpcionController {
 
     
     @PostMapping("/crear-opcion")
-    public ResponseEntity<Opcion> crearOpcion(@RequestBody Opcion opcion) {
+    public ResponseEntity<Opcion> crearOpcion(@Valid @RequestBody OpcionPostDto opcionDto) {
         try {
-            if (opcion.getNombre() == null || opcion.getNombre().isEmpty() ||
-                    opcion.getOrdenMenu() == null || opcion.getPagina() == null || opcion.getPagina().isEmpty()) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
-            }
+            Opcion opcion = new Opcion();
+            Menu menu = menuRepository.findById(opcionDto.getIdMenu())
+             .orElseThrow(() -> new RuntimeException("Menú no encontrado con id"));
+
+            opcion.setNombre(opcionDto.getNombre());
+            opcion.setMenu(menu);
+            opcion.setOrdenMenu(opcionDto.getOrdenMenu());
             opcion.setFechaCreacion(LocalDateTime.now());
-            opcion.setUsuarioCreacion("Administrador");
-            Opcion opcionGuardada = opcionRepository.save(opcion);
-            return new ResponseEntity<>(opcionGuardada, HttpStatus.CREATED); 
+            opcion.setPagina(opcionDto.getPagina());
+            opcion.setUsuarioCreacion(opcionDto.getIdUsuario());
+            Opcion opcionCreado = opcionRepository.save(opcion);
+            return new ResponseEntity<>(opcionCreado, HttpStatus.CREATED); 
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR); 
         }
     }
 
   
-    @PutMapping("/actualizar-opcion")
-    public ResponseEntity<Opcion> actualizarOpcion(@RequestBody Opcion opcion) {
+    @PutMapping("/actualizar-opcion/{idOpcion}")
+    public ResponseEntity<Opcion> actualizarOpcion(@PathVariable Integer idOpcion, @Valid @RequestBody OpcionPostDto opcionDto) {
         try {
-            Opcion opcionExistente = opcionRepository.findById(opcion.getIdOpcion())
-                    .orElseThrow(() -> new RuntimeException("Opción no encontrada con id: " + opcion.getIdOpcion()));
-            if (opcion.getNombre() == null || opcion.getNombre().isEmpty() ||
-                    opcion.getOrdenMenu() == null || opcion.getPagina() == null || opcion.getPagina().isEmpty()) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
-            }
-            opcionExistente.setNombre(opcion.getNombre());
-            opcionExistente.setOrdenMenu(opcion.getOrdenMenu());
-            opcionExistente.setPagina(opcion.getPagina());
+            Opcion opcionExistente = opcionRepository.findById(idOpcion)
+                    .orElseThrow(() -> new RuntimeException("Opción no encontrada con id"));
+           
+            opcionExistente.setNombre(opcionDto.getNombre());
+            opcionExistente.setOrdenMenu(opcionDto.getOrdenMenu());
+            opcionExistente.setPagina(opcionDto.getPagina());
             opcionExistente.setFechaModificacion(LocalDateTime.now());
-            opcionExistente.setUsuarioModificacion("Administrador");
-            Opcion opcionActualizada = opcionRepository.save(opcionExistente);
-            return new ResponseEntity<>(opcionActualizada, HttpStatus.OK); 
+            opcionExistente.setUsuarioModificacion(opcionDto.getIdUsuario());
+             Opcion opcionCreado = opcionRepository.save(opcionExistente);
+            return new ResponseEntity<>(opcionCreado, HttpStatus.OK); 
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND); 
         } catch (Exception e) {

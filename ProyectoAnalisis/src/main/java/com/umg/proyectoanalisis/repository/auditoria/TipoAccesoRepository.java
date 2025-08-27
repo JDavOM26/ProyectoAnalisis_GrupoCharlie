@@ -7,4 +7,5 @@ import com.umg.proyectoanalisis.entity.auditoria.TipoAcceso;
 
 @Repository("tipoAccesoRepository")
 public interface TipoAccesoRepository extends JpaRepository<TipoAcceso, Integer> {
+     TipoAcceso findByNombre(String nombre);
 }

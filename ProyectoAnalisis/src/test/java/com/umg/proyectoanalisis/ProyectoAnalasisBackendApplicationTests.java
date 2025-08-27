@@ -1,4 +1,4 @@
-package com.umg.proyectoAnalasis;
+package com.umg.proyectoanalisis;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

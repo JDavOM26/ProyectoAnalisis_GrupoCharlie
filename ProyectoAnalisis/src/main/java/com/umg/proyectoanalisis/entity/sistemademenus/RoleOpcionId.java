@@ -8,6 +8,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode
 public class RoleOpcionId implements Serializable {
-    private Integer idRole;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1509793388973011973L;
+	private Integer idRole;
     private Integer idOpcion;
 }
