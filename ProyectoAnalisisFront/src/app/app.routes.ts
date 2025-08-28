@@ -21,8 +21,8 @@ export const routes: Routes = [
        { path: 'generos', loadComponent: () => import('./Component/genero/genero').then(m => m.GenerocComponent) },
        { path: 'roles', loadComponent: () => import('./Component/rol/rol').then(m => m.RolComponent) },
        { path: 'estatus-usuario', loadComponent: () => import('./Component/estatususuario/estatususuario').then(m => m.EstatusUsuarioComponent) },
-       { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) }
-       
+       { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) },
+       { path: 'empresas', loadComponent: () => import('./Component/empresa/empresa').then(m => m.EmpresaComponent) }
       ]
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },

@@ -12,7 +12,7 @@ import com.umg.proyectoanalisis.entity.principales.Empresa;
 import com.umg.proyectoanalisis.repository.principales.EmpresaRepository;
 
 @RestController
-@RequestMapping("/api/noauth/empresa")
+@RequestMapping("/api/auth/empresa")
 public class EmpresaController {
 
     @Autowired

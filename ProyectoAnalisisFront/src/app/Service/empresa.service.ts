@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders,HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Empresa } from '../Models/empresa.model';
+import { catchError, throwError } from 'rxjs';
 
 // Ajusta la URL exactamente como expone tu API
-const BASE = 'http://localhost:8080/api/Empresas';
+const BASE = 'http://localhost:8080/api/auth/empresa';
 
 @Injectable({ providedIn: 'root' })
 export class EmpresaService {
@@ -16,23 +17,74 @@ export class EmpresaService {
     if (q?.page != null) params = params.set('page', q.page);
     if (q?.size != null) params = params.set('size', q.size);
 
-    return this.http.get<any[]>(BASE, { params }).pipe(map(rows => rows.map(this.toFront)));
+    return this.http.get<any>(BASE+'/GetEmpresas', { 
+      params,
+      headers: this.authHeaders(true) 
+    }).pipe(
+          map(resp => {
+            console.log('Respuesta cruda GetEmpresas:', resp);
+            const rows = Array.isArray(resp) ? resp
+                      : Array.isArray(resp?.data) ? resp.data
+                      : [];
+    
+            return rows.map(this.toFront);
+          }),
+          catchError(err => {
+            if (err?.status === 401) {
+              console.warn('401 con Bearer; reintentando sin Bearer…');
+              return this.http.get<any>(BASE, {
+                params,
+                headers: this.authHeaders(false)
+              }).pipe(
+                map(resp => {
+                  console.log('Respuesta cruda (sin Bearer):', resp);
+                  const rows = Array.isArray(resp) ? resp
+                            : Array.isArray(resp?.data) ? resp.data
+                            : [];
+                  return rows.map(this.toFront);
+                })
+              );
+            }
+            console.error('Error en GetEmpresas:', err);
+            return throwError(() => err);
+          })
+        );
   }
 
-  getById(id: string): Observable<Empresa> {
-    return this.http.get<any>(`${BASE}/${encodeURIComponent(id)}`).pipe(map(this.toFront));
+  private authHeaders(multipart = false): HttpHeaders {
+    const token = localStorage.getItem('token');
+    console.log('Token retrieved from localStorage:', token);
+    if (!token) throw new Error('No hay token en localStorage. Inicia sesión primero.');
+
+    let headers = new HttpHeaders({ Authorization: `Bearer ${token}`  });
+    console.log('Autorizacion:', headers);
+    return headers;
   }
 
-  create(e: Empresa): Observable<Empresa> {
-    return this.http.post<any>(BASE, this.toBackPascal(e)).pipe(map(this.toFront));
+  create(bodyEmpresa: Empresa): Observable<Empresa> {
+    return this.http
+      .post<any>(`${BASE}/CrearEmpresa`, bodyEmpresa, { headers: this.authHeaders() })
+      .pipe(map(this.toFront));
   }
 
-  update(id: string, e: Empresa): Observable<Empresa> {
-    return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, this.toBackPascal(e)).pipe(map(this.toFront));
+  update(bodyEmpresa: Empresa): Observable<Empresa> {
+    return this.http
+      .put<any>(`${BASE}/ActualizarEmpresa`,bodyEmpresa,{ headers: this.authHeaders() })
+      .pipe(map(this.toFront));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${BASE}/${encodeURIComponent(id)}`);
+    return this.http.delete<void>(
+      `${BASE}/BorrarEmpresa?idEmpresa=${encodeURIComponent(id)}`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  getById(id: string): Observable<Empresa> {
+    return this.http.get<any>(
+      `${BASE}/${encodeURIComponent(id)}`,
+      { headers: this.authHeaders(true) }              // <= token aquí
+    ).pipe(map(this.toFront));
   }
 
   // --- MAPEOS ---
@@ -53,32 +105,6 @@ export class EmpresaService {
     passwordCantidadNumeros: r.PasswordCantidadNumeros ?? r.passwordCantidadNumeros ?? r.password_cantidad_numeros ?? 0,
     passwordCantidadPreguntasValidar: r.PasswordCantidadPreguntasValidar ?? r.passwordCantidadPreguntasValidar ?? r.password_cantidad_preguntas_validar ?? 0,
 
-    fechaCreacion: r.FechaCreacion ?? r.fechaCreacion ?? r.fecha_creacion ?? null as any,
-    usuarioCreacion: r.UsuarioCreacion ?? r.usuarioCreacion ?? r.usuario_creacion ?? '',
-    fechaModificacion: r.FechaModificacion ?? r.fechaModificacion ?? r.fecha_modificacion ?? null as any,
-    usuarioModificacion: r.UsuarioModificacion ?? r.usuarioModificacion ?? r.usuario_modificacion ?? '',
-
-    // Campos duplicados en snake_case (tu modelo los define, así que los rellenamos)
-    fecha_creacion: r.Fecha_creacion ?? r.fecha_creacion ?? r.FechaCreacion ?? null as any,
-    fecha_modificacion: r.Fecha_modificacion ?? r.fecha_modificacion ?? r.FechaModificacion ?? null as any,
-    password_cantidad_caracteres_especiales:
-      r.Password_cantidad_caracteres_especiales ?? r.password_cantidad_caracteres_especiales ?? r.PasswordCantidadCaracteresEspeciales ?? 0,
-    password_cantidad_mayusculas:
-      r.Password_cantidad_mayusculas ?? r.password_cantidad_mayusculas ?? r.PasswordCantidadMayusculas ?? 0,
-    password_cantidad_minusculas:
-      r.Password_cantidad_minusculas ?? r.password_cantidad_minusculas ?? r.PasswordCantidadMinusculas ?? 0,
-    password_cantidad_caducidad_dias:
-      r.Password_cantidad_caducidad_dias ?? r.password_cantidad_caducidad_dias ?? r.PasswordCantidadCaducidadDias ?? 0,
-    password_cantidad_numeros:
-      r.Password_cantidad_numeros ?? r.password_cantidad_numeros ?? r.PasswordCantidadNumeros ?? 0,
-    password_cantidad_preguntas_validar:
-      r.Password_cantidad_preguntas_validar ?? r.password_cantidad_preguntas_validar ?? r.PasswordCantidadPreguntasValidar ?? 0,
-    password_intentos_antes_de_bloquear:
-      r.Password_intentos_antes_de_bloquear ?? r.password_intentos_antes_de_bloquear ?? r.PasswordIntentosAntesDeBloquear ?? 0,
-    password_largo:
-      r.Password_largo ?? r.password_largo ?? r.PasswordLargo ?? 0,
-    usuario_creacion: r.Usuario_creacion ?? r.usuario_creacion ?? r.UsuarioCreacion ?? '',
-    usuario_modificacion: r.Usuario_modificacion ?? r.usuario_modificacion ?? r.UsuarioModificacion ?? '',
   });
 
   /** Payload en PascalCase (útil si tu API/JPA espera estos nombres exactos). */
@@ -96,12 +122,7 @@ export class EmpresaService {
       PasswordLargo: e.passwordLargo,
       PasswordIntentosAntesDeBloquear: e.passwordIntentosAntesDeBloquear,
       PasswordCantidadNumeros: e.passwordCantidadNumeros,
-      PasswordCantidadPreguntasValidar: e.passwordCantidadPreguntasValidar,
-
-      FechaCreacion: e.fechaCreacion,
-      UsuarioCreacion: e.usuarioCreacion,
-      FechaModificacion: e.fechaModificacion,
-      UsuarioModificacion: e.usuarioModificacion
+      PasswordCantidadPreguntasValidar: e.passwordCantidadPreguntasValidar
     };
   }
 }

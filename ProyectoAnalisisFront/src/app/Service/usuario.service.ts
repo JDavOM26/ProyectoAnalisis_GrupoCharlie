@@ -7,7 +7,7 @@ import { catchError, throwError } from 'rxjs';
 
 // ajusta tu base URL (o usa environment)
 const BASE = 'http://localhost:8080/api/noauth/login';
-const USERS_URL = 'http://localhost:8080/api/auth/getAllUsers';
+const USERS_URL = 'http://localhost:8080/api/auth';
 const USERS_LIST_URL = 'http://localhost:8080/api/auth/getAllUsers';
 
 
@@ -80,21 +80,21 @@ export class UsuarioService {
     // Si vas a subir fotografía, usa FormData:
     if (file) {
       const fd = this.toFormData(u, file);
-      return this.http.post<any>(BASE, fd).pipe(map(this.toFront));
+      return this.http.post<any>(USERS_URL, fd).pipe(map(this.toFront));
     }
-    return this.http.post<any>(BASE, this.toBack(u)).pipe(map(this.toFront));
+    return this.http.post<any>(USERS_URL, this.toBack(u)).pipe(map(this.toFront));
   }
 
   update(id: string, u: Usuario, file?: File): Observable<Usuario> {
     if (file) {
       const fd = this.toFormData(u, file);
-      return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, fd).pipe(map(this.toFront));
+      return this.http.put<any>(`${USERS_URL}/${encodeURIComponent(id)}`, fd).pipe(map(this.toFront));
     }
-    return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, this.toBack(u)).pipe(map(this.toFront));
+    return this.http.put<any>(`${USERS_URL}/${encodeURIComponent(id)}`, this.toBack(u)).pipe(map(this.toFront));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${BASE}/${encodeURIComponent(id)}`);
+    return this.http.delete<void>(`${USERS_URL}/${encodeURIComponent(id)}`);
   }
 
   // Catálogos (ajusta a tus endpoints reales)
