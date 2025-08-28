@@ -1,5 +1,4 @@
 <div class="container-fluid py-3">
-
   <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
     <h5 class="m-0">Empresas</h5>
     <div class="ms-auto d-flex gap-2">
@@ -15,6 +14,7 @@
       <form [formGroup]="form" class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Nombre *</label>
+          <input class="form-control" style="display: none;" formControlName="idEmpresa" />
           <input class="form-control" formControlName="nombre" />
         </div>
         <div class="col-md-4">
@@ -23,95 +23,39 @@
         </div>
         <div class="col-md-2">
           <label class="form-label">NIT</label>
-          <input class="form-control" formControlName="direccion" />
+          <input class="form-control" formControlName="nit" />
         </div>
         <div class="col-md-2">
           <label class="form-label">Cantidad Mayusculas *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordCantidadMayusculas"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">Cantidad <br> Minusculas *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordCantidadMinusculas"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">Cantidad Caracteres <br> Especiales *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordCantidadCaracteresEspeciales"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">Dias de Caducidad <br> Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordCantidadCaducidadDias"/>
         </div>
         <div class="col-md-2">
-          <label class="form-label">Tama&ntilde;o de <br> Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <label class="form-label">Password <br> Largo *</label>
+          <input type="number" class="form-control" formControlName="passwordLargo"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">Intentos de <br>Bloqueo Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordIntentosAntesDeBloquear"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">Cantidad de <br>Numeros *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordCantidadNumeros"/>
         </div>
         <div class="col-md-2">
           <label class="form-label">Cantidad de <br>Preguntas *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Fecha de <br>Creaci&oacute;n *</label>
-          <input type="date" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Usuario de <br>Creaci&oacute;n *</label>
-          <input class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Fecha de <br>Modificaci&oacute;n *</label>
-          <input type="date" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Usuario de <br>Modificaci&oacute;n *</label>
-          <input class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Dias de Caducidad <br>Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Cantidad de Caracteres <br>Especiales Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Cantidad de Mayusculas<br>Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Cantidad de Minusculas<br>Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Cantidad de N&uacute;meros<br>Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Cantidad de preguntas<br>Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Intentos antes de<br>Bloqueo de Password *</label>
-          <input type="number" class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Password<br>Largo *</label>
-          <input type="password" class="form-control" formControlName="pCantMayus" placeholder="••••••"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Usuario<br>Creaci&oacute;n *</label>
-          <input class="form-control" formControlName="pCantMayus"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Usuario<br>Modificaci&oacute;n *</label>
-          <input class="form-control" formControlName="pCantMayus"/>
+          <input type="number" class="form-control" formControlName="passwordCantidadPreguntasValidar"/>
         </div>
       </form>
     </div>
@@ -124,17 +68,19 @@
         <table class="table table-sm table-hover align-middle">
           <thead class="table-light">
             <tr>
+              <th>ID</th>
               <th>Nombre</th>
               <th>Dirección</th>
-              <th>Empresa</th>
+              <th>NIT</th>
               <th class="text-end">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let s of (Empresas$ | async)">
+              <td>{{s.idEmpresa}}</td>
               <td>{{s.nombre}}</td>
               <td>{{s.direccion}}</td>
-              <td>{{s.idEmpresa}}</td>
+              <td>{{s.nit}}</td>
 
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>
