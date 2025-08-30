@@ -1,8 +1,10 @@
+import { Empresa } from './../../Models/empresa.model';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SucursalService } from '../../Service/sucursal.service';
 import { Sucursal } from '../../Models/sucursal.model';
+
 import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
@@ -25,6 +27,7 @@ export class SucursalComponent implements OnInit {
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   sucursales$!: Observable<Sucursal[]>;
+  Empresas$!: Observable<Empresa[]>;
 
 
   fotoFile?: File;
@@ -39,7 +42,9 @@ export class SucursalComponent implements OnInit {
 
     });
 
-    this.sucursales$ = this.refresh$.pipe(
+
+
+  this.sucursales$ = this.refresh$.pipe(
       startWith(undefined),
       switchMap(() => this.svc.list({ search: this.search() }))
     );
