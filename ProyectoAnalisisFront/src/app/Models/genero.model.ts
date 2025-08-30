@@ -1,7 +1,7 @@
 export interface Genero {
-  IdGenero: string; // Cambiado de IdSucursal a IdGenero
-  Nombre: string;
-  Descripcion?: string; // Agregado para descripción del género
+  idGenero?: number; // Cambiado de IdSucursal a IdGenero
+  nombre: string;
+   idUsuario?: string;
   FechaCreacion?: string; // ISO datetime
   UsuarioCreacion?: string;
   FechaModificacion?: string | null; // ISO datetime
