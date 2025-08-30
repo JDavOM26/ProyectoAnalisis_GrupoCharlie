@@ -1,92 +1,68 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opciones</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        .form-label {
-            font-weight: 500;
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-        }
-        .table th {
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        .btn-sm {
-            border-radius: 4px;
-        }
-        .required-field::after {
-            content: " *";
-            color: #dc3545;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid py-3">
-        <!-- Encabezado con botones -->
-        <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
-            <h5 class="m-0">Opciones</h5>
-            <div class="ms-auto d-flex gap-2">
-                <button class="btn btn-sm btn-success">
-                    <i class="bi bi-plus-circle me-1"></i>Nuevo
-                </button>
-                <button class="btn btn-sm btn-primary" disabled>
-                    <i class="bi bi-check-circle me-1"></i>Guardar
-                </button>
-                <button class="btn btn-sm btn-secondary" disabled>
-                    <i class="bi bi-x-circle me-1"></i>Cancelar
-                </button>
-            </div>
-        </div>
+<div class="container-fluid py-3">
 
-        <!-- FORMULARIO -->
+  <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+    <h5 class="m-0">Opciones</h5>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-success" (click)="nuevo()">Nuevo</button>
+      <button class="btn btn-sm btn-primary" (click)="guardar()" [disabled]="mode()==='idle' || mode()==='ver'">Guardar</button>
+      <button class="btn btn-sm btn-secondary" (click)="cancelar()" [disabled]="mode()==='idle'">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
   <div class="card shadow-sm mb-3">
     <div class="card-body">
       <form [formGroup]="form" class="row g-3">
-        <div class="col-md-4">
+         <div class="col-md-2">
+          <label class="form-label">Menu *</label>
+          <select class="form-select" formControlName="IdMenu">
+            <option *ngFor="let e of (Menus$ | async)" [value]="e.idMenu">{{ e.nombre}}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
           <label class="form-label">Nombre *</label>
           <input class="form-control" formControlName="Nombre" />
+        </div>
+        <div class="col-md-4">
           <label class="form-label">Orden Menu *</label>
           <input class="form-control" formControlName="OrdenMenu" />
+        </div>
+       <div class="col-md-4">
           <label class="form-label">Pagina *</label>
           <input class="form-control" formControlName="Pagina" />
         </div>
       </form>
     </div>
   </div>
-         <!-- LISTADO -->
+
+  <!-- LISTADO -->
   <div class="card shadow-sm">
     <div class="card-body">
       <div class="table-responsive">
         <table class="table table-sm table-hover align-middle">
           <thead class="table-light">
             <tr>
+               <th>Menu</th>
               <th>Nombre</th>
-              <th>Orden Menú</th>
-              <th>Página</th>
+              <th>Orden Menu</th>
+              <th>Pagina</th>
               <th class="text-end">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let g of (opciones$ | async)">
-              <td>{{g.Nombre}}</td>
-              <td>{{g.OrdenMenu}}</td>
-              <td>{{g.Pagina}}</td>
+            <tr *ngFor="let s of (opciones$ | async)">
+               <td>{{s.IdMenu}}</td>
+              <td>{{s.Nombre}}</td>
+              <td>{{s.OrdenMenu}}</td>
+              <td>{{s.Pagina}}</td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(g)">Ver</button>
-                <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(g)">Editar</button>
-                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(g)">Eliminar</button>
+                <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>
+                <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(s)">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(s)">Eliminar</button>
               </td>
             </tr>
             <tr *ngIf="!(opciones$ | async)?.length">
-              <td colspan="6" class="text-center text-muted py-4">Sin registros</td>
+              <td colspan="8" class="text-center text-muted py-4">Sin registros</td>
             </tr>
           </tbody>
         </table>

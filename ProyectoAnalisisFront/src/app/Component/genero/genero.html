@@ -15,7 +15,8 @@
       <form [formGroup]="form" class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Nombre *</label>
-          <input class="form-control" formControlName="nombre" />
+
+          <input class="form-control" formControlName="Nombre" />
         </div>
       </form>
     </div>
@@ -34,7 +35,8 @@
           </thead>
           <tbody>
             <tr *ngFor="let g of (generos$ | async)">
-              <td>{{g.Nombre}}</td>
+
+              <td>{{g.nombre}}</td>
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(g)">Ver</button>
                 <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(g)">Editar</button>

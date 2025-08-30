@@ -15,16 +15,16 @@
       <form [formGroup]="form" class="row g-3">
         <div class="col-md-3">
           <label class="form-label">Nombre *</label>
-          <input class="form-control" formControlName="nombre" />
+          <input class="form-control" formControlName="Nombre" />
         </div>
         <div class="col-md-4">
           <label class="form-label">Dirección *</label>
-          <input class="form-control" formControlName="direccion" />
+          <input class="form-control" formControlName="Direccion" />
         </div>
         <div class="col-md-2">
           <label class="form-label">Empresa *</label>
-          <select class="form-select" formControlName="idEmpresa">
-            <!--option *ngFor="let e of (empresas$ | async)" [value]="e.id">{{ e.nombre }}</option-->
+          <select class="form-select" formControlName="IdEmpresa">
+            <option *ngFor="let e of (Empresas$ | async)" [value]="e.idEmpresa">{{ e.nombre}}</option>
           </select>
         </div>
       </form>
