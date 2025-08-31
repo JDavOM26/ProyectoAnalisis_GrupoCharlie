@@ -55,24 +55,24 @@ export class EstatusUsuarioComponent implements OnInit {
     this.mode.set('crear');
     this.selectedId.set(null);
     this.form.reset({
-      IdEstatus: '', Nombre: '',
+      IdStatusUsuario: '', Nombre: '',
     });
     this.form.enable();
   }
 
   ver(row: EstatusUsuario) {
     this.mode.set('ver');
-    this.selectedId.set(row.IdEstatus);
+    this.selectedId.set(row.IdStatusUsuario);
     this.form.patchValue(row);
     this.form.disable();
   }
 
   editar(row: EstatusUsuario) {
     this.mode.set('editar');
-    this.selectedId.set(row.IdEstatus);
+    this.selectedId.set(row.IdStatusUsuario);
     this.form.patchValue(row);
-    this.form.get('IdEstatus')?.disable(); // no editar llave
-    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdEstatus') this.form.get(c)?.enable(); });
+    this.form.get('IdStatusUsuario')?.disable(); // no editar llave
+    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdStatusUsuario') this.form.get(c)?.enable(); });
   }
 
   cancelar() {
@@ -99,7 +99,7 @@ export class EstatusUsuarioComponent implements OnInit {
   }
 
   eliminar(row: EstatusUsuario) {
-    if (!confirm(`¿Eliminar el Estatus ${row.IdEstatus}?`)) return;
-    this.svc.delete(row.IdEstatus).subscribe(() => this.refresh$.next());
+    if (!confirm(`¿Eliminar el Estatus ${row.IdStatusUsuario}?`)) return;
+    this.svc.delete(row.IdStatusUsuario).subscribe(() => this.refresh$.next());
   }
 }

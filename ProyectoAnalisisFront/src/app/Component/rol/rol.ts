@@ -59,18 +59,18 @@ export class RolComponent implements OnInit {
 
   ver(row: Rol) {
     this.mode.set('ver');
-    this.selectedId.set(row.IdRol.toString());
+    this.selectedId.set(row.IdRole.toString());
     this.form.enable();
    this.form.patchValue(row);
-    this.form.get('IdRol')?.disable(); // no editar llave
+    this.form.get('IdRole')?.disable(); // no editar llave
     Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
   }
 
   editar(row: Rol) {
     this.mode.set('editar');
     this.form.enable();
-    this.form.get('IdRol')?.disable(); // no editar llave
-    this.selectedId.set(row.IdRol.toString());
+    this.form.get('IdRole')?.disable(); // no editar llave
+    this.selectedId.set(row.IdRole.toString());
     this.form.patchValue(row);
     Object.keys(this.form.controls).forEach(c => { if (c !== 'IdRol') this.form.get(c)?.enable(); });
   }
@@ -99,7 +99,7 @@ export class RolComponent implements OnInit {
   }
 
   eliminar(row: Rol) {
-    if (!confirm(`¿Eliminar Rol ${row.IdRol}?`)) return;
-    this.svc.delete(row.IdRol).subscribe(() => this.refresh$.next());
+    if (!confirm(`¿Eliminar Rol ${row.IdRole}?`)) return;
+    this.svc.delete(row.IdRole).subscribe(() => this.refresh$.next());
   }
 }

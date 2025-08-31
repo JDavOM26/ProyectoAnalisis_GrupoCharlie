@@ -1,5 +1,5 @@
 export interface EstatusUsuario {
-  IdEstatus: string; // Identificador único del estatus
+  IdStatusUsuario: string; // Identificador único del estatus
   Nombre: string; // Nombre del estatus
   FechaCreacion?: string; // Fecha de creación en formato ISO datetime
   UsuarioCreacion?: string; // Usuario que creó el rol

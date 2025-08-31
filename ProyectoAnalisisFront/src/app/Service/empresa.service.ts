@@ -19,7 +19,7 @@ export class EmpresaService {
 
     return this.http.get<any>(BASE+'/GetEmpresas', { 
       params,
-      headers: this.authHeaders(true) 
+      headers: this.authHeaders() 
     }).pipe(
           map(resp => {
             console.log('Respuesta cruda GetEmpresas:', resp);

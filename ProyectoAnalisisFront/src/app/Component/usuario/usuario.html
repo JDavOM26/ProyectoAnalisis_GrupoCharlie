@@ -1,5 +1,4 @@
 <div class="container-fluid py-3">
-
   <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
     <h5 class="m-0">Usuarios</h5>
     <div class="ms-auto d-flex gap-2">
@@ -9,7 +8,6 @@
     </div>
   </div>
 
-  <!-- FORM (arriba) -->
   <div class="card shadow-sm mb-3">
     <div class="card-body">
       <form [formGroup]="form" class="row g-3">
@@ -34,44 +32,65 @@
         </div>
 
         <div class="col-md-3">
-          <label class="form-label">Teléfono</label>
-          <input class="form-control" formControlName="telefonoMovil" />
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Nacimiento</label>
-          <input class="form-control" type="date" formControlName="fechaNacimiento" />
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Género</label>
-          <select class="form-select" formControlName="idGenero">
-            <!--option *ngFor="let g of (generos$ | async)" [value]="g.id">{{ g.nombre }}</option-->
-          </select>
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Estatus</label>
-          <select class="form-select" formControlName="idStatusUsuario">
-            <!--option *ngFor="let e of (estatus$ | async)" [value]="e.id">{{ e.nombre }}</option-->
-          </select>
-        </div>
-
-        <div class="col-md-2">
-          <label class="form-label">Sucursal</label>
-          <select class="form-select" formControlName="idSucursal">
-            <!--option *ngFor="let s of (sucursales$ | async)" [value]="s.id">{{ s.nombre }}</option-->
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Contraseña (opcional)</label>
+          <label class="form-label">Contraseña *</label>
           <input class="form-control" type="password" formControlName="password" placeholder="••••••" />
         </div>
 
         <div class="col-md-3">
-          <label class="form-label">Foto</label>
-          <input type="file" class="form-control" (change)="onFile($event)" accept="image/*" />
+          <label class="form-label">Tel&eacute;fono *</label>
+          <input class="form-control" formControlName="telefonoMovil" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Nacimiento *</label>
+          <input class="form-control" type="date" formControlName="fechaNacimiento" />
+        </div>
+
+        <div class="col-md-3"></div>
+
+        <div class="col-md-2">
+          <label class="form-label">G&eacute;nero *</label>
+          <select class="form-select" formControlName="idGenero">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let g of (generos$ | async); trackBy: trackGenero" [ngValue]="g.idGenero">
+              {{ g.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Estatus *</label>
+          <select class="form-select" formControlName="idStatusUsuario">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let e of (estatus$ | async); trackBy: trackEstatus" [ngValue]="e.IdStatusUsuario">
+              {{ e.Nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Sucursal *</label>
+          <select class="form-select" formControlName="idSucursal">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let s of (sucursales$ | async); trackBy: trackSucursal" [ngValue]="s.IdSucursal">
+              {{ s.Nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Rol *</label>
+          <select class="form-select" formControlName="idRole">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let r of (roles$ | async); trackBy: trackRol" [ngValue]="r.IdRole">
+              {{ r.Nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-12">
+          <input class="form-control" style="display: none;" formControlName="fechaCreacion" />
+          <input class="form-control" style="display: none;" formControlName="usuarioCreacion" />
         </div>
 
         <div class="col-md-6">
@@ -86,14 +105,8 @@
     </div>
   </div>
 
-  <!-- LISTADO (abajo) -->
   <div class="card shadow-sm">
     <div class="card-body">
-      <div class="d-flex mb-2">
-        <!--input class="form-control" style="max-width: 300px" placeholder="Buscar..."
-               (input)="search.set(($event.target as HTMLInputElement).value); refresh$.next()"-->
-      </div>
-
       <div class="table-responsive">
         <table class="table table-sm table-hover align-middle">
           <thead class="table-light">
@@ -125,7 +138,6 @@
           </tbody>
         </table>
       </div>
-
     </div>
   </div>
 </div>

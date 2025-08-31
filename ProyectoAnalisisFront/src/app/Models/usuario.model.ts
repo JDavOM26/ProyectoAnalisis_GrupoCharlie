@@ -18,6 +18,7 @@ export interface Usuario {
   telefonoMovil?: string;
 
   idSucursal: number;
+  idRole: number;
 
   pregunta?: string;
   respuesta?: string;

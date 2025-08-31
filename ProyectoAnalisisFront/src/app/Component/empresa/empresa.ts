@@ -86,7 +86,7 @@ export class EmpresaComponent implements OnInit {
       passwordCantidadPreguntasValidar: row.passwordCantidadPreguntasValidar
     });
     this.form.get('idEmpresa')?.disable(); // no editar llave
-    Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
+    Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable()); 
   }
 
   editar(row: Empresa) {
@@ -115,7 +115,7 @@ export class EmpresaComponent implements OnInit {
     this.mode.set('idle');
     this.selectedId.set(null);
     this.form.reset();
-    this.form.enable();
+    this.form.disable();
     this.fotoFile = undefined;
   }
 
@@ -143,6 +143,7 @@ export class EmpresaComponent implements OnInit {
     console.log(this.form.value);
     if (this.form.invalid) { 
       this.form.markAllAsTouched(); 
+      alert('Ingrese la informacion requerida.');
       return; 
     }
 
