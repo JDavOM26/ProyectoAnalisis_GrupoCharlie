@@ -89,4 +89,8 @@ export class PasswordRecovery {
       }
     });
   }
+
+  regresar() {
+    this.router.navigate(['/login']);
+  }
 }
