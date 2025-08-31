@@ -101,7 +101,7 @@ export class RolService {
 
   // ---- helpers: mapeo API <-> Front ----
   private toFront = (r: any): Rol => ({
-    IdRol: r.idRol ?? r.IdRol,
+    IdRole: r.idRole ?? r.IdRole,
     Nombre: r.nombre ?? r.Nombre,
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
@@ -112,7 +112,7 @@ export class RolService {
   private toBack(s: Rol): any {
     // Ajusta al naming de tu API (ej. PascalCase si usas JPA con nombres exactos)
     return {
-      IdRol: s.IdRol,
+      IdRole: s.IdRole,
       Nombre: s.Nombre,
       FechaCreacion: s.FechaCreacion,
       UsuarioCreacion: s.UsuarioCreacion,

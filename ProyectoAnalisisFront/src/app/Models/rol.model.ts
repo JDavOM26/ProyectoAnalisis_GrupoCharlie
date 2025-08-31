@@ -1,5 +1,5 @@
 export interface Rol {
-  IdRol: string; // Identificador único del rol
+  IdRole: string; // Identificador único del rol
   Nombre: string; // Nombre del rol
   FechaCreacion?: string; // Fecha de creación en formato ISO datetime
   UsuarioCreacion?: string; // Usuario que creó el rol

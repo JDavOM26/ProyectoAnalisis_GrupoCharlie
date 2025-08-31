@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable, map, catchError, throwError } from 'rxjs';
 import { Usuario } from '../Models/usuario.model';
-import { provideHttpClient } from '@angular/common/http';
-import { catchError, throwError } from 'rxjs';
 
-// ajusta tu base URL (o usa environment)
-const BASE = 'http://localhost:8080/api/noauth/login';
-const USERS_URL = 'http://localhost:8080/api/auth';
-const USERS_LIST_URL = 'http://localhost:8080/api/auth/getAllUsers';
-
+const LOGIN_URL     = 'http://localhost:8080/api/noauth/login';
+const USERS_BASE    = 'http://localhost:8080/api/auth';
+const USERS_LIST_URL= 'http://localhost:8080/api/auth/getAllUsers';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
@@ -18,156 +14,123 @@ export class UsuarioService {
   list(q?: { search?: string; page?: number; size?: number }): Observable<Usuario[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
-    if (q?.page   != null) params = params.set('page',  q.page);
-    if (q?.size   != null) params = params.set('size',  q.size);
+    if (q?.page   != null) params = params.set('page',  String(q.page));
+    if (q?.size   != null) params = params.set('size',  String(q.size));
 
-    // 1) Intento con Bearer (igual que Postman)
     return this.http.get<any>(USERS_LIST_URL, {
       params,
-      headers: this.authHeaders(true)
+      headers: this.authHeaders()
     }).pipe(
       map(resp => {
-        // DEBUG
-        console.log('Respuesta cruda getAllUsers:', resp);
-
-        // 2) Normaliza: si es array -> úsalo; si viene como { data: [...] } úsalo; si no, array vacío
-        const rows = Array.isArray(resp) ? resp
-                  : Array.isArray(resp?.data) ? resp.data
-                  : [];
-
+        const rows = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : []);
         return rows.map(this.toFront);
       }),
-      // 3) Si devuelve 401 (o falla) intentamos SIN Bearer (por si ese endpoint no lo requiere)
       catchError(err => {
-        if (err?.status === 401) {
-          console.warn('401 con Bearer; reintentando sin Bearer…');
-          return this.http.get<any>(USERS_LIST_URL, {
-            params,
-            headers: this.authHeaders(false)
-          }).pipe(
-            map(resp => {
-              console.log('Respuesta cruda (sin Bearer):', resp);
-              const rows = Array.isArray(resp) ? resp
-                        : Array.isArray(resp?.data) ? resp.data
-                        : [];
-              return rows.map(this.toFront);
-            })
-          );
-        }
         console.error('Error en getAllUsers:', err);
         return throwError(() => err);
       })
     );
   }
 
-  private authHeaders(multipart = false): HttpHeaders {
-    const token = localStorage.getItem('token');
-    console.log('Token retrieved from localStorage:', token);
-    if (!token) throw new Error('No hay token en localStorage. Inicia sesión primero.');
-
-    let headers = new HttpHeaders({ Authorization: `Bearer ${token}`  });
-    console.log('Autorizacion:', headers);
-    return headers;
-  }
-
   getById(id: string): Observable<Usuario> {
-    return this.http.get<any>(`${BASE}/${encodeURIComponent(id)}`).pipe(
-      map(this.toFront)
-    );
+    return this.http.get<any>(`${USERS_BASE}/usuario/${encodeURIComponent(id)}`, {
+      headers: this.authHeaders()
+    }).pipe(map(this.toFront));
   }
 
-  create(u: Usuario, file?: File): Observable<Usuario> {
-    // Si vas a subir fotografía, usa FormData:
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.post<any>(USERS_URL, fd).pipe(map(this.toFront));
-    }
-    return this.http.post<any>(USERS_URL, this.toBack(u)).pipe(map(this.toFront));
+  create(u: Usuario): Observable<Usuario> {
+    return this.http.post<any>(`${USERS_BASE}/signup/1`, u, {
+      headers: this.authHeaders(),
+      responseType: 'text' as 'json'
+    }).pipe(map(this.toFront));
   }
 
-  update(id: string, u: Usuario, file?: File): Observable<Usuario> {
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.put<any>(`${USERS_URL}/${encodeURIComponent(id)}`, fd).pipe(map(this.toFront));
-    }
-    return this.http.put<any>(`${USERS_URL}/${encodeURIComponent(id)}`, this.toBack(u)).pipe(map(this.toFront));
+  update(u: Usuario): Observable<Usuario> {
+    return this.http.put<any>(`${USERS_BASE}/updateUser`, u, {
+      headers: this.authHeaders(),
+      responseType: 'text' as 'json'
+    }).pipe(map(this.toFront));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${USERS_URL}/${encodeURIComponent(id)}`);
+    return this.http.delete<void>(`${USERS_BASE}/deleteUser/${encodeURIComponent(id)}`, {
+      headers: this.authHeaders(),
+      responseType: 'text' as 'json'
+    });
   }
 
-  // Catálogos (ajusta a tus endpoints reales)
-  getGeneros() { return this.http.get<{id:number; nombre:string}[]>('http://localhost:8080/api/generos'); }
-  getEstatus() { return this.http.get<{id:number; nombre:string}[]>('http://localhost:8080/api/estatus-usuario'); }
-  getSucursales(){return this.http.get<{id:number; nombre:string}[]>('http://localhost:8080/api/sucursales'); }
+  private authHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No hay token en localStorage.');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
-  // ---- helpers: mapeo API <-> Front ----
   private toFront = (r: any): Usuario => ({
     idUsuario: r.idUsuario ?? r.IdUsuario,
     nombre: r.nombre ?? r.Nombre,
     apellido: r.apellido ?? r.Apellido,
-    fechaNacimiento: r.fechaNacimiento ?? r.FechaNacimiento,
-    idStatusUsuario: r.idStatusUsuario ?? r.IdStatusUsuario,
-    password: r.password ?? r.Password,
-    idGenero: r.idGenero ?? r.IdGenero,
-    ultimaFechaIngreso: r.ultimaFechaIngreso ?? r.UltimaFechaIngreso ?? r.ultimafecha_ingreso,
-    intentosDeAcceso: r.intentosDeAcceso ?? r.IntentosDeAcceso,
-    sesionActual: r.sesionActual ?? r.SesionActual,
-    ultimaFechaCambioPassword: r.ultimaFechaCambioPassword ?? r.UltimaFechaCambioPassword,
-    correoElectronico: r.correoElectronico ?? r.CorreoElectronico,
-    requiereCambiarPassword: r.requiereCambiarPassword ?? r.RequiereCambiarPassword,
+    fechaNacimiento: r.fechaNacimiento ?? r.FechaNacimiento ?? null,
+
+    correoElectronico: r.correoElectronico ?? r.CorreoElectronico ?? null,
+    telefonoMovil: r.telefonoMovil ?? r.TelefonoMovil ?? null,
+    pregunta: r.pregunta ?? r.Pregunta ?? null,
+    respuesta: r.respuesta ?? r.Respuesta ?? null,
+
+    ultimaFechaIngreso: r.ultimaFechaIngreso ?? r.UltimaFechaIngreso ?? r.ultimafecha_ingreso ?? null,
+    intentosDeAcceso: r.intentosDeAcceso ?? r.IntentosDeAcceso ?? 0,
+    sesionActual: r.sesionActual ?? r.SesionActual ?? null,
+    ultimaFechaCambioPassword: r.ultimaFechaCambioPassword ?? r.UltimaFechaCambioPassword ?? null,
+    requiereCambiarPassword: r.requiereCambiarPassword ?? r.RequiereCambiarPassword ?? 0,
+
     fotografia: r.fotografia ?? r.Fotografia ?? null,
-    telefonoMovil: r.telefonoMovil ?? r.TelefonoMovil,
-    idSucursal: r.idSucursal ?? r.IdSucursal,
-    pregunta: r.pregunta ?? r.Pregunta,
-    respuesta: r.respuesta ?? r.Respuesta,
-    fechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
-    usuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
-    fechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
-    usuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion,
-    fechabloqueo: r.fechabloqueo,
-    ultimafecha_ingreso: r.ultimafecha_ingreso
+
+    // IDs normalizados
+    idGenero: r.idGenero ?? r.IdGenero ?? null,
+    idStatusUsuario: r.idStatusUsuario ?? r.IdStatusUsuario ?? r.idStatusUsuario ?? null,
+    idRole: r.idRole ?? r.IdRole ?? null,
+    idSucursal: r.idSucursal ?? r.IdSucursal ?? null,
+
+    fechaCreacion: r.fechaCreacion ?? r.FechaCreacion ?? null,
+    usuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion ?? null,
+    fechaModificacion: r.fechaModificacion ?? r.FechaModificacion ?? null,
+    usuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion ?? null,
+
+    fechabloqueo: r.fechabloqueo ?? null,
+    ultimafecha_ingreso: r.ultimafecha_ingreso ?? null,
+    password: r.password ?? null
   });
 
   private toBack(u: Usuario): any {
-    // Ajusta al naming de tu API (ej. PascalCase si usas JPA con nombres exactos)
     return {
       IdUsuario: u.idUsuario,
       Nombre: u.nombre,
       Apellido: u.apellido,
-      FechaNacimiento: u.fechaNacimiento,
-      IdStatusUsuario: u.idStatusUsuario,
-      Password: u.password,
+      FechaNacimiento: u.fechaNacimiento ?? null,
+      Password: u.password ?? null,
+
+      CorreoElectronico: u.correoElectronico ?? null,
+      TelefonoMovil: u.telefonoMovil ?? null,
+      Pregunta: u.pregunta ?? null,
+      Respuesta: u.respuesta ?? null,
+
       IdGenero: u.idGenero,
-      UltimaFechaIngreso: u.ultimaFechaIngreso,
-      IntentosDeAcceso: u.intentosDeAcceso,
-      SesionActual: u.sesionActual,
-      UltimaFechaCambioPassword: u.ultimaFechaCambioPassword,
-      CorreoElectronico: u.correoElectronico,
-      RequiereCambiarPassword: u.requiereCambiarPassword,
-      TelefonoMovil: u.telefonoMovil,
+      IdStatusUsuario: u.idStatusUsuario,
       IdSucursal: u.idSucursal,
-      Pregunta: u.pregunta,
-      Respuesta: u.respuesta,
-      // Fotografia: se manda por FormData si hay archivo
+      IdRole: u.idRole,
+      FechaCreacion: u.fechaCreacion ?? null,
+      UsuarioCreacion: u.usuarioCreacion ?? null,
+      FechaModificacion: u.fechaModificacion ?? null,
+      UsuarioModificacion: u.usuarioModificacion ?? null,
+      // Si mandas base64:
+      Fotografia: u.fotografia ?? null
     };
   }
 
-  private toFormData(u: Usuario, file: File): FormData {
-    const fd = new FormData();
-    Object.entries(this.toBack(u)).forEach(([k, v]) => {
-      if (v !== undefined && v !== null) fd.append(k, String(v));
-    });
-    fd.append('Fotografia', file, file.name);
-    return fd;
-  }
-
+  // Login, igual que tenías
   login(username: string, password: string) {
     const body = { idUsuario: username, password };
-    return this.http.post('http://localhost:8080/api/noauth/login', body, { responseType: 'text' as 'json' }).pipe(
+    return this.http.post(LOGIN_URL, body, { responseType: 'text' as 'json' }).pipe(
       map((response: any) => {
-        // El backend responde: "token: eyJhbGciOiJIUzI1NiJ9..."
         let token = '';
         if (typeof response === 'string') {
           const match = response.match(/token:\s*(.+)/i);

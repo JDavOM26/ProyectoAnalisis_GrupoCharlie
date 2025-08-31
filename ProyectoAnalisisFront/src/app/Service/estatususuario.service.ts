@@ -105,7 +105,7 @@ export class EstatusUsuarioService {
 
   // ---- helpers: mapeo API <-> Front ----
   private toFront = (r: any): EstatusUsuario => ({
-    IdEstatus: r.idSucursal ?? r.IdSucursal,
+    IdStatusUsuario: r.idStatusUsuario ?? r.IdStatusUsuario,
     Nombre: r.nombre ?? r.Nombre,
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
@@ -116,7 +116,7 @@ export class EstatusUsuarioService {
   private toBack(s: EstatusUsuario): any {
     // Ajusta al naming de tu API (ej. PascalCase si usas JPA con nombres exactos)
     return {
-      IdEstatus: s.IdEstatus,
+      IdStatusUsuario: s.IdStatusUsuario,
       Nombre: s.Nombre,
       FechaCreacion: s.FechaCreacion,
       UsuarioCreacion: s.UsuarioCreacion,
