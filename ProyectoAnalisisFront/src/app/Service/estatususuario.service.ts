@@ -9,7 +9,7 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 const BASE= 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
-export class EstatususuarioService {
+export class EstatusUsuarioService {
   constructor(private http: HttpClient) {}
 
   list(q?: { search?: string; page?: number; size?: number }): Observable<EstatusUsuario[]> {

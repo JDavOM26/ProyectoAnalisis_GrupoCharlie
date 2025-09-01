@@ -1,4 +1,4 @@
-import { EstatususuarioService } from './../../Service/estatususuario.service';
+import { EstatusUsuarioService } from './../../Service/estatususuario.service';
 import { EstatusUsuario } from './../../Models/estatususuario.model';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -26,7 +26,7 @@ export class EstatusUsuarioComponent implements OnInit {
 
   fotoFile?: File;
 
-  constructor(private fb: FormBuilder, private svc: EstatususuarioService) {}
+  constructor(private fb: FormBuilder, private svc: EstatusUsuarioService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
