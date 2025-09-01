@@ -65,8 +65,8 @@ public class RoleOpcionController {
    }
 
   
-   @PutMapping("/actualizar-opcion-rol/{idOpcionRol}")
-   public ResponseEntity<RoleOpcion> actualizarOpcionRol(@PathVariable Integer idOpcionRol, @Valid @RequestBody RoleOpcionPostDto roleOpcionDto) {
+   @PutMapping("/actualizar-opcion-rol")
+   public ResponseEntity<RoleOpcion> actualizarOpcionRol(@Valid @RequestBody RoleOpcionPostDto roleOpcionDto) {
       try {
          RoleOpcionId id = new RoleOpcionId();
          id.setIdRole(roleOpcionDto.getIdRole());
