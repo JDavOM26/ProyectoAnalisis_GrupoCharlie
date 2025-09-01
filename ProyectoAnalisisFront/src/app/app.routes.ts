@@ -9,6 +9,8 @@ import { EstatusUsuarioComponent } from './Component/estatususuario/estatususuar
 import { OpcionComponent } from './Component/opcion/opcion';
 import { PasswordRecovery } from './Component/password-recovery/password-recovery';
 import { CrearUsuarioComponent } from './Component/usuario/crear-usuario';
+import { EmpresaComponent } from './Component/empresa/empresa';
+import { RoleOpcionComponent } from './Component/role-opcion/role-opcion';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'recover', component: PasswordRecovery },
@@ -23,6 +25,7 @@ export const routes: Routes = [
        { path: 'generos', loadComponent: () => import('./Component/genero/genero').then(m => m.GenerocComponent) },
        { path: 'roles', loadComponent: () => import('./Component/rol/rol').then(m => m.RolComponent) },
        { path: 'estatus-usuario', loadComponent: () => import('./Component/estatususuario/estatususuario').then(m => m.EstatusUsuarioComponent) },
+       { path: 'role-opcion', loadComponent: () => import('./Component/role-opcion/role-opcion').then(m => m.RoleOpcionComponent) },
        { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) },
        { path: 'empresas', loadComponent: () => import('./Component/empresa/empresa').then(m => m.EmpresaComponent) },
       ]

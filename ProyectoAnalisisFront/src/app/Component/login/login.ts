@@ -48,6 +48,7 @@ export class LoginComponent {
         console.log('Login exitoso:', tokenRsp);
         localStorage.setItem('token', tokenRsp);
         localStorage.setItem('rol', rolRsp);
+        localStorage.setItem('username', this.loginForm.value.username);
         this.router.navigate(['/home']);
       }, 
       error: (error) => {
