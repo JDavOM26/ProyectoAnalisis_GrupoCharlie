@@ -24,7 +24,7 @@
         <div class="col-md-2">
           <label class="form-label">Empresa *</label>
           <select class="form-select" formControlName="IdEmpresa">
-            <!--option *ngFor="let e of (Empresas$ | async)" [value]="e.idEmpresa">{{ e.nombre}}</option-->
+            <option *ngFor="let e of (Empresas$ | async)" [value]="e.idEmpresa">{{ e.nombre}}</option>
           </select>
         </div>
       </form>
@@ -46,9 +46,9 @@
           </thead>
           <tbody>
             <tr *ngFor="let s of (sucursales$ | async)">
-              <td>{{s.Nombre}}</td>
-              <td>{{s.Direccion}}</td>
-              <td>{{s.IdEmpresa}}</td>
+              <td>{{s.nombre}}</td>
+              <td>{{s.direccion}}</td>
+              <td>{{s.idEmpresa}}</td>
 
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>
