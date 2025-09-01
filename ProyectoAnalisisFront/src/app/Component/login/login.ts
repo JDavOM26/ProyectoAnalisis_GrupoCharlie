@@ -32,19 +32,29 @@ export class LoginComponent {
     const { username, password } = this.loginForm.value;
 
     console.log(username, password);
-    
+
     this.usuarioService.login(
-      this.loginForm.value.username, 
+      this.loginForm.value.username,
       this.loginForm.value.password
     ).subscribe({
-      next: (response: any) => { 
-        console.log('Inicio de sesión exitoso', response);
+      next: (response: any) => {
+        const data = response.token;
+        const pIniRol = response.token.indexOf('"idRol":') + 8;
+        const pFinRol = response.token.indexOf(',"');
+        const rolRsp = data.substring(pIniRol, pFinRol);
+        const pIniTkn = response.token.indexOf('"token":') + 9;
+        const pFinTkn = response.token.indexOf('"}');
+        const tokenRsp = data.substring(pIniTkn, pFinTkn);
+        console.log('Login exitoso:', tokenRsp);
+        localStorage.setItem('token', tokenRsp);
+        localStorage.setItem('idUsuario',  this.loginForm.value.username );
+        localStorage.setItem('rol', rolRsp);
         this.router.navigate(['/home']);
-      }, 
+      },
       error: (error) => {
         console.error('Error al iniciar sesión', error);
         alert('Usuario o contraseña incorrectos');
-      } 
+      }
     }) ;
   }
 
