@@ -1,5 +1,6 @@
 package com.umg.proyectoanalisis.controller;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,10 +107,11 @@ public class JwtAuthenticationController {
                             user.getPassword()));
 
             // LOGIN EXITOSO
-            userService.manejarIntentoExitoso(user.getIdUsuario());
+            userService.manejarIntentoExitoso(user.getIdUsuario(), sesion);
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String jwt = jwtUtils.generateToken(userDetails.getUsername());
+            Date fechaExpiracion = new Date(new Date().getTime() + 900000);
 
             
 
@@ -117,6 +119,7 @@ public class JwtAuthenticationController {
             response.put("token", jwt);
             response.put("idRol",  usr.getIdRole());
             response.put("mensaje", "Login exitoso");
+            response.put("expiracionToken", fechaExpiracion);
 
             // Registrar en la bitácora acceso exitoso
             String usuario = usr.getIdUsuario();
