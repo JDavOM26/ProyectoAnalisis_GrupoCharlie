@@ -37,7 +37,6 @@ public class UserService {
 	@Autowired
 	NamedParameterJdbcTemplate npjt;
 
-
 	// Asignar valores de la tabla de estatus.
 	private static final int ESTADO_ACTIVO = 1;
 	private static final int ESTADO_BLOQUEADO = 2;
@@ -72,7 +71,8 @@ public class UserService {
 		params.addValue("fechaIngreso", LocalDateTime.now());
 		params.addValue("sesionActual", sesion);
 
-		String query = "UPDATE USUARIO SET IntentosDeAcceso = 0, UltimaFechaIngreso = :fechaIngreso, sesionActual= :sesionActual, IdStatusUsuario = :estadoActivo " +
+		String query = "UPDATE USUARIO SET IntentosDeAcceso = 0, UltimaFechaIngreso = :fechaIngreso, sesionActual= :sesionActual, IdStatusUsuario = :estadoActivo "
+				+
 				"WHERE IdUsuario = :idUsuario";
 
 		int updated = npjt.update(query, params);
@@ -165,8 +165,6 @@ public class UserService {
 			throw new RuntimeException("Usuario no encontrado: " + idUsuario);
 		}
 	}
-	
-
 
 	// Validación de contraseña basada en Empresa: ahora solo devuelve true/false
 	private boolean validarPassword(String password, Empresa empresa) {
@@ -195,49 +193,45 @@ public class UserService {
 	// Registro de usuario
 	public boolean registrarUsuario(UsuarioPostDto userDto, int idEmpresa) {
 
-	    if (usuarioRepository.existsByIdUsuario(userDto.getIdUsuario())) {
-	        return false;
-	    }
+		if (usuarioRepository.existsByIdUsuario(userDto.getIdUsuario())) {
+			return false;
+		}
 
-	    Empresa empresa = empresaRepository.findById(idEmpresa)
-	            .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+		Empresa empresa = empresaRepository.findById(idEmpresa)
+				.orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
 
-	    if (!validarPassword(userDto.getPassword(), empresa)) {
-	        return false;
-	    }
+		if (!validarPassword(userDto.getPassword(), empresa)) {
+			return false;
+		}
 
-	    Usuario user = new Usuario();
+		Usuario user = new Usuario();
 
-	  
-	    user.setIdUsuario(userDto.getIdUsuario());
-	    user.setNombre(userDto.getNombre());
-	    user.setApellido(userDto.getApellido());
-	    user.setFechaNacimiento(userDto.getFechaNacimiento());
-	    user.setIdGenero(userDto.getIdGenero());
-	    user.setIdRole(userDto.getIdRole());
-	    user.setIdSucursal(userDto.getIdSucursal());
-	    user.setPregunta(userDto.getPregunta());
-	    user.setRespuesta(userDto.getRespuesta());
+		user.setIdUsuario(userDto.getIdUsuario());
+		user.setNombre(userDto.getNombre());
+		user.setApellido(userDto.getApellido());
+		user.setFechaNacimiento(userDto.getFechaNacimiento());
+		user.setIdGenero(userDto.getIdGenero());
+		user.setIdRole(userDto.getIdRole());
+		user.setIdSucursal(userDto.getIdSucursal());
+		user.setPregunta(userDto.getPregunta());
+		user.setRespuesta(userDto.getRespuesta());
 
-	
-	    user.setCorreoElectronico(userDto.getCorreoElectronico());
-	    user.setTelefonoMovil(userDto.getTelefonoMovil());
+		user.setCorreoElectronico(userDto.getCorreoElectronico());
+		user.setTelefonoMovil(userDto.getTelefonoMovil());
 
-	    
-	    user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-	    user.setFechaCreacion(LocalDateTime.now());
-	    user.setUsuarioCreacion(userDto.getIdUsuario());
-	    user.setIntentosDeAcceso(0);
-	    user.setRequiereCambiarPassword(0);
-	    user.setUltimaFechaCambioPassword(LocalDateTime.now());
+		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+		user.setFechaCreacion(LocalDateTime.now());
+		user.setUsuarioCreacion(userDto.getIdUsuario());
+		user.setIntentosDeAcceso(0);
+		user.setRequiereCambiarPassword(0);
+		user.setUltimaFechaCambioPassword(LocalDateTime.now());
 
-	  
-	    StatusUsuario status = statusUsuarioRepository.findById(1)
-	            .orElseThrow(() -> new RuntimeException("StatusUsuario no encontrado"));
-	    user.setIdStatusUsuario(status.getIdStatusUsuario());
+		StatusUsuario status = statusUsuarioRepository.findById(1)
+				.orElseThrow(() -> new RuntimeException("StatusUsuario no encontrado"));
+		user.setIdStatusUsuario(status.getIdStatusUsuario());
 
-	    usuarioRepository.save(user);
-	    return true;
+		usuarioRepository.save(user);
+		return true;
 	}
 
 }

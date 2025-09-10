@@ -55,7 +55,8 @@ public class MenuController {
         try {
             Menu menu = new Menu();
             Modulo modulo = moduloRepository.findById(menuDto.getIdModulo())
-            .orElseThrow(() -> new RuntimeException("Módulo con ID " + menuDto.getIdModulo() + " no encontrado"));
+                    .orElseThrow(
+                            () -> new RuntimeException("Módulo con ID " + menuDto.getIdModulo() + " no encontrado"));
             menu.setNombre(menuDto.getNombre());
             menu.setOrdenMenu(menuDto.getOrdenMenu());
             menu.setModulo(modulo);
@@ -73,16 +74,16 @@ public class MenuController {
         try {
             Menu menuExistente = menuRepository.findById(idMenu)
                     .orElseThrow(() -> new RuntimeException("Menú no encontrado con id"));
-            
+
             Modulo moduloExistente = moduloRepository.findById(menuDto.getIdModulo())
                     .orElseThrow(() -> new RuntimeException("Modulo no encontrado con id"));
-                    
+
             menuExistente.setNombre(menuDto.getNombre());
             menuExistente.setOrdenMenu(menuDto.getOrdenMenu());
             menuExistente.setModulo(moduloExistente);
             menuExistente.setFechaModificacion(LocalDateTime.now());
             menuExistente.setUsuarioModificacion(menuDto.getIdUsuario());
-             Menu menuGuardado = menuRepository.save(menuExistente);
+            Menu menuGuardado = menuRepository.save(menuExistente);
             return new ResponseEntity<>(menuGuardado, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -109,11 +110,11 @@ public class MenuController {
         try {
             List<Map<String, Object>> opciones = userRoleOptionsService.obtenerRoleOptions(idUsuario);
             if (opciones.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return ResponseEntity.noContent().build();
             }
-            return new ResponseEntity<>(opciones, HttpStatus.OK);
+            return ResponseEntity.ok(opciones);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
