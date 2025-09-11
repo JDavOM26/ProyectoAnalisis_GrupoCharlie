@@ -76,7 +76,9 @@ export class EmpresaService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(
       `${BASE}/BorrarEmpresa?idEmpresa=${encodeURIComponent(id)}`,
-      { headers: this.authHeaders() }
+      { headers: this.authHeaders(),
+      responseType: 'text' as 'json'  
+    }
     );
   }
 
@@ -91,38 +93,38 @@ export class EmpresaService {
 
   /** Normaliza la respuesta del backend a tu interfaz Empresa (en PascalCase). */
   private toFront = (r: any): Empresa => ({
-    idEmpresa: r.IdEmpresa ?? r.idEmpresa ?? r.id_empresa ?? '',
-    nombre: r.Nombre ?? r.nombre ?? '',
-    direccion: r.Direccion ?? r.direccion ?? '',
-    nit: r.Nit ?? r.nit ?? '',
+    IdEmpresa: r.IdEmpresa ?? r.idEmpresa ?? r.id_empresa ?? '',
+    Nombre: r.Nombre ?? r.nombre ?? '',
+    Direccion: r.Direccion ?? r.direccion ?? '',
+    Nit: r.Nit ?? r.nit ?? '',
 
-    passwordCantidadMayusculas: r.PasswordCantidadMayusculas ?? r.passwordCantidadMayusculas ?? r.password_cantidad_mayusculas ?? 0,
-    passwordCantidadMinusculas: r.PasswordCantidadMinusculas ?? r.passwordCantidadMinusculas ?? r.password_cantidad_minusculas ?? 0,
-    passwordCantidadCaracteresEspeciales: r.PasswordCantidadCaracteresEspeciales ?? r.passwordCantidadCaracteresEspeciales ?? r.password_cantidad_caracteres_especiales ?? 0,
-    passwordCantidadCaducidadDias: r.PasswordCantidadCaducidadDias ?? r.passwordCantidadCaducidadDias ?? r.password_cantidad_caducidad_dias ?? 0,
-    passwordLargo: r.PasswordLargo ?? r.passwordLargo ?? r.password_largo ?? 0,
-    passwordIntentosAntesDeBloquear: r.PasswordIntentosAntesDeBloquear ?? r.passwordIntentosAntesDeBloquear ?? r.password_intentos_antes_de_bloquear ?? 0,
-    passwordCantidadNumeros: r.PasswordCantidadNumeros ?? r.passwordCantidadNumeros ?? r.password_cantidad_numeros ?? 0,
-    passwordCantidadPreguntasValidar: r.PasswordCantidadPreguntasValidar ?? r.passwordCantidadPreguntasValidar ?? r.password_cantidad_preguntas_validar ?? 0,
+    PasswordCantidadMayusculas: r.PasswordCantidadMayusculas ?? r.passwordCantidadMayusculas ?? r.password_cantidad_mayusculas ?? 0,
+    PasswordCantidadMinusculas: r.PasswordCantidadMinusculas ?? r.passwordCantidadMinusculas ?? r.password_cantidad_minusculas ?? 0,
+    PasswordCantidadCaracteresEspeciales: r.PasswordCantidadCaracteresEspeciales ?? r.passwordCantidadCaracteresEspeciales ?? r.password_cantidad_caracteres_especiales ?? 0,
+    PasswordCantidadCaducidadDias: r.PasswordCantidadCaducidadDias ?? r.passwordCantidadCaducidadDias ?? r.password_cantidad_caducidad_dias ?? 0,
+    PasswordLargo: r.PasswordLargo ?? r.passwordLargo ?? r.password_largo ?? 0,
+    PasswordIntentosAntesDeBloquear: r.PasswordIntentosAntesDeBloquear ?? r.passwordIntentosAntesDeBloquear ?? r.password_intentos_antes_de_bloquear ?? 0,
+    PasswordCantidadNumeros: r.PasswordCantidadNumeros ?? r.passwordCantidadNumeros ?? r.password_cantidad_numeros ?? 0,
+    PasswordCantidadPreguntasValidar: r.PasswordCantidadPreguntasValidar ?? r.passwordCantidadPreguntasValidar ?? r.password_cantidad_preguntas_validar ?? 0,
 
   });
 
   /** Payload en PascalCase (útil si tu API/JPA espera estos nombres exactos). */
   private toBackPascal(e: Empresa): any {
     return {
-      IdEmpresa: e.idEmpresa,
-      Nombre: e.nombre,
-      Direccion: e.direccion,
-      Nit: e.nit,
+      IdEmpresa: e.IdEmpresa,
+      Nombre: e.Nombre,
+      Direccion: e.Direccion,
+      Nit: e.Nit,
 
-      PasswordCantidadMayusculas: e.passwordCantidadMayusculas,
-      PasswordCantidadMinusculas: e.passwordCantidadMinusculas,
-      PasswordCantidadCaracteresEspeciales: e.passwordCantidadCaracteresEspeciales,
-      PasswordCantidadCaducidadDias: e.passwordCantidadCaducidadDias,
-      PasswordLargo: e.passwordLargo,
-      PasswordIntentosAntesDeBloquear: e.passwordIntentosAntesDeBloquear,
-      PasswordCantidadNumeros: e.passwordCantidadNumeros,
-      PasswordCantidadPreguntasValidar: e.passwordCantidadPreguntasValidar
+      PasswordCantidadMayusculas: e.PasswordCantidadMayusculas,
+      PasswordCantidadMinusculas: e.PasswordCantidadMinusculas,
+      PasswordCantidadCaracteresEspeciales: e.PasswordCantidadCaracteresEspeciales,
+      PasswordCantidadCaducidadDias: e.PasswordCantidadCaducidadDias,
+      PasswordLargo: e.PasswordLargo,
+      PasswordIntentosAntesDeBloquear: e.PasswordIntentosAntesDeBloquear,
+      PasswordCantidadNumeros: e.PasswordCantidadNumeros,
+      PasswordCantidadPreguntasValidar: e.PasswordCantidadPreguntasValidar
     };
   }
 }

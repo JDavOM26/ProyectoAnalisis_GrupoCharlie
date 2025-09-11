@@ -32,14 +32,21 @@ export class RolComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      IdRol: ['', [Validators.required, Validators.minLength(3)]],
+      IdRol: [''],
       Nombre: ['', Validators.required],
+      IdUsuario: [''],
+      FechaCreacion: [''],
+      UsuarioCreacion: [''],
+      FechaModificacion: [''],
+      UsuarioModificacion: [''],
     });
 
     this.roles$ = this.refresh$.pipe(
       startWith(undefined),
       switchMap(() => this.svc.list({ search: this.search() }))
     );
+
+    this.form.disable();
   }
 
   onFile(e: Event) {
@@ -72,7 +79,7 @@ export class RolComponent implements OnInit {
     this.form.get('IdRole')?.disable(); // no editar llave
     this.selectedId.set(row.IdRole.toString());
     this.form.patchValue(row);
-    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdRol') this.form.get(c)?.enable(); });
+    //Object.keys(this.form.controls).forEach(c => { if (c !== 'IdRol') this.form.get(c)?.enable(); });
   }
 
   cancelar() {
@@ -80,19 +87,22 @@ export class RolComponent implements OnInit {
     this.selectedId.set(null);
     this.form.reset();
     this.form.enable();
-    this.fotoFile = undefined;
   }
 
   guardar() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) { 
+      this.form.markAllAsTouched(); 
+      alert('Ingrese los datos correctamente.');
+      return; 
+    }
     const payload: Rol = this.form.getRawValue();
 
     if (this.mode() === 'crear') {
-      this.svc.create(payload, this.fotoFile).subscribe(() => {
+      this.svc.create(payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
       });
     } else if (this.mode() === 'editar' && this.selectedId()) {
-      this.svc.update(this.selectedId()!, payload, this.fotoFile).subscribe(() => {
+      this.svc.update(this.selectedId()!, payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
       });
     }

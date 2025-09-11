@@ -1,14 +1,9 @@
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { EstatusUsuario } from '../Models/estatususuario.model';
-//import { provideHttpClient } from '@angular/common/http';
 
-// ajusta tu base URL (o usa environment)
-const BASE = 'http://localhost:8080/api/noauth/login';
-//const USERS_URL = 'http://localhost:8080/api/auth/sucursal/GetSucursales';
-const USERS_LIST_URL = 'http://localhost:8080/api/auth/status';
+const BASE = 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
 export class EstatusUsuarioService {
@@ -20,27 +15,26 @@ export class EstatusUsuarioService {
     if (q?.page   != null) params = params.set('page',  q.page);
     if (q?.size   != null) params = params.set('size',  q.size);
 
-    // 1) Intento con Bearer (igual que Postman)
-    return this.http.get<any>(USERS_LIST_URL, {
+    return this.http.get<any>(BASE + '/status', {
       params,
       headers: this.authHeaders(true)
     }).pipe(
       map(resp => {
-        // DEBUG
+        
         console.log('Respuesta cruda status:', resp);
 
-        // 2) Normaliza: si es array -> úsalo; si viene como { data: [...] } úsalo; si no, array vacío
+        
         const rows = Array.isArray(resp) ? resp
                   : Array.isArray(resp?.data) ? resp.data
                   : [];
 
         return rows.map(this.toFront);
       }),
-      // 3) Si devuelve 401 (o falla) intentamos SIN Bearer (por si ese endpoint no lo requiere)
+      
       catchError(err => {
         if (err?.status === 401) {
           console.warn('401 con Bearer; reintentando sin Bearer…');
-          return this.http.get<any>(USERS_LIST_URL, {
+          return this.http.get<any>(BASE+'/status', {
             params,
             headers: this.authHeaders(false)
           }).pipe(
@@ -69,59 +63,48 @@ export class EstatusUsuarioService {
     return headers;
   }
 
-  getById(id: string): Observable<EstatusUsuario> {
-    return this.http.get<any>(`${BASE}/${encodeURIComponent(id)}`).pipe(
-      map(this.toFront)
-    );
+  create(u: EstatusUsuario): Observable<EstatusUsuario> {
+    u.IdUsuario = localStorage.getItem('username') || 'Sistema';
+  
+    return this.http
+    .post<any>(BASE+'/crear-status', this.toBack(u), { headers: this.authHeaders() })
+    .pipe(map(this.toFront));
   }
 
-  create(u: EstatusUsuario, file?: File): Observable<EstatusUsuario> {
-    // Si vas a subir fotografía, usa FormData:
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.post<any>(BASE, fd).pipe(map(this.toFront));
-    }
-    return this.http.post<any>(BASE, this.toBack(u)).pipe(map(this.toFront));
-  }
-  toFormData(u: EstatusUsuario, file: File) {
-    throw new Error('Method not implemented.');
-  }
-
-  update(id: string, u: EstatusUsuario, file?: File): Observable<EstatusUsuario> {
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, fd).pipe(map(this.toFront));
-    }
-    return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, this.toBack(u)).pipe(map(this.toFront));
+  update(id: string, u: EstatusUsuario): Observable<EstatusUsuario> {
+    u.IdUsuario = localStorage.getItem('username') || 'Sistema';
+    return this.http.put<any>(`${BASE}/actualizar-status/${encodeURIComponent(id)}`, 
+    this.toBack(u),{ headers: this.authHeaders() })
+    .pipe(map(this.toFront));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${BASE}/${encodeURIComponent(id)}`);
+    return this.http.delete<void>(`${BASE}/borrar-status?idStatus=${encodeURIComponent(id)}`,{
+      headers: this.authHeaders(),
+      responseType: 'text' as 'json'
+    });
   }
 
-
-
-
-
-  // ---- helpers: mapeo API <-> Front ----
   private toFront = (r: any): EstatusUsuario => ({
     IdStatusUsuario: r.idStatusUsuario ?? r.IdStatusUsuario,
     Nombre: r.nombre ?? r.Nombre,
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
     FechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
-    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion
+    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion,
+    IdUsuario: r.idUsuario ?? r.IdUsuario
   });
 
   private toBack(s: EstatusUsuario): any {
-    // Ajusta al naming de tu API (ej. PascalCase si usas JPA con nombres exactos)
+    
     return {
-      IdStatusUsuario: s.IdStatusUsuario,
-      Nombre: s.Nombre,
-      FechaCreacion: s.FechaCreacion,
-      UsuarioCreacion: s.UsuarioCreacion,
-      FechaModificacion:  s.FechaModificacion,
-      UsuarioModificacion: s.UsuarioModificacion
+      idStatusUsuario: s.IdStatusUsuario,
+      nombre: s.Nombre,
+      fechaCreacion: s.FechaCreacion,
+      usuarioCreacion: s.UsuarioCreacion,
+      fechaModificacion:  s.FechaModificacion,
+      usuarioModificacion: s.UsuarioModificacion,
+      idUsuario: s.IdUsuario
     };
   }
 }

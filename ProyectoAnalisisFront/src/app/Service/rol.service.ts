@@ -4,9 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 //import { provideHttpClient } from '@angular/common/http';
 
-// ajusta tu base URL (o usa environment)
-const BASE = 'http://localhost:8080/api/noauth/login';
-const USERS_LIST_URL = 'http://localhost:8080/api/auth/obtener-roles';
+const ROL_URL = 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
 export class RolService {
@@ -18,32 +16,23 @@ export class RolService {
     if (q?.page   != null) params = params.set('page',  q.page);
     if (q?.size   != null) params = params.set('size',  q.size);
 
-    // 1) Intento con Bearer (igual que Postman)
-    return this.http.get<any>(USERS_LIST_URL, {
+    return this.http.get<any>(ROL_URL+'/obtener-roles', {
       params,
       headers: this.authHeaders(true)
     }).pipe(
       map(resp => {
-        // DEBUG
-        console.log('Respuesta cruda obtener-roles:', resp);
-
-        // 2) Normaliza: si es array -> úsalo; si viene como { data: [...] } úsalo; si no, array vacío
         const rows = Array.isArray(resp) ? resp
                   : Array.isArray(resp?.data) ? resp.data
                   : [];
-
         return rows.map(this.toFront);
       }),
-      // 3) Si devuelve 401 (o falla) intentamos SIN Bearer (por si ese endpoint no lo requiere)
       catchError(err => {
         if (err?.status === 401) {
-          console.warn('401 con Bearer; reintentando sin Bearer…');
-          return this.http.get<any>(USERS_LIST_URL, {
+          return this.http.get<any>(ROL_URL+'/obtener-roles', {
             params,
             headers: this.authHeaders(false)
           }).pipe(
             map(resp => {
-              console.log('Respuesta cruda (sin Bearer):', resp);
               const rows = Array.isArray(resp) ? resp
                         : Array.isArray(resp?.data) ? resp.data
                         : [];
@@ -51,7 +40,6 @@ export class RolService {
             })
           );
         }
-        console.error('Error en obtener-roles:', err);
         return throwError(() => err);
       })
     );
@@ -68,56 +56,56 @@ export class RolService {
   }
 
   getById(id: string): Observable<Rol> {
-    return this.http.get<any>(`${BASE}/${encodeURIComponent(id)}`).pipe(
+    return this.http.get<any>(`${ROL_URL}/${encodeURIComponent(id)}`).pipe(
       map(this.toFront)
     );
   }
 
-  create(u: Rol, file?: File): Observable<Rol> {
-    // Si vas a subir fotografía, usa FormData:
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.post<any>(BASE, fd).pipe(map(this.toFront));
-    }
-    return this.http.post<any>(BASE, this.toBack(u)).pipe(map(this.toFront));
+  create(u: Rol): Observable<Rol> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.post<any>(`${ROL_URL}/crear-rol`, this.toBack(u),{
+      headers: this.authHeaders()})
+    .pipe(map(this.toFront));
   }
-  toFormData(u: Rol, file: File) {
+  toFormData(u: Rol) {
     throw new Error('Method not implemented.');
   }
 
-  update(id: string, u: Rol, file?: File): Observable<Rol> {
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, fd).pipe(map(this.toFront));
-    }
-    return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, this.toBack(u)).pipe(map(this.toFront));
+  update(id: string, u: Rol): Observable<Rol> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.put<any>(`${ROL_URL}/actualizar-rol/${encodeURIComponent(id)}`, this.toBack(u),{
+      headers: this.authHeaders()})
+      .pipe(map(this.toFront));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${BASE}/${encodeURIComponent(id)}`);
+    return this.http.delete<void>(`${ROL_URL}/borrar-rol?idRol=${encodeURIComponent(id)}`,{
+      headers: this.authHeaders(),
+      responseType: 'text' as 'json' 
+    });
   }
 
 
 
-  // ---- helpers: mapeo API <-> Front ----
   private toFront = (r: any): Rol => ({
     IdRole: r.idRole ?? r.IdRole,
     Nombre: r.nombre ?? r.Nombre,
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
     FechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
-    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion
+    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion,
+    IdUsuario: r.idUsuario ?? r.IdUsuario
   });
 
   private toBack(s: Rol): any {
-    // Ajusta al naming de tu API (ej. PascalCase si usas JPA con nombres exactos)
     return {
-      IdRole: s.IdRole,
-      Nombre: s.Nombre,
-      FechaCreacion: s.FechaCreacion,
-      UsuarioCreacion: s.UsuarioCreacion,
-      FechaModificacion:  s.FechaModificacion,
-      UsuarioModificacion: s.UsuarioModificacion
+      idRole: s.IdRole,
+      nombre: s.Nombre,
+      fechaCreacion: s.FechaCreacion,
+      usuarioCreacion: s.UsuarioCreacion,
+      fechaModificacion:  s.FechaModificacion,
+      usuarioModificacion: s.UsuarioModificacion,
+      idUsuario: s.IdUsuario
     };
   }
 }

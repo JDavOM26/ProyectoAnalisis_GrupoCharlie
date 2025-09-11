@@ -155,7 +155,7 @@ guardar() {
 
 
   eliminar(row: Genero) {
-    if (!confirm(`¿Eliminar el genero ${row.idGenero}?`)) return;
+    if (!confirm(`¿Eliminar el genero ${row.nombre}?`)) return;
 
     this.svc.delete(row.idGenero!.toString()).subscribe({
       next: (msg) => {

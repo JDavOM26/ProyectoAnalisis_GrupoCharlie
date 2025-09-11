@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.umg.proyectoanalisis.dto.requestdto.postdtos.OpcionPostDto;
-import com.umg.proyectoanalisis.entity.sistemademenus.Menu;
 import com.umg.proyectoanalisis.entity.sistemademenus.Opcion;
 import com.umg.proyectoanalisis.repository.sistemademenus.MenuRepository;
 import com.umg.proyectoanalisis.repository.sistemademenus.OpcionRepository;
@@ -50,11 +49,8 @@ public class OpcionController {
     public ResponseEntity<Opcion> crearOpcion(@Valid @RequestBody OpcionPostDto opcionDto) {
         try {
             Opcion opcion = new Opcion();
-            Menu menu = menuRepository.findById(opcionDto.getIdMenu())
-             .orElseThrow(() -> new RuntimeException("Menú no encontrado con id"));
-
             opcion.setNombre(opcionDto.getNombre());
-            opcion.setMenu(menu);
+            opcion.setIdMenu(opcionDto.getIdMenu());
             opcion.setOrdenMenu(opcionDto.getOrdenMenu());
             opcion.setFechaCreacion(LocalDateTime.now());
             opcion.setPagina(opcionDto.getPagina());

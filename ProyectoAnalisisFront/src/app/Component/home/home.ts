@@ -14,7 +14,7 @@ export class HomeComponent {
 
   logout(): void {
     // Limpia lo que uses para sesión (tokens, usuario, etc.)
-    localStorage.removeItem('token');
+    localStorage.clear();
     sessionStorage.clear();
     this.router.navigate(['/login']);
   }

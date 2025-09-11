@@ -93,7 +93,8 @@ update(id: string, bodyGenero: Genero): Observable<Genero> {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(
       `${BASE}/borrar-genero?idGenero=${encodeURIComponent(id)}`,
-      { headers: this.authHeaders() }
+      { headers: this.authHeaders(),
+      responseType: 'text' as 'json'  }
     );
   }
 

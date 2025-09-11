@@ -11,6 +11,8 @@ import { PasswordRecovery } from './Component/password-recovery/password-recover
 import { CrearUsuarioComponent } from './Component/usuario/crear-usuario';
 import { EmpresaComponent } from './Component/empresa/empresa';
 import { RoleOpcionComponent } from './Component/role-opcion/role-opcion';
+import { AuthGuard } from './Service/auth.guard';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'recover', component: PasswordRecovery },
@@ -28,7 +30,8 @@ export const routes: Routes = [
        { path: 'role-opcion', loadComponent: () => import('./Component/role-opcion/role-opcion').then(m => m.RoleOpcionComponent) },
        { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) },
        { path: 'empresas', loadComponent: () => import('./Component/empresa/empresa').then(m => m.EmpresaComponent) },
-      ]
+      ],
+    canActivate: [AuthGuard]
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }

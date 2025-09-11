@@ -44,12 +44,9 @@ public class StatusUsuarioController {
 
     
     @PostMapping("/crear-status")
-    public ResponseEntity<StatusUsuario> crearStatusUsuario(@RequestBody NombreIdUsuarioDto statusUsuarioDto) {
+    public ResponseEntity<StatusUsuario> crearStatusUsuario(@Valid @RequestBody NombreIdUsuarioDto statusUsuarioDto) {
         try {
-            if (statusUsuarioDto.getNombre() == null || statusUsuarioDto.getNombre().isEmpty()
-            && statusUsuarioDto.getIdUsuario() == null || statusUsuarioDto.getIdUsuario().isEmpty()) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); 
-            }
+           
             StatusUsuario statusUsuario = new StatusUsuario();
             statusUsuario.setNombre(statusUsuarioDto.getNombre());
             statusUsuario.setFechaCreacion(LocalDateTime.now());

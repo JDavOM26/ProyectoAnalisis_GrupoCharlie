@@ -77,10 +77,10 @@
           </thead>
           <tbody>
             <tr *ngFor="let s of (Empresas$ | async)">
-              <td>{{s.idEmpresa}}</td>
-              <td>{{s.nombre}}</td>
-              <td>{{s.direccion}}</td>
-              <td>{{s.nit}}</td>
+              <td>{{s.IdEmpresa}}</td>
+              <td>{{s.Nombre}}</td>
+              <td>{{s.Direccion}}</td>
+              <td>{{s.Nit}}</td>
 
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>

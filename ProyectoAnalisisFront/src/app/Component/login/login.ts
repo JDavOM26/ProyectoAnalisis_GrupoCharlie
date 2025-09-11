@@ -26,6 +26,7 @@ export class LoginComponent {
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
+    localStorage.clear();
   }
 
   onLogin(): void {

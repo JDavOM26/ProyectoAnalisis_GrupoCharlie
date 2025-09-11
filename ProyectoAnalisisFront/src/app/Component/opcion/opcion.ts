@@ -3,7 +3,9 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OpcionService } from '../../Service/opcion.service';
-import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
+import { Observable, BehaviorSubject, switchMap, startWith, map } from 'rxjs';
+import { MenuService } from '../../Service/menu.service';
+import { Menu } from '../../Models/menu.model';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -17,88 +19,140 @@ type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 export class OpcionComponent implements OnInit {
   form!: FormGroup;
   mode = signal<Mode>('idle');
-  selectedId = signal<string | null>(null);
+  selectedIdOpcion = signal<string | null>(null);
+  selectedIdMenu = signal<string | null>(null);
 
-  constructor(private fb: FormBuilder, private svc: OpcionService) {}
+  constructor(
+    private fb: FormBuilder, 
+    private svc: OpcionService,
+    private svcMenu: MenuService,
+  ) {}
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   opciones$!: Observable<Opcion[]>;
+  menus$!: Observable<Menu[]>;
+  menusMap$!: Observable<Record<string, string>>;
 
-
-  fotoFile?: File;
-
+  vm$!: Observable<{menusMap: Record<number,string>}>;
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      IdRol: ['', [Validators.required, Validators.minLength(3)]],
+      IdOpcion: [''],
+      IdMenu: ['', Validators.required],
       Nombre: ['', Validators.required],
+      OrdenMenu: ['', Validators.required],
+      Pagina: ['', Validators.required],
+      FechaCreacion: [''],
+      UsuarioCreacion: [''],
+      FechaModificacion: [''],
+      UsuarioModificacion: [''],
+      IdUsuario: ['']
     });
 
     this.opciones$ = this.refresh$.pipe(
       startWith(undefined),
       switchMap(() => this.svc.list({ search: this.search() }))
     );
+
+    this.menus$ = this.refresh$.pipe(
+      startWith(undefined),
+      switchMap(() => this.svcMenu.list({search: this.search()}))
+    );
+
+    this.menusMap$ = this.menus$.pipe(
+      map(menus =>
+        menus.reduce((acc, r) => {
+          const key = Number((r as any).IdMenu);
+          acc[key] = (r as any).Nombre;
+          return acc;
+        }, {} as Record<number, string>)
+      )
+    );
+
+    this.vm$ = this.menusMap$.pipe(
+      map(menusMap => ({ menusMap }))
+    );
+
+    this.form.disable();
   }
 
-  onFile(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files.length) this.fotoFile = input.files[0];
-  }
+  trackMenu = (_: number, item: Menu) => item.IdMenu;
 
   nuevo() {
     this.mode.set('crear');
-    this.selectedId.set(null);
+    this.selectedIdOpcion.set(null);
+    this.selectedIdMenu.set(null);
     this.form.reset({
-      IdOpcion: '', IdMenu: '', Nombre: '', OrdenMenu: '', Pagina: ''
+      IdOpcion: '', 
+      IdMenu: '', 
+      Nombre: '', 
+      OrdenMenu: '', 
+      Pagina: ''
     });
     this.form.enable();
   }
 
   ver(row: Opcion) {
     this.mode.set('ver');
-    this.selectedId.set(row.IdOpcion.toString());
+    this.selectedIdOpcion.set(row.IdOpcion.toString());
     this.form.enable();
-   this.form.patchValue(row);
-    this.form.get('IdOpcion')?.disable(); // no editar llave
+    this.form.patchValue(row);
+    this.form.get('IdOpcion')?.disable(); 
+    this.form.get('IdMenu')?.disable(); 
     Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
   }
 
   editar(row: Opcion) {
     this.mode.set('editar');
     this.form.enable();
-    this.form.get('IdOpcion')?.disable(); // no editar llave
-    this.selectedId.set(row.IdOpcion.toString());
+    this.form.get('IdOpcion')?.disable(); 
+    this.form.get('IdMenu')?.disable(); 
+    this.selectedIdOpcion.set(row.IdOpcion.toString());
+    this.selectedIdMenu.set(row.IdMenu.toString());
     this.form.patchValue(row);
-    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdOpcion') this.form.get(c)?.enable(); });
+    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdOpcion' && c !== 'IdMenu') this.form.get(c)?.enable(); });
   }
 
   cancelar() {
     this.mode.set('idle');
-    this.selectedId.set(null);
+    this.selectedIdOpcion.set(null);
+    this.selectedIdMenu.set(null);
     this.form.reset();
-    this.form.enable();
-    this.fotoFile = undefined;
+    this.form.disable();
   }
 
   guardar() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) { 
+      this.form.markAllAsTouched(); 
+      alert('Ingrese todos los campos requeridos.');
+      return; 
+    }
     const payload: Opcion = this.form.getRawValue();
 
     if (this.mode() === 'crear') {
-      this.svc.create(payload, this.fotoFile).subscribe(() => {
+      this.svc.create(payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
       });
-    } else if (this.mode() === 'editar' && this.selectedId()) {
-      this.svc.update(this.selectedId()!, payload, this.fotoFile).subscribe(() => {
+    } else if (this.mode() === 'editar' && this.selectedIdOpcion()) {
+      this.svc.update(this.selectedIdOpcion()!, payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
       });
     }
   }
 
   eliminar(row: Opcion) {
-    if (!confirm(`¿Eliminar la opcion ${row.IdOpcion}?`)) return;
-    this.svc.delete(row.IdOpcion).subscribe(() => this.refresh$.next());
+    if (!confirm(`¿Eliminar la opción ${row.IdOpcion}?`)) return;
+    this.svc.delete(row.IdOpcion).subscribe({
+      next: (msg) => {
+        alert('Opción eliminada correctamente.');
+        this.refresh$.next(); 
+        if (this.selectedIdOpcion() === String(row.IdOpcion)) {
+          this.cancelar();
+        }
+        this.refresh$.next();
+      }, error: e => alert(typeof e?.error === 'string' ? e.error : 'Error al eliminar la opción')
+    });
   }
 }

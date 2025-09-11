@@ -35,7 +35,7 @@ export class EstatusUsuarioComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      IdGenero: ['', [Validators.required, Validators.minLength(3)]],
+      IdStatusUsuario: [''],
       Nombre: ['', Validators.required],
     });
 
@@ -44,6 +44,8 @@ export class EstatusUsuarioComponent implements OnInit {
       startWith(undefined),
       switchMap(() => this.svc.list({ search: this.search() }))
     );
+
+    this.form.disable();
   }
 
   onFile(e: Event) {
@@ -84,22 +86,27 @@ export class EstatusUsuarioComponent implements OnInit {
   }
 
   guardar() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) { 
+      alert('Debe completar los campos requeridos');
+      this.form.markAllAsTouched(); 
+      return; 
+    }
+    
     const payload: EstatusUsuario = this.form.getRawValue();
 
     if (this.mode() === 'crear') {
-      this.svc.create(payload, this.fotoFile).subscribe(() => {
+      this.svc.create(payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
       });
     } else if (this.mode() === 'editar' && this.selectedId()) {
-      this.svc.update(this.selectedId()!, payload, this.fotoFile).subscribe(() => {
+      this.svc.update(this.selectedId()!, payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
       });
     }
   }
 
   eliminar(row: EstatusUsuario) {
-    if (!confirm(`¿Eliminar el Estatus ${row.IdStatusUsuario}?`)) return;
+    if (!confirm(`¿Eliminar el Estatus ${row.Nombre}?`)) return;
     this.svc.delete(row.IdStatusUsuario).subscribe(() => this.refresh$.next());
   }
 }

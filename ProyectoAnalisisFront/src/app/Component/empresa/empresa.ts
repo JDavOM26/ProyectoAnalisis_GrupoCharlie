@@ -69,21 +69,21 @@ export class EmpresaComponent implements OnInit {
 
   ver(row: Empresa) {
     this.mode.set('ver');
-    this.selectedId.set(row.idEmpresa.toString());
+    this.selectedId.set(row.IdEmpresa.toString());
     this.form.enable();
     this.form.patchValue({
-      idEmpresa: row.idEmpresa,
-      nombre: row.nombre,
-      direccion: row.direccion,
-      nit: row.nit,
-      passwordCantidadMayusculas: row.passwordCantidadMayusculas,
-      passwordCantidadMinusculas: row.passwordCantidadMinusculas,
-      passwordCantidadCaracteresEspeciales: row.passwordCantidadCaracteresEspeciales,
-      passwordCantidadCaducidadDias: row.passwordCantidadCaducidadDias,
-      passwordLargo: row.passwordLargo,
-      passwordIntentosAntesDeBloquear: row.passwordIntentosAntesDeBloquear,
-      passwordCantidadNumeros: row.passwordCantidadNumeros,
-      passwordCantidadPreguntasValidar: row.passwordCantidadPreguntasValidar
+      idEmpresa: row.IdEmpresa,
+      nombre: row.Nombre,
+      direccion: row.Direccion,
+      nit: row.Nit,
+      passwordCantidadMayusculas: row.PasswordCantidadMayusculas,
+      passwordCantidadMinusculas: row.PasswordCantidadMinusculas,
+      passwordCantidadCaracteresEspeciales: row.PasswordCantidadCaracteresEspeciales,
+      passwordCantidadCaducidadDias: row.PasswordCantidadCaducidadDias,
+      passwordLargo: row.PasswordLargo,
+      passwordIntentosAntesDeBloquear: row.PasswordIntentosAntesDeBloquear,
+      passwordCantidadNumeros: row.PasswordCantidadNumeros,
+      passwordCantidadPreguntasValidar: row.PasswordCantidadPreguntasValidar
     });
     this.form.get('idEmpresa')?.disable(); // no editar llave
     Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable()); 
@@ -93,20 +93,20 @@ export class EmpresaComponent implements OnInit {
     this.mode.set('editar');
     this.form.enable();
     this.form.get('idEmpresa')?.disable(); // no editar llave
-    this.selectedId.set(row.idEmpresa.toString());
+    this.selectedId.set(row.IdEmpresa.toString());
     this.form.patchValue({
-      idEmpresa: row.idEmpresa,
-      nombre: row.nombre,
-      direccion: row.direccion,
-      nit: row.nit,
-      passwordCantidadMayusculas: row.passwordCantidadMayusculas,
-      passwordCantidadMinusculas: row.passwordCantidadMinusculas,
-      passwordCantidadCaracteresEspeciales: row.passwordCantidadCaracteresEspeciales,
-      passwordCantidadCaducidadDias: row.passwordCantidadCaducidadDias,
-      passwordLargo: row.passwordLargo,
-      passwordIntentosAntesDeBloquear: row.passwordIntentosAntesDeBloquear,
-      passwordCantidadNumeros: row.passwordCantidadNumeros,
-      passwordCantidadPreguntasValidar: row.passwordCantidadPreguntasValidar
+      idEmpresa: row.IdEmpresa,
+      nombre: row.Nombre,
+      direccion: row.Direccion,
+      nit: row.Nit,
+      passwordCantidadMinusculas: row.PasswordCantidadMinusculas,
+      passwordCantidadMayusculas: row.PasswordCantidadMayusculas,
+      passwordCantidadCaracteresEspeciales: row.PasswordCantidadCaracteresEspeciales,
+      passwordCantidadCaducidadDias: row.PasswordCantidadCaducidadDias,
+      passwordLargo: row.PasswordLargo,
+      passwordIntentosAntesDeBloquear: row.PasswordIntentosAntesDeBloquear,
+      passwordCantidadNumeros: row.PasswordCantidadNumeros,
+      passwordCantidadPreguntasValidar: row.PasswordCantidadPreguntasValidar
     });
     Object.keys(this.form.controls).forEach(c => { if (c !== 'idEmpresa') this.form.get(c)?.enable(); });
   }
@@ -122,18 +122,18 @@ export class EmpresaComponent implements OnInit {
   private buildCreateBody(): Partial<Empresa> {
     const v = this.form.getRawValue();
     return {
-      idEmpresa: v.idEmpresa,
-      nombre: v.nombre,
-      direccion: v.direccion,
-      nit: v.nit,
-      passwordCantidadMayusculas: +v.passwordCantidadMayusculas,
-      passwordCantidadMinusculas: +v.passwordCantidadMinusculas,
-      passwordCantidadCaracteresEspeciales: +v.passwordCantidadCaracteresEspeciales,
-      passwordCantidadCaducidadDias: +v.passwordCantidadCaducidadDias,
-      passwordLargo: +v.passwordLargo,
-      passwordIntentosAntesDeBloquear: +v.passwordIntentosAntesDeBloquear,
-      passwordCantidadNumeros: +v.passwordCantidadNumeros,
-      passwordCantidadPreguntasValidar: +v.passwordCantidadPreguntasValidar
+      IdEmpresa: v.idEmpresa,
+      Nombre: v.nombre,
+      Direccion: v.direccion,
+      Nit: v.nit,
+      PasswordCantidadMayusculas: +v.passwordCantidadMayusculas,
+      PasswordCantidadMinusculas: +v.passwordCantidadMinusculas,
+      PasswordCantidadCaracteresEspeciales: +v.passwordCantidadCaracteresEspeciales,
+      PasswordCantidadCaducidadDias: +v.passwordCantidadCaducidadDias,
+      PasswordLargo: +v.passwordLargo,
+      PasswordIntentosAntesDeBloquear: +v.passwordIntentosAntesDeBloquear,
+      PasswordCantidadNumeros: +v.passwordCantidadNumeros,
+      PasswordCantidadPreguntasValidar: +v.passwordCantidadPreguntasValidar
     };
   }
   
@@ -182,9 +182,9 @@ export class EmpresaComponent implements OnInit {
   }
 
   eliminar(row: Empresa) {
-    if (!confirm(`¿Eliminar empresa ${row.idEmpresa}?`)) return;
+    if (!confirm(`¿Eliminar empresa ${row.Nombre}?`)) return;
 
-    this.svc.delete(row.idEmpresa.toString()).subscribe({
+    this.svc.delete(row.IdEmpresa.toString()).subscribe({
       next: (msg) => {
         console.log('Empresa eliminada:', msg);
         alert('Empresa eliminada exitosamente');

@@ -170,8 +170,7 @@ export class RoleOpcionComponent implements OnInit {
 
   eliminar(row: RoleOpcion) {
     if (!confirm(`¿Eliminar Rol ${row.IdRole}?`)) return;
-    this.svc.delete(row.IdRole,row.IdOpcion).subscribe(() => {
-        this.cancelar(); this.refresh$.next(); this.ngOnInit();
-      });
+    this.svc.delete(row.IdRole,row.IdOpcion).subscribe(() => 
+        this.refresh$.next());
   }
 }

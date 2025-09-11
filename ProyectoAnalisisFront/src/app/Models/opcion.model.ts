@@ -4,6 +4,7 @@ export interface Opcion {
   Nombre: string; // Nombre de la opción
   OrdenMenu: number; // Orden de la opción en el menú
   Pagina: string; // Página asociada a la opción
+  IdUsuario?: string; // Usuario asociado a la opción (opcional)
   FechaCreacion?: string; // Fecha de creación en formato ISO datetime
   UsuarioCreacion?: string; // Usuario que creó la opción
   FechaModificacion?: string | null; // Fecha de última modificación en formato ISO datetime
