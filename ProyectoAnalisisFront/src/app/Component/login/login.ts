@@ -14,6 +14,7 @@ import { Router, RouterModule } from '@angular/router';
 
 export class LoginComponent {
   loginForm!: FormGroup;
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -29,6 +30,7 @@ export class LoginComponent {
   }
 
   onLogin(): void {
+    this.errorMessage = '';
     const { username, password } = this.loginForm.value;
 
     console.log(username, password);
@@ -51,11 +53,18 @@ export class LoginComponent {
         localStorage.setItem('rol', rolRsp);
         this.router.navigate(['/home']);
       },
-      error: (error) => {
-        console.error('Error al iniciar sesión', error);
-        alert('Usuario o contraseña incorrectos');
+    error: (err) => {
+        console.error('Error al iniciar sesión', err);
+        this.errorMessage = err.error || 'Error desconocido en el login. Intenta de nuevo.';
+        if (this.errorMessage.includes('Intentos')) {
+          this.errorMessage = `Acceso denegado: ${this.errorMessage}`;
+        } else if (this.errorMessage.includes('bloqueada')) {
+          this.errorMessage = 'Cuenta bloqueada por demasiados intentos fallidos. Contacta al administrador.';
+        } else if (this.errorMessage.includes('inactiva')) {
+          this.errorMessage = 'Cuenta inactiva. Contacta al administrador.';
+        }
       }
-    }) ;
+    });
   }
 
   onSubmit() {
