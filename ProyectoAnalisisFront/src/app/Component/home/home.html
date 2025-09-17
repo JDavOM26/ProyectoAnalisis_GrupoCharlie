@@ -1,64 +1,51 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
   <div class="container-fluid">
-    <a class="navbar-brand" routerLink="/home">Seguridad</a>
+    <a class="navbar-brand fw-semibold" routerLink="/">G. Charlie</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="mainNavbar">
+    <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-        <!-- Catálogos -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
-            Catálogos
+        <!-- Módulos -->
+        <li class="nav-item dropdown" *ngFor="let mod of (menu$ | async)">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            {{ mod.nombre }}
           </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" routerLink="empresas">Empresas</a></li>
-            <li><a class="dropdown-item" routerLink="sucursales">Sucursales</a></li>
-            <li><a class="dropdown-item" routerLink="generos">G&eacute;neros</a></li>
-            <li><a class="dropdown-item" routerLink="estatus-usuario">Estatus Usuario</a></li>
+
+          <ul class="dropdown-menu dropdown-menu-dark">
+            <!-- Menús -->
+            <li class="dropdown-submenu dropend" *ngFor="let mn of mod.menus">
+              <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                {{ mn.nombre }}
+              </a>
+
+              <!-- Opciones -->
+              <ul class="dropdown-menu dropdown-menu-dark">
+                <li *ngFor="let op of mn.opciones">
+                  <a class="dropdown-item"
+                     [routerLink]="toRoute(op.pagina)"
+                     [href]="toHref(op.pagina)">
+                    {{ op.nombre }}
+                  </a>
+                </li>
+              </ul>
+            </li>
           </ul>
         </li>
 
-        <!-- Seguridad -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
-            Seguridad
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" routerLink="usuarios">Usuarios</a></li>
-            <li><a class="dropdown-item" routerLink="roles">Roles</a></li>
-            <li><a class="dropdown-item" routerLink="modulos">M&oacute;dulos</a></li>
-            <li><a class="dropdown-item" routerLink="menus">Men&uacute;s</a></li>
-            <li><a class="dropdown-item" routerLink="opciones">Opciones</a></li>
-            <li><a class="dropdown-item" routerLink="role-opcion">Asignar Opciones a Role</a></li>
-          </ul>
-        </li>
-
-        <!-- Auditoría -->
-        <!--li class="nav-item">
-          <a class="nav-link" routerLink="bitacora">Bitacora de Acceso</a>
-        </li-->
       </ul>
 
       <div class="d-flex">
-        <button class="btn btn-outline-light btn-sm" (click)="logout()">
-          Cerrar sesión
-        </button>
+        <a class="btn btn-outline-light btn-sm" (click)="logout()">Salir</a>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- Contenido -->
 <div class="container py-4">
   <router-outlet></router-outlet>
-
-  <!-- Mensaje por defecto si no hay ruta hija seleccionada -->
-  <div class="text-muted" *ngIf="router.url === '/home'">
-    <h5 class="mb-2">Bienvenido</h5>
-    <p>Selecciona una opción del menú para empezar.</p>
-  </div>
 </div>

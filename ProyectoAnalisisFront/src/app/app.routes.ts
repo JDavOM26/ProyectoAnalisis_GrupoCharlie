@@ -30,6 +30,8 @@ export const routes: Routes = [
        { path: 'role-opcion', loadComponent: () => import('./Component/role-opcion/role-opcion').then(m => m.RoleOpcionComponent) },
        { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) },
        { path: 'empresas', loadComponent: () => import('./Component/empresa/empresa').then(m => m.EmpresaComponent) },
+       { path: 'modulos', loadComponent: () => import('./Component/modulo/modulo').then(m => m.ModuloComponent) },
+       { path: 'menus', loadComponent: () => import('./Component/menu/menu').then(m => m.MenuComponent) },
       ],
     canActivate: [AuthGuard]
   },

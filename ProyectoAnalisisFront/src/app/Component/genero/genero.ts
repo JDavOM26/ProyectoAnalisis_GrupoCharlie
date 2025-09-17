@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GeneroService } from '../../Service/genero.service';
 import { Observable, BehaviorSubject, switchMap, startWith, catchError, of } from 'rxjs';
+import { Permisos } from '../../Models/menu.perm.model';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -23,10 +25,13 @@ export class GenerocComponent implements OnInit {
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   generos$!: Observable<Genero[]>;
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
-  fotoFile?: File;
-
-  constructor(private fb: FormBuilder, private svc: GeneroService) {}
+  constructor(
+    private fb: FormBuilder, 
+    private svc: GeneroService,
+    private menuSvc: MenuDinamicoService
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -42,15 +47,23 @@ export class GenerocComponent implements OnInit {
         return of([] as Genero[]);
       })
     );
+
+    const pageKey = 'genero'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+    console.log('Permisos desde localStorage:', this.permisos);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+        console.log('Permisos desde backend:', p);
+      });
+    }
+
     this.form.disable();
   }
 
-  onFile(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files.length) this.fotoFile = input.files[0];
-  }
-
   nuevo() {
+    if (!this.permisos.Alta) return;
     this.mode.set('crear');
     this.selectedId.set(null);
     this.form.reset();
@@ -71,6 +84,7 @@ export class GenerocComponent implements OnInit {
   }
 
   editar(row: Genero) {
+    if (!this.permisos.Cambio) return;
     this.mode.set('editar');
     this.form.enable();
     this.form.get('idGenero')?.disable(); // no editar llave
@@ -87,7 +101,6 @@ export class GenerocComponent implements OnInit {
     this.selectedId.set(null);
     this.form.reset();
     this.form.enable();
-    this.fotoFile = undefined;
   }
 
   private buildCreateBody(): Partial<Genero> {
@@ -155,6 +168,7 @@ guardar() {
 
 
   eliminar(row: Genero) {
+    if (!this.permisos.Baja) return;
     if (!confirm(`¿Eliminar el genero ${row.nombre}?`)) return;
 
     this.svc.delete(row.idGenero!.toString()).subscribe({

@@ -6,6 +6,8 @@ import { Sucursal } from '../../Models/sucursal.model';
 import { Observable, BehaviorSubject, switchMap, startWith, map, combineLatest } from 'rxjs';
 import { EmpresaService } from '../../Service/empresa.service';
 import { Empresa } from '../../Models/empresa.model';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
+import { Permisos } from '../../Models/menu.perm.model';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -21,11 +23,13 @@ export class SucursalComponent implements OnInit {
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
   selectedIdEmpresa = signal<string | null>(null);
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
   constructor(
     private fb: FormBuilder, 
     private svc: SucursalService,
     private svcEmpresa: EmpresaService,
+    private menuSvc: MenuDinamicoService,
   ) {}
 
   // list + filtro
@@ -72,6 +76,17 @@ export class SucursalComponent implements OnInit {
     this.vm$ = combineLatest([this.empresasMap$]).pipe(
       map(([empresasMap]) => ({ empresasMap }))
     );
+
+    const pageKey = 'sucursal'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+    console.log('Permisos desde localStorage:', this.permisos);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+        console.log('Permisos desde backend:', p);
+      });
+    }
 
     this.form.disable();
   }

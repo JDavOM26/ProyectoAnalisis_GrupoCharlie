@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.umg.proyectoanalisis.dto.requestdto.postdtos.MenuPostDto;
 import com.umg.proyectoanalisis.entity.sistemademenus.Menu;
-import com.umg.proyectoanalisis.entity.sistemademenus.Modulo;
 import com.umg.proyectoanalisis.repository.sistemademenus.MenuRepository;
 import com.umg.proyectoanalisis.repository.sistemademenus.ModuloRepository;
 import com.umg.proyectoanalisis.service.UserRoleOptionsService;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +52,9 @@ public class MenuController {
     public ResponseEntity<Menu> crearMenu(@Valid @RequestBody MenuPostDto menuDto) {
         try {
             Menu menu = new Menu();
-            Modulo modulo = moduloRepository.findById(menuDto.getIdModulo())
-            .orElseThrow(() -> new RuntimeException("Módulo con ID " + menuDto.getIdModulo() + " no encontrado"));
             menu.setNombre(menuDto.getNombre());
             menu.setOrdenMenu(menuDto.getOrdenMenu());
-            menu.setModulo(modulo);
+            menu.setIdModulo(menuDto.getIdModulo());
             menu.setFechaCreacion(LocalDateTime.now());
             menu.setUsuarioCreacion(menuDto.getIdUsuario());
             Menu menuGuardado = menuRepository.save(menu);
@@ -74,12 +70,11 @@ public class MenuController {
             Menu menuExistente = menuRepository.findById(idMenu)
                     .orElseThrow(() -> new RuntimeException("Menú no encontrado con id"));
             
-            Modulo moduloExistente = moduloRepository.findById(menuDto.getIdModulo())
-                    .orElseThrow(() -> new RuntimeException("Modulo no encontrado con id"));
+          
                     
             menuExistente.setNombre(menuDto.getNombre());
             menuExistente.setOrdenMenu(menuDto.getOrdenMenu());
-            menuExistente.setModulo(moduloExistente);
+            menuExistente.setIdModulo(menuDto.getIdModulo());
             menuExistente.setFechaModificacion(LocalDateTime.now());
             menuExistente.setUsuarioModificacion(menuDto.getIdUsuario());
              Menu menuGuardado = menuRepository.save(menuExistente);

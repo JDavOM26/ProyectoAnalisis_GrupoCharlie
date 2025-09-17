@@ -6,6 +6,8 @@ import { OpcionService } from '../../Service/opcion.service';
 import { Observable, BehaviorSubject, switchMap, startWith, map } from 'rxjs';
 import { MenuService } from '../../Service/menu.service';
 import { Menu } from '../../Models/menu.model';
+import { Permisos } from '../../Models/menu.perm.model';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -21,11 +23,13 @@ export class OpcionComponent implements OnInit {
   mode = signal<Mode>('idle');
   selectedIdOpcion = signal<string | null>(null);
   selectedIdMenu = signal<string | null>(null);
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
   constructor(
     private fb: FormBuilder, 
     private svc: OpcionService,
     private svcMenu: MenuService,
+    private menuSvc: MenuDinamicoService
   ) {}
 
   // list + filtro
@@ -75,12 +79,24 @@ export class OpcionComponent implements OnInit {
       map(menusMap => ({ menusMap }))
     );
 
+    const pageKey = 'opcion'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+    console.log('Permisos desde localStorage:', this.permisos);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+        console.log('Permisos desde backend:', p);
+      });
+    }
+
     this.form.disable();
   }
 
   trackMenu = (_: number, item: Menu) => item.IdMenu;
 
   nuevo() {
+    if (!this.permisos.Alta) return;
     this.mode.set('crear');
     this.selectedIdOpcion.set(null);
     this.selectedIdMenu.set(null);
@@ -105,6 +121,7 @@ export class OpcionComponent implements OnInit {
   }
 
   editar(row: Opcion) {
+    if (!this.permisos.Cambio) return;
     this.mode.set('editar');
     this.form.enable();
     this.form.get('IdOpcion')?.disable(); 
@@ -143,7 +160,8 @@ export class OpcionComponent implements OnInit {
   }
 
   eliminar(row: Opcion) {
-    if (!confirm(`¿Eliminar la opción ${row.IdOpcion}?`)) return;
+    if (!this.permisos.Baja) return;
+    if (!confirm(`¿Eliminar la opción ${row.Nombre}?`)) return;
     this.svc.delete(row.IdOpcion).subscribe({
       next: (msg) => {
         alert('Opción eliminada correctamente.');

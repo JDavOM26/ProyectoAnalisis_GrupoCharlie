@@ -1,8 +1,5 @@
 package com.umg.proyectoanalisis.entity.sistemademenus;
 import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,10 +13,9 @@ public class Menu {
     @Column(name = "Idmenu")
     private Integer idMenu;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonBackReference
-    @JoinColumn(name = "Idmodulo", nullable = false)
-    private Modulo modulo;
+
+    @Column(name = "Idmodulo", nullable = false)
+    private Integer idModulo;
 
     @Column(name = "Nombre", nullable = false, length = 50)
     private String nombre;

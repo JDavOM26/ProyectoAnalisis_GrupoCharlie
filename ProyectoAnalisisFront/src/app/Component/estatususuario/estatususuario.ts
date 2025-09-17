@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EstatusUsuarioService } from '../../Service/estatususuario.service';
 import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
+import { Permisos } from '../../Models/menu.perm.model';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -19,12 +21,17 @@ export class EstatusUsuarioComponent implements OnInit {
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
 
-  constructor(private fb: FormBuilder, private svc: EstatusUsuarioService) {}
+  constructor(
+    private fb: FormBuilder, 
+    private svc: EstatusUsuarioService,
+    private menuSvc: MenuDinamicoService
+  ) {}
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   Estatususuario$!: Observable<EstatusUsuario[]>;
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
   //generos$ = this.svc.getGeneros();
   //estatus$ = this.svc.getEstatus();
@@ -45,15 +52,20 @@ export class EstatusUsuarioComponent implements OnInit {
       switchMap(() => this.svc.list({ search: this.search() }))
     );
 
+    const pageKey = 'estatususuario'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+      });
+    }
+
     this.form.disable();
   }
 
-  onFile(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files.length) this.fotoFile = input.files[0];
-  }
-
   nuevo() {
+    if (!this.permisos.Alta) return;
     this.mode.set('crear');
     this.selectedId.set(null);
     this.form.reset({
@@ -70,6 +82,7 @@ export class EstatusUsuarioComponent implements OnInit {
   }
 
   editar(row: EstatusUsuario) {
+    if (!this.permisos.Cambio) return;
     this.mode.set('editar');
     this.selectedId.set(row.IdStatusUsuario);
     this.form.patchValue(row);
@@ -106,6 +119,7 @@ export class EstatusUsuarioComponent implements OnInit {
   }
 
   eliminar(row: EstatusUsuario) {
+    if (!this.permisos.Baja) return;
     if (!confirm(`¿Eliminar el Estatus ${row.Nombre}?`)) return;
     this.svc.delete(row.IdStatusUsuario).subscribe(() => this.refresh$.next());
   }

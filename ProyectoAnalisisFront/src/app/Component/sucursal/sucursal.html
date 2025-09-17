@@ -3,7 +3,7 @@
   <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
     <h5 class="m-0">Sucursales</h5>
     <div class="ms-auto d-flex gap-2">
-      <button class="btn btn-sm btn-success" (click)="nuevo()">Nuevo</button>
+      <button class="btn btn-sm btn-success" (click)="nuevo()" [disabled]="!permisos.Alta">Nuevo</button>
       <button class="btn btn-sm btn-primary" (click)="guardar()" [disabled]="mode()==='idle' || mode()==='ver'">Guardar</button>
       <button class="btn btn-sm btn-secondary" (click)="cancelar()" [disabled]="mode()==='idle'">Cancelar</button>
     </div>
@@ -56,8 +56,8 @@
                 
                 <td class="text-end">
                   <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(s)">Editar</button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(s)">Eliminar</button>
+                  <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(s)" [disabled]="!permisos.Cambio">Editar</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(s)" [disabled]="!permisos.Baja">Eliminar</button>
                 </td>
               </tr>
               <tr *ngIf="!(sucursales$ | async)?.length">

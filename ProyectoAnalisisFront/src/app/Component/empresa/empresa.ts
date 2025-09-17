@@ -1,9 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { EmpresaService } from '../../Service/empresa.service';
 import { Empresa } from '../../Models/empresa.model';
+import { Permisos } from '../../Models/menu.perm.model';
 import { Observable, BehaviorSubject, switchMap, startWith, catchError, of } from 'rxjs';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -19,14 +22,18 @@ export class EmpresaComponent implements OnInit {
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
 
-  // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
+
   Empresas$!: Observable<Empresa[]>;
-  
-  fotoFile?: File;
-  
-  constructor(private fb: FormBuilder, private svc: EmpresaService) {}
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
+
+  constructor(
+    private fb: FormBuilder,
+    private svc: EmpresaService,
+    private menuSvc: MenuDinamicoService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -52,15 +59,23 @@ export class EmpresaComponent implements OnInit {
         return of([] as Empresa[]);
       })
     );
+
+    const pageKey = 'empresas'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+    console.log('Permisos desde localStorage:', this.permisos);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+        console.log('Permisos desde backend:', p);
+      });
+    }
+
     this.form.disable();
   }
 
-  onFile(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files.length) this.fotoFile = input.files[0];
-  }
-
   nuevo() {
+    if (!this.permisos.Alta) return;
     this.mode.set('crear');
     this.selectedId.set(null);
     this.form.reset();
@@ -85,14 +100,15 @@ export class EmpresaComponent implements OnInit {
       passwordCantidadNumeros: row.PasswordCantidadNumeros,
       passwordCantidadPreguntasValidar: row.PasswordCantidadPreguntasValidar
     });
-    this.form.get('idEmpresa')?.disable(); // no editar llave
-    Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable()); 
+    this.form.get('idEmpresa')?.disable();
+    Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
   }
 
   editar(row: Empresa) {
+    if (!this.permisos.Cambio) return;
     this.mode.set('editar');
     this.form.enable();
-    this.form.get('idEmpresa')?.disable(); // no editar llave
+    this.form.get('idEmpresa')?.disable();
     this.selectedId.set(row.IdEmpresa.toString());
     this.form.patchValue({
       idEmpresa: row.IdEmpresa,
@@ -116,7 +132,6 @@ export class EmpresaComponent implements OnInit {
     this.selectedId.set(null);
     this.form.reset();
     this.form.disable();
-    this.fotoFile = undefined;
   }
 
   private buildCreateBody(): Partial<Empresa> {
@@ -136,75 +151,44 @@ export class EmpresaComponent implements OnInit {
       PasswordCantidadPreguntasValidar: +v.passwordCantidadPreguntasValidar
     };
   }
-  
 
   guardar() {
-    console.log(this.mode());
-    console.log(this.form.value);
-    if (this.form.invalid) { 
-      this.form.markAllAsTouched(); 
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       alert('Ingrese la informacion requerida.');
-      return; 
+      return;
     }
 
-    if (this.mode() === 'crear') {
+    if (this.permisos.Alta && this.mode() === 'crear') {
       const body = this.buildCreateBody();
-      console.log(body);
       this.svc.create(body as Empresa).subscribe({
-        next: (created) => {
-          console.log('Empresa creada:', created);
-          alert('¡Empresa creada correctamente!');
-          this.cancelar();
-          this.refresh$.next();
-        },
-        error: (err) => {
-          console.error('Error al crear empresa', err);
-          alert('Error al crear empresa. Verificar la informacion.');
-        }
+        next: () => { alert('¡Empresa creada correctamente!'); this.cancelar(); this.refresh$.next(); },
+        error: (err) => { console.error('Error al crear empresa', err); alert('Error al crear empresa.'); }
       });
 
-    } else if (this.mode() === 'editar' && this.selectedId()) {
+    } else if (this.permisos.Cambio && this.mode() === 'editar' && this.selectedId()) {
       const body = this.buildCreateBody();
-      console.log('UPDATE body:', body);
       this.svc.update(body as Empresa).subscribe({
-        next: (updated) => {
-          console.log('Empresa actualizada:', updated);
-          alert('¡Empresa actualizada correctamente!');
-          this.cancelar();
-          this.refresh$.next();
-        },
-        error: (err) => {
-          console.error('Error al actualizar empresa', err);
-          alert('Error al actualizar empresa. Verificar la información.');
-        }
+        next: () => { alert('¡Empresa actualizada correctamente!'); this.cancelar(); this.refresh$.next(); },
+        error: (err) => { console.error('Error al actualizar empresa', err); alert('Error al actualizar empresa.'); }
       });
     }
   }
 
   eliminar(row: Empresa) {
+    if (!this.permisos.Baja) return;
     if (!confirm(`¿Eliminar empresa ${row.Nombre}?`)) return;
 
     this.svc.delete(row.IdEmpresa.toString()).subscribe({
-      next: (msg) => {
-        console.log('Empresa eliminada:', msg);
-        alert('Empresa eliminada exitosamente');
-        this.ngOnInit();
-      },
-      error: (err) => {
-        console.error('Error al eliminar empresa:', err);
-        alert(err.error || 'Error al eliminar la empresa');
-      }
+      next: () => { alert('Empresa eliminada exitosamente'); this.refresh$.next(); this.cancelar(); },
+      error: (err) => { console.error('Error al eliminar empresa:', err); alert(err.error || 'Error al eliminar la empresa'); }
     });
   }
 
   private formatDate(date: any): string | null {
-  if (!date) return null;
-
-  // Si ya es string (por ejemplo "2025-08-27"), devolverlo tal cual
-  if (typeof date === 'string') return date.substring(0, 10);
-
-  // Si es un objeto Date
-  const d = new Date(date);
-  return d.toISOString().substring(0, 10); // "YYYY-MM-DD"
-}
+    if (!date) return null;
+    if (typeof date === 'string') return date.substring(0, 10);
+    const d = new Date(date);
+    return d.toISOString().substring(0, 10);
+  }
 }

@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RolService } from '../../Service/rol.service';
 import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
+import { Permisos } from '../../Models/menu.perm.model';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -18,8 +20,13 @@ export class RolComponent implements OnInit {
   form!: FormGroup;
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
-  constructor(private fb: FormBuilder, private svc: RolService) {}
+  constructor(
+    private fb: FormBuilder, 
+    private svc: RolService,
+    private menuSvc: MenuDinamicoService,
+  ) {}
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
@@ -46,6 +53,17 @@ export class RolComponent implements OnInit {
       switchMap(() => this.svc.list({ search: this.search() }))
     );
 
+    const pageKey = 'rol'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+    console.log('Permisos desde localStorage:', this.permisos);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+        console.log('Permisos desde backend:', p);
+      });
+    }
+
     this.form.disable();
   }
 
@@ -55,6 +73,7 @@ export class RolComponent implements OnInit {
   }
 
   nuevo() {
+    if (!this.permisos.Alta) return;
     this.mode.set('crear');
     this.selectedId.set(null);
     this.form.reset({
@@ -74,6 +93,7 @@ export class RolComponent implements OnInit {
   }
 
   editar(row: Rol) {
+    if (!this.permisos.Cambio) return;
     this.mode.set('editar');
     this.form.enable();
     this.form.get('IdRole')?.disable(); // no editar llave
@@ -86,7 +106,7 @@ export class RolComponent implements OnInit {
     this.mode.set('idle');
     this.selectedId.set(null);
     this.form.reset();
-    this.form.enable();
+    this.form.disable();
   }
 
   guardar() {
@@ -109,6 +129,7 @@ export class RolComponent implements OnInit {
   }
 
   eliminar(row: Rol) {
+    if (!this.permisos.Baja) return;
     if (!confirm(`¿Eliminar Rol ${row.IdRole}?`)) return;
     this.svc.delete(row.IdRole).subscribe(() => this.refresh$.next());
   }
