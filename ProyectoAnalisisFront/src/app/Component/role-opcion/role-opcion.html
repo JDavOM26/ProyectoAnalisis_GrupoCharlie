@@ -22,8 +22,8 @@
           <label class="form-label">Rol *</label>
           <select class="form-select" formControlName="IdRole">
             <option [ngValue]="null" disabled>Seleccione…</option>
-            <option *ngFor="let r of (roles$ | async); trackBy: trackRol" [ngValue]="r.IdRole">
-              {{ r.Nombre }}
+            <option *ngFor="let r of (roles$ | async); trackBy: trackRol" [ngValue]="r.idRole">
+              {{ r.nombre }}
             </option>
           </select>
         </div>

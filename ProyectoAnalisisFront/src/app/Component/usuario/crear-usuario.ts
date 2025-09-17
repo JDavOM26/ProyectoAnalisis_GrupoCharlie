@@ -96,9 +96,9 @@ export class CrearUsuarioComponent implements OnInit {
     }
   
     trackGenero   = (_: number, g: Genero) => g.idGenero;
-    trackEstatus  = (_: number, e: EstatusUsuario) => e.IdStatusUsuario;
-    trackRol      = (_: number, r: Rol) => r.IdRole;
-    trackSucursal = (_: number, s: Sucursal) => s.IdSucursal;
+    trackEstatus  = (_: number, e: EstatusUsuario) => e.idStatusUsuario;
+    trackRol      = (_: number, r: Rol) => r.idRole;
+    trackSucursal = (_: number, s: Sucursal) => s.idSucursal;
   
     onFileSelected(e: Event) {
       const input = e.target as HTMLInputElement;

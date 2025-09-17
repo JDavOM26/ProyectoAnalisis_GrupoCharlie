@@ -1,11 +1,11 @@
+import { EmpresaService } from './../../Service/empresa.service';
+import { Empresa } from './../../Models/empresa.model';
+import { Sucursal } from './../../Models/sucursal.model';
+import { SucursalService } from './../../Service/sucursal.service';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SucursalService } from '../../Service/sucursal.service';
-import { Sucursal } from '../../Models/sucursal.model';
-import { Observable, BehaviorSubject, switchMap, startWith, map, combineLatest } from 'rxjs';
-import { EmpresaService } from '../../Service/empresa.service';
-import { Empresa } from '../../Models/empresa.model';
+import { Observable, BehaviorSubject, switchMap, startWith, catchError, of } from 'rxjs';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -20,128 +20,159 @@ export class SucursalComponent implements OnInit {
   form!: FormGroup;
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
-  selectedIdEmpresa = signal<string | null>(null);
-
-  constructor(
-    private fb: FormBuilder, 
-    private svc: SucursalService,
-    private svcEmpresa: EmpresaService,
-  ) {}
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   sucursales$!: Observable<Sucursal[]>;
-  empresas$!: Observable<Empresa[]>;
-  empresasMap$!: Observable<Record<string, string>>;
-  vm$!: Observable<{ empresasMap: Record<number, string> }>;
+   Empresas$!: Observable<Empresa[]>;
+  fotoFile?: File;
+
+  constructor(private fb: FormBuilder, private svc: SucursalService, private empresaSvc: EmpresaService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      IdSucursal: [''],
+      idSucursal: [''],
       Nombre: ['', Validators.required],
       Direccion: ['', Validators.required],
-      IdEmpresa: ['',Validators.required],
-      FechaCreacion: [''],
-      UsuarioCreacion: [''],
-      FechaModificacion: [''],
-      UsuarioModificacion: [''],
-      IdUsuario: ['']
+      idEmpresa: ['', Validators.required]
     });
-    
+
     this.sucursales$ = this.refresh$.pipe(
       startWith(undefined),
-      switchMap(() => this.svc.list({ search: this.search() }))
+      switchMap(() => this.svc.list({ search: this.search() })),
+      catchError(err => {
+        console.error('Error cargando las sucursales', err);
+        return of([] as Sucursal[]);
+      })
     );
-    
-    this.empresas$ = this.refresh$.pipe(
-      startWith(undefined),
-      switchMap(() => this.svcEmpresa.list({ search: this.search() }))
-    );
-
-    this.empresasMap$ = this.empresas$.pipe(
-      map(empresas => 
-        empresas.reduce((acc, e) => {
-          const key = Number((e as any).IdEmpresa ?? (e as any).idEmpresa);
-          acc[key] = (e as any).Nombre;
-          return acc;
-        }, {} as Record<number, string>)
-      )
-    );
-    
-    this.vm$ = combineLatest([this.empresasMap$]).pipe(
-      map(([empresasMap]) => ({ empresasMap }))
-    );
-
+    this.Empresas$ = this.empresaSvc.list();
     this.form.disable();
   }
 
-  trackEmpresa = (_: number, e: Empresa) => e.IdEmpresa;
+  onFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    if (input.files && input.files.length) this.fotoFile = input.files[0];
+  }
 
   nuevo() {
     this.mode.set('crear');
     this.selectedId.set(null);
-    this.selectedIdEmpresa.set(null);
-    this.form.reset({
-      IdSucursal: '', 
-      Nombre: '', 
-      Direccion: '',
-      IdEmpresa: ''
-    });
+    this.form.reset();
     this.form.enable();
   }
 
   ver(row: Sucursal) {
     this.mode.set('ver');
-    this.selectedId.set(row.IdSucursal.toString());
-    this.selectedIdEmpresa.set(row.IdEmpresa.toString());
+    this.selectedId.set(row.idSucursal!.toString());
     this.form.enable();
-    this.form.patchValue(row);
-    this.form.get('IdSucursal')?.disable(); // no editar llave
-    this.form.get('IdEmpresa')?.disable(); // no editar llave
+    this.form.patchValue({
+      idSucursal: row.idSucursal,
+      Nombre: row.nombre,
+      Direccion: row.direccion,
+      idEmpresa: row.idEmpresa
+    });
+      //
+    this.form.get('idSucursal')?.disable(); // no editar llave
     Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
   }
 
   editar(row: Sucursal) {
     this.mode.set('editar');
     this.form.enable();
-    this.form.get('IdSucursal')?.disable(); // no editar llave
-    //this.form.get('IdEmpresa')?.disable(); // no editar llave
-    this.selectedId.set(row.IdSucursal.toString());
-    this.selectedIdEmpresa.set(row.IdEmpresa);
-    this.form.patchValue(row);
-    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdSucursal' && c !=='IdEmpresa') this.form.get(c)?.enable(); });
+    this.form.get('idSucursal')?.disable(); // no editar llave
+    this.selectedId.set(row.idSucursal!.toString());
+    this.form.patchValue({
+      idSucursal: row.idSucursal,
+      Nombre: row.nombre,
+      Direccion: row.direccion,
+      idEmpresa: row.idEmpresa
+    });
+    Object.keys(this.form.controls).forEach(c => { if (c !== 'idSucursal') this.form.get(c)?.enable(); });
   }
 
   cancelar() {
     this.mode.set('idle');
     this.selectedId.set(null);
-    this.selectedIdEmpresa.set(null);
     this.form.reset();
     this.form.enable();
+    this.fotoFile = undefined;
   }
 
-  guardar() {
-    if (this.form.invalid) { 
-      this.form.markAllAsTouched(); 
-      alert('Ingrese los datos requeridos.');
-      return; 
-    }
-    const payload: Sucursal = this.form.getRawValue();
-
-    if (this.mode() === 'crear') {
-      this.svc.create(payload).subscribe(() => {
-        this.cancelar(); this.refresh$.next();
-      });
-    } else if (this.mode() === 'editar' && this.selectedId()) {
-      this.svc.update(this.selectedId()!, payload).subscribe(() => {
-        this.cancelar(); this.refresh$.next();
-      });
-    }
+  private buildCreateBody(): Partial<Sucursal> {
+    const v = this.form.getRawValue();
+    return {
+      idSucursal: v.idSucursal,
+      nombre: v.Nombre,
+      direccion: v.Direccion,
+      idEmpresa: v.idEmpresa
+    };
   }
 
+
+guardar() {
+  console.log(this.mode());
+  console.log(this.form.value);
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
+  if (this.mode() === 'crear') {
+      const body = this.buildCreateBody();
+      console.log(body);
+      this.svc.create(body as Sucursal).subscribe({
+        next: (created) => {
+          console.log('Sucursak creada:', created);
+          alert('¡Sucursal creada correctamente!');
+          this.cancelar();
+          this.refresh$.next();
+        },
+        error: (err) => {
+          console.error('Error al crear la sucursal', err);
+          alert('Error al crear sucursal. Verificar la informacion.');
+        }
+      });
+} else if (this.mode() === 'editar' && this.selectedId()) {
+      const body = this.buildCreateBody();
+      console.log('UPDATE body:', body);
+      this.svc.update(body as Sucursal).subscribe({
+        next: (updated) => {
+          console.log('Sucursal actualizada:', updated);
+          alert('¡Sucursal actualizada correctamente!');
+          this.cancelar();
+          this.refresh$.next();
+        },
+        error: (err) => {
+          console.error('Error al actualizar sucursal', err);
+          alert('Error al actualizar el sucursal. Verificar la información.');
+        }
+      });
+}
+}
   eliminar(row: Sucursal) {
-    if (!confirm(`¿Eliminar Sucursal: ${row.Nombre}?`)) return;
-    this.svc.delete(row.IdSucursal).subscribe(() => this.refresh$.next());
+    if (!confirm(`¿Eliminar el sucursal ${row.idSucursal}?`)) return;
+
+    this.svc.delete(row.idSucursal!.toString()).subscribe({
+      next: (msg) => {
+        console.log('Sucursal eliminado:', msg);
+        alert('Sucursal eliminado exitosamente');
+        this.ngOnInit();
+      },
+      error: (err) => {
+        console.error('Error al eliminar sucursal:', err);
+        alert(err.error || 'Error al eliminar el sucursal');
+      }
+    });
   }
+
+  private formatDate(date: any): string | null {
+  if (!date) return null;
+
+  // Si ya es string (por ejemplo "2025-08-27"), devolverlo tal cual
+  if (typeof date === 'string') return date.substring(0, 10);
+
+  // Si es un objeto Date
+  const d = new Date(date);
+  return d.toISOString().substring(0, 10); // "YYYY-MM-DD"
+}
 }

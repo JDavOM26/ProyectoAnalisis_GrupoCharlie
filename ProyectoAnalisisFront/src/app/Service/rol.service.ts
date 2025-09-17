@@ -1,10 +1,13 @@
+
 import { Rol } from './../Models/rol.model';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 //import { provideHttpClient } from '@angular/common/http';
 
-const ROL_URL = 'http://localhost:8080/api/auth';
+// ajusta tu base URL (o usa environment)
+// = 'http://localhost:8080/api/noauth/login';
+const BASE= 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
 export class RolService {
@@ -13,36 +16,41 @@ export class RolService {
   list(q?: { search?: string; page?: number; size?: number }): Observable<Rol[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
-    if (q?.page   != null) params = params.set('page',  q.page);
-    if (q?.size   != null) params = params.set('size',  q.size);
+    if (q?.page != null) params = params.set('page', q.page);
+    if (q?.size != null) params = params.set('size', q.size);
 
-    return this.http.get<any>(ROL_URL+'/obtener-roles', {
+    return this.http.get<any>(BASE+'/obtener-roles', {
       params,
       headers: this.authHeaders(true)
     }).pipe(
-      map(resp => {
-        const rows = Array.isArray(resp) ? resp
-                  : Array.isArray(resp?.data) ? resp.data
-                  : [];
-        return rows.map(this.toFront);
-      }),
-      catchError(err => {
-        if (err?.status === 401) {
-          return this.http.get<any>(ROL_URL+'/obtener-roles', {
-            params,
-            headers: this.authHeaders(false)
-          }).pipe(
-            map(resp => {
-              const rows = Array.isArray(resp) ? resp
-                        : Array.isArray(resp?.data) ? resp.data
-                        : [];
-              return rows.map(this.toFront);
-            })
-          );
-        }
-        return throwError(() => err);
-      })
-    );
+          map(resp => {
+            console.log('Respuesta cruda obtener-roles:', resp);
+            const rows = Array.isArray(resp) ? resp
+                      : Array.isArray(resp?.data) ? resp.data
+                      : [];
+
+            return rows.map(this.toFront);
+          }),
+          catchError(err => {
+            if (err?.status === 401) {
+              console.warn('401 con Bearer; reintentando sin Bearer…');
+              return this.http.get<any>(BASE, {
+                params,
+                headers: this.authHeaders(false)
+              }).pipe(
+                map(resp => {
+                  console.log('Respuesta cruda (sin Bearer):', resp);
+                  const rows = Array.isArray(resp) ? resp
+                            : Array.isArray(resp?.data) ? resp.data
+                            : [];
+                  return rows.map(this.toFront);
+                })
+              );
+            }
+            console.error('Error en obtener-roles:', err);
+            return throwError(() => err);
+          })
+        );
   }
 
   private authHeaders(multipart = false): HttpHeaders {
@@ -55,57 +63,61 @@ export class RolService {
     return headers;
   }
 
-  getById(id: string): Observable<Rol> {
-    return this.http.get<any>(`${ROL_URL}/${encodeURIComponent(id)}`).pipe(
-      map(this.toFront)
+create(bodyGenero: Rol): Observable<Rol> {
+  const usuario = localStorage.getItem('idUsuario') || 'Sistema';
+
+  const payload = {
+    ...bodyGenero,
+    idUsuario: usuario   // 👈 IMPORTANTE, el backend espera este campo
+  };
+
+  return this.http
+    .post<any>(`${BASE}/crear-rol`, payload, { headers: this.authHeaders() })
+    .pipe(map(this.toFront));
+}
+
+update(id: string, bodyGenero: Rol): Observable<Rol> {
+  const usuario = localStorage.getItem('idUsuario') || 'Sistema';
+
+  const payload = {
+    ...bodyGenero,
+    idUsuario: usuario
+  };
+
+  return this.http
+    .put<any>(`${BASE}/actualizar-rol/${id}`, payload, { headers: this.authHeaders() })
+    .pipe(map(this.toFront));
+}
+
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${BASE}/borrar-rol?idRol=${encodeURIComponent(id)}`,
+      { headers: this.authHeaders() }
     );
   }
 
-  create(u: Rol): Observable<Rol> {
-    u.IdUsuario = localStorage.getItem('username')?.toString();
-    return this.http.post<any>(`${ROL_URL}/crear-rol`, this.toBack(u),{
-      headers: this.authHeaders()})
-    .pipe(map(this.toFront));
-  }
-  toFormData(u: Rol) {
-    throw new Error('Method not implemented.');
+  getById(id: string): Observable<Rol> {
+    return this.http.get<any>(
+      `${BASE}/${encodeURIComponent(id)}`,
+      { headers: this.authHeaders(true) }              // <= token aquí
+    ).pipe(map(this.toFront));
   }
 
-  update(id: string, u: Rol): Observable<Rol> {
-    u.IdUsuario = localStorage.getItem('username')?.toString();
-    return this.http.put<any>(`${ROL_URL}/actualizar-rol/${encodeURIComponent(id)}`, this.toBack(u),{
-      headers: this.authHeaders()})
-      .pipe(map(this.toFront));
-  }
+  // --- MAPEOS ---
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${ROL_URL}/borrar-rol?idRol=${encodeURIComponent(id)}`,{
-      headers: this.authHeaders(),
-      responseType: 'text' as 'json' 
-    });
-  }
-
-
-
+  /** Normaliza la respuesta del backend a tu interfaz Empresa (en PascalCase). */
   private toFront = (r: any): Rol => ({
-    IdRole: r.idRole ?? r.IdRole,
-    Nombre: r.nombre ?? r.Nombre,
-    FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
-    UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
-    FechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
-    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion,
-    IdUsuario: r.idUsuario ?? r.IdUsuario
+    idRole: r.IdRole ?? r.idRole ?? r.id_role ?? '',
+    nombre: r.Nombre ?? r.nombre ?? r.nombre ?? ''
+
   });
 
-  private toBack(s: Rol): any {
+  /** Payload en PascalCase (útil si tu API/JPA espera estos nombres exactos). */
+  private toBackPascal(e: Rol): any {
     return {
-      idRole: s.IdRole,
-      nombre: s.Nombre,
-      fechaCreacion: s.FechaCreacion,
-      usuarioCreacion: s.UsuarioCreacion,
-      fechaModificacion:  s.FechaModificacion,
-      usuarioModificacion: s.UsuarioModificacion,
-      idUsuario: s.IdUsuario
+      IdRole: e.idRole,
+      Nombre: e.nombre
     };
   }
 }

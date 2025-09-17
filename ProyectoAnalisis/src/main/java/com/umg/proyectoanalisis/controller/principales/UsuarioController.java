@@ -1,5 +1,6 @@
 package com.umg.proyectoanalisis.controller.principales;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.UsuarioPostDto;
 import com.umg.proyectoanalisis.entity.principales.Usuario;
 import com.umg.proyectoanalisis.repository.principales.UsuarioRepository;
 import com.umg.proyectoanalisis.service.UserService;
+
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -40,25 +44,59 @@ public class UsuarioController {
      */
 
     @GetMapping("/getAllUsers")
-    public List<Usuario> obtenerUsuarios() {
-        return userRepository.findAll();
+    public ResponseEntity<List<Usuario>> obtenerUsuarios() {
+        List<Usuario> usuarios = userRepository.findAll();
+        if (usuarios.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(usuarios);
     }
 
     @DeleteMapping("/deleteUser/{idUsuario}")
-    public void borrarUsuarioPorId(@PathVariable String idUsuario) {
+    public ResponseEntity<String> borrarUsuarioPorId(@PathVariable String idUsuario) {
+        if (!userRepository.existsById(idUsuario)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Usuario con ID " + idUsuario + " no encontrado");
+        }
+
         userRepository.deleteById(idUsuario);
+        return ResponseEntity.ok("Usuario eliminado correctamente");
     }
 
-    @PutMapping("/updateUser")
-    public Usuario updateUsuario(@RequestBody Usuario usuario) {
-        return userRepository.save(usuario);
+    @PutMapping("/updateUser/{idUsuario}")
+    public Usuario updateUsuario(@PathVariable String idUsuario, @Valid @RequestBody UsuarioPostDto usuarioDto) {
+
+      
+        Usuario usuarioExistente = userRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+
+        usuarioExistente.setNombre(usuarioDto.getNombre());
+        usuarioExistente.setApellido(usuarioDto.getApellido());
+        usuarioExistente.setFechaNacimiento(usuarioDto.getFechaNacimiento());
+        usuarioExistente.setIdStatusUsuario(usuarioDto.getIdStatusUsuario());
+        usuarioExistente.setIdGenero(usuarioDto.getIdGenero());
+        usuarioExistente.setCorreoElectronico(usuarioDto.getCorreoElectronico());
+        usuarioExistente.setTelefonoMovil(usuarioDto.getTelefonoMovil());
+        usuarioExistente.setIdSucursal(usuarioDto.getIdSucursal());
+        usuarioExistente.setPregunta(usuarioDto.getPregunta());
+        usuarioExistente.setRespuesta(usuarioDto.getRespuesta());
+        usuarioExistente.setIdRole(usuarioDto.getIdRole());
+
+        
+        usuarioExistente.setFechaModificacion(LocalDateTime.now());
+        usuarioExistente.setUsuarioModificacion(usuarioDto.getIdUsuario()); 
+
+    
+        return userRepository.save(usuarioExistente);
     }
+
 
     // Registro de Usuarios. Consumo del servicio Logica en el UserService
     @PostMapping("/signup/{idEmpresa}")
-    public ResponseEntity<String> registerUser(@RequestBody Usuario user, @PathVariable int idEmpresa) {
+    public ResponseEntity<String> registerUser(@Valid @RequestBody UsuarioPostDto usuarioDto, @PathVariable int idEmpresa) {
         try {
-            boolean registrado = usuarioService.registrarUsuario(user, idEmpresa);
+            boolean registrado = usuarioService.registrarUsuario(usuarioDto, idEmpresa);
 
             if (registrado) {
                 return ResponseEntity.ok("Usuario registrado exitosamente!");

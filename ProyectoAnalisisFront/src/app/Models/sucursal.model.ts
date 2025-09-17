@@ -1,10 +1,11 @@
 export interface Sucursal {
-  IdSucursal: string;
-  Nombre: string;
-  Direccion: string;
-  IdEmpresa: string;
+  idSucursal: string;
+  nombre: string;
+  direccion: string;
+  idEmpresa: number;
+  //idUsuario?: string;
   FechaCreacion?: string;              // ISO datetime
-  UsuarioCreacion?: string;
+  usuarioCreacion?: string;
   FechaModificacion?: string | null;   // ISO datetime
   UsuarioModificacion?: string | null; // username
 }
