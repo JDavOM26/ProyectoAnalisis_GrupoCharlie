@@ -1,9 +1,11 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { EstatusUsuario } from '../Models/estatususuario.model';
 
 const BASE = 'http://localhost:8080/api/auth';
+
 
 @Injectable({ providedIn: 'root' })
 export class EstatusUsuarioService {
@@ -12,8 +14,9 @@ export class EstatusUsuarioService {
   list(q?: { search?: string; page?: number; size?: number }): Observable<EstatusUsuario[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
-    if (q?.page   != null) params = params.set('page',  q.page);
-    if (q?.size   != null) params = params.set('size',  q.size);
+    if (q?.page != null) params = params.set('page', q.page);
+    if (q?.size != null) params = params.set('size', q.size);
+
 
     return this.http.get<any>(BASE + '/status', {
       params,
@@ -51,6 +54,7 @@ export class EstatusUsuarioService {
         return throwError(() => err);
       })
     );
+
   }
 
   private authHeaders(multipart = false): HttpHeaders {
@@ -62,6 +66,7 @@ export class EstatusUsuarioService {
     console.log('Autorizacion:', headers);
     return headers;
   }
+
 
   create(u: EstatusUsuario): Observable<EstatusUsuario> {
     u.IdUsuario = localStorage.getItem('username') || 'Sistema';
@@ -105,6 +110,7 @@ export class EstatusUsuarioService {
       fechaModificacion:  s.FechaModificacion,
       usuarioModificacion: s.UsuarioModificacion,
       idUsuario: s.IdUsuario
+
     };
   }
 }

@@ -101,7 +101,7 @@ export class RoleOpcionComponent implements OnInit {
     this.form.disable();
   }
 
-  trackRol      = (_: number, r: Rol) => r.IdRole;
+  trackRol      = (_: number, r: Rol) => r.idRole;
   trackOpcion   = (_: number, o: Opcion) => o.IdOpcion;
 
   nuevo() {

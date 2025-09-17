@@ -14,6 +14,7 @@ import { Router, RouterModule } from '@angular/router';
 
 export class LoginComponent {
   loginForm!: FormGroup;
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -30,15 +31,16 @@ export class LoginComponent {
   }
 
   onLogin(): void {
+    this.errorMessage = '';
     const { username, password } = this.loginForm.value;
 
     console.log(username, password);
-    
+
     this.usuarioService.login(
-      this.loginForm.value.username, 
+      this.loginForm.value.username,
       this.loginForm.value.password
     ).subscribe({
-      next: (response: any) => { 
+      next: (response: any) => {
         const data = response.token;
         const pIniRol = response.token.indexOf('"idRol":') + 8;
         const pFinRol = response.token.indexOf(',"');
@@ -48,15 +50,22 @@ export class LoginComponent {
         const tokenRsp = data.substring(pIniTkn, pFinTkn);
         console.log('Login exitoso:', tokenRsp);
         localStorage.setItem('token', tokenRsp);
+        localStorage.setItem('idUsuario',  this.loginForm.value.username );
         localStorage.setItem('rol', rolRsp);
-        localStorage.setItem('username', this.loginForm.value.username);
         this.router.navigate(['/home']);
-      }, 
-      error: (error) => {
-        console.error('Error al iniciar sesión', error);
-        alert('Usuario o contraseña incorrectos');
-      } 
-    }) ;
+      },
+    error: (err) => {
+        console.error('Error al iniciar sesión', err);
+        this.errorMessage = err.error || 'Error desconocido en el login. Intenta de nuevo.';
+        if (this.errorMessage.includes('Intentos')) {
+          this.errorMessage = `Acceso denegado: ${this.errorMessage}`;
+        } else if (this.errorMessage.includes('bloqueada')) {
+          this.errorMessage = 'Cuenta bloqueada por demasiados intentos fallidos. Contacta al administrador.';
+        } else if (this.errorMessage.includes('inactiva')) {
+          this.errorMessage = 'Cuenta inactiva. Contacta al administrador.';
+        }
+      }
+    });
   }
 
   onSubmit() {

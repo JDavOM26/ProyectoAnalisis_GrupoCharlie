@@ -7,8 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.SucursalPostDto;
 import com.umg.proyectoanalisis.entity.principales.Sucursal;
 import com.umg.proyectoanalisis.repository.principales.SucursalRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth/sucursal")
@@ -32,16 +35,14 @@ public class SucursalController {
 
     // Crear sucursal
     @PostMapping("/CrearSucursal")
-    public ResponseEntity<Sucursal> crearSucursal(@RequestBody Sucursal sucursal) {
+    public ResponseEntity<Sucursal> crearSucursal(@Valid @RequestBody SucursalPostDto sucursalDto) {
         try {
-            if (sucursal.getNombre() == null || sucursal.getNombre().isEmpty() ||
-                    sucursal.getDireccion() == null || sucursal.getDireccion().isEmpty() ||
-                    sucursal.getIdEmpresa() == null) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
-
+            Sucursal sucursal = new Sucursal();
+            sucursal.setNombre(sucursalDto.getNombre());
+            sucursal.setDireccion(sucursalDto.getDireccion());
+            sucursal.setIdEmpresa(sucursalDto.getIdEmpresa());
             sucursal.setFechaCreacion(LocalDateTime.now());
-            sucursal.setUsuarioCreacion("Administrador");
+            sucursal.setUsuarioCreacion(sucursalDto.getIdUsuario());
 
             Sucursal sucursalGuardada = sucursalRepository.save(sucursal);
             return new ResponseEntity<>(sucursalGuardada, HttpStatus.CREATED);
@@ -51,24 +52,20 @@ public class SucursalController {
     }
 
     // Actualizar sucursal
-    @PutMapping("/ActualizarSucursal")
-    public ResponseEntity<Sucursal> actualizarSucursal(@RequestBody Sucursal sucursal) {
+    @PutMapping("/ActualizarSucursal/{idSucursal}")
+    public ResponseEntity<Sucursal> actualizarSucursal(@PathVariable Integer idSucursal, @Valid @RequestBody SucursalPostDto sucursalDto) {
         try {
-            Sucursal sucursalExistente = sucursalRepository.findById(sucursal.getIdSucursal())
+            Sucursal sucursalExistente = sucursalRepository.findById(idSucursal)
                     .orElseThrow(
-                            () -> new RuntimeException("Sucursal no encontrada con id: " + sucursal.getIdSucursal()));
+                            () -> new RuntimeException("Sucursal no encontrada"));
 
-            if (sucursal.getNombre() == null || sucursal.getNombre().isEmpty() ||
-                    sucursal.getDireccion() == null || sucursal.getDireccion().isEmpty() ||
-                    sucursal.getIdEmpresa() == null) { // Cambiado de getEmpresa() a getIdEmpresa()
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
+          
 
-            sucursalExistente.setNombre(sucursal.getNombre());
-            sucursalExistente.setDireccion(sucursal.getDireccion());
-            sucursalExistente.setIdEmpresa(sucursal.getIdEmpresa());
+            sucursalExistente.setNombre(sucursalDto.getNombre());
+            sucursalExistente.setDireccion(sucursalDto.getDireccion());
+            sucursalExistente.setIdEmpresa(sucursalDto.getIdEmpresa());
             sucursalExistente.setFechaModificacion(LocalDateTime.now());
-            sucursalExistente.setUsuarioModificacion("Administrador");
+            sucursalExistente.setUsuarioModificacion(sucursalDto.getIdUsuario());
 
             Sucursal sucursalActualizada = sucursalRepository.save(sucursalExistente);
             return new ResponseEntity<>(sucursalActualizada, HttpStatus.OK);

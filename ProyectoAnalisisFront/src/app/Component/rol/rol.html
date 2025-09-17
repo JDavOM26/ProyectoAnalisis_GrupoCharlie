@@ -35,7 +35,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let r of (roles$ | async)">
-              <td>{{r.Nombre}}</td>
+              <td>{{r.nombre}}</td>
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(r)">Ver</button>
                 <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(r)" [disabled]="!permisos.Cambio">Editar</button>

@@ -32,6 +32,7 @@ public class JwtTokenUtil {
 
         //Generación de tokens JWT.
         public String generateToken(String username) {
+        	
             return Jwts.builder()
                     .subject(username)
                     .issuedAt(new Date())

@@ -30,6 +30,7 @@
       <!-- Botón Iniciar sesión -->
       <div class="d-grid mb-3">
         <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Iniciar Sesión</button>
+        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
       </div>
 
       <!-- Opciones adicionales -->

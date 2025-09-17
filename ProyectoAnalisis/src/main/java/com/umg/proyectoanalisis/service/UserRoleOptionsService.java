@@ -4,15 +4,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import com.umg.proyectoanalisis.repository.sistemademenus.RoleOpcionRepository;
 
 @Service
 public class UserRoleOptionsService {
     @Autowired
-    NamedParameterJdbcTemplate npjt;
+    private RoleOpcionRepository roleOpcionRepository;
 
     public List<Map<String, Object>> obtenerRoleOptions(String idUsuario) {
+
         String query = """
         SELECT 
             m.idModulo,
@@ -40,6 +42,7 @@ public class UserRoleOptionsService {
             m.OrdenMenu, me.OrdenMenu, o.OrdenMenu;
                       """;
         return npjt.getJdbcTemplate().queryForList(query, idUsuario);
+
     }
 
 }

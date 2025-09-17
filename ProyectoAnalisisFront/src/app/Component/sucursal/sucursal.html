@@ -24,6 +24,7 @@
         <div class="col-md-4">
           <label class="form-label">Empresa *</label>
           <select class="form-select" formControlName="IdEmpresa">
+
             <option [ngValue]="null" disabled>Seleccione…</option>
             <option *ngFor="let e of (empresas$ | async) trackby: trackEmpresa" [ngValue]="e.IdEmpresa">
               {{ e.Nombre }}
@@ -47,6 +48,7 @@
               <th class="text-end">Acciones</th>
             </tr>
           </thead>
+
           <ng-container *ngIf="empresasMap$ | async as empresasMap">
             <tbody *ngIf="vm$ | async as vm">
               <tr *ngFor="let s of (sucursales$ | async)">
@@ -65,6 +67,7 @@
               </tr>
             </tbody>
           </ng-container>
+
         </table>
       </div>
     </div>

@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.UsuarioPostDto;
 import com.umg.proyectoanalisis.entity.principales.Empresa;
 import com.umg.proyectoanalisis.entity.principales.StatusUsuario;
 import com.umg.proyectoanalisis.entity.principales.Usuario;
@@ -35,7 +36,6 @@ public class UserService {
 
 	@Autowired
 	NamedParameterJdbcTemplate npjt;
-	private String usuarioCreacion;
 
 	// Asignar valores de la tabla de estatus.
 	private static final int ESTADO_ACTIVO = 1;
@@ -57,7 +57,7 @@ public class UserService {
 		}
 	}
 
-	public void manejarIntentoExitoso(String idUsuario) {
+	public void manejarIntentoExitoso(String idUsuario, String sesion) {
 		int estadoActual = obtenerStatusUsuario(idUsuario);
 
 		// Solo resetear si no está bloqueado
@@ -68,8 +68,11 @@ public class UserService {
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("idUsuario", idUsuario);
 		params.addValue("estadoActivo", ESTADO_ACTIVO);
+		params.addValue("fechaIngreso", LocalDateTime.now());
+		params.addValue("sesionActual", sesion);
 
-		String query = "UPDATE USUARIO SET IntentosDeAcceso = 0, IdStatusUsuario = :estadoActivo " +
+		String query = "UPDATE USUARIO SET IntentosDeAcceso = 0, UltimaFechaIngreso = :fechaIngreso, sesionActual= :sesionActual, IdStatusUsuario = :estadoActivo "
+				+
 				"WHERE IdUsuario = :idUsuario";
 
 		int updated = npjt.update(query, params);
@@ -162,8 +165,6 @@ public class UserService {
 			throw new RuntimeException("Usuario no encontrado: " + idUsuario);
 		}
 	}
-	
-
 
 	// Validación de contraseña basada en Empresa: ahora solo devuelve true/false
 	private boolean validarPassword(String password, Empresa empresa) {
@@ -190,31 +191,45 @@ public class UserService {
 	}
 
 	// Registro de usuario
-	public boolean registrarUsuario(Usuario user, int idEmpresa) {
-		usuarioCreacion = "system";
+	public boolean registrarUsuario(UsuarioPostDto userDto, int idEmpresa) {
 
-		if (usuarioRepository.existsByIdUsuario(user.getIdUsuario())) {
+		if (usuarioRepository.existsByIdUsuario(userDto.getIdUsuario())) {
 			return false;
 		}
 
 		Empresa empresa = empresaRepository.findById(idEmpresa)
 				.orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
 
-		if (!validarPassword(user.getPassword(), empresa)) {
+		if (!validarPassword(userDto.getPassword(), empresa)) {
 			return false;
 		}
 
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		Usuario user = new Usuario();
+
+		user.setIdUsuario(userDto.getIdUsuario());
+		user.setNombre(userDto.getNombre());
+		user.setApellido(userDto.getApellido());
+		user.setFechaNacimiento(userDto.getFechaNacimiento());
+		user.setIdGenero(userDto.getIdGenero());
+		user.setIdRole(userDto.getIdRole());
+		user.setIdSucursal(userDto.getIdSucursal());
+		user.setPregunta(userDto.getPregunta());
+		user.setRespuesta(userDto.getRespuesta());
+
+		user.setCorreoElectronico(userDto.getCorreoElectronico());
+		user.setTelefonoMovil(userDto.getTelefonoMovil());
+
+		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 		user.setFechaCreacion(LocalDateTime.now());
-		user.setUsuarioCreacion(usuarioCreacion);
+		user.setUsuarioCreacion(userDto.getIdUsuario());
 		user.setIntentosDeAcceso(0);
 		user.setRequiereCambiarPassword(0);
+		user.setUltimaFechaCambioPassword(LocalDateTime.now());
 
 		StatusUsuario status = statusUsuarioRepository.findById(1)
 				.orElseThrow(() -> new RuntimeException("StatusUsuario no encontrado"));
-
 		user.setIdStatusUsuario(status.getIdStatusUsuario());
-		user.setUltimaFechaCambioPassword(LocalDateTime.now());
+
 		usuarioRepository.save(user);
 		return true;
 	}
