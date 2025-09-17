@@ -1,0 +1,116 @@
+<!-- Crear/Editar Usuario – estilo tarjeta centrada como login -->
+<div class="container vh-100 d-flex justify-content-center align-items-center">
+  <div class="card shadow-lg p-4" style="width: 100%; max-width: 720px; border-radius: 14px;">
+    <!-- Header -->
+    <div class="text-center mb-3">
+      <i class="bi bi-person-gear" style="font-size: 3rem; color: #0d6efd;"></i>
+      <h4 class="mt-2 m-0">Gestión de Usuario</h4>
+      <p class="text-muted mb-0">Complete los datos y guarde los cambios</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <!-- fila 1 -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Usuario *</label>
+          <input class="form-control" formControlName="idUsuario" placeholder="ID de usuario" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Correo</label>
+          <input class="form-control" type="email" formControlName="correoElectronico" placeholder="usuario@ejemplo.com" />
+        </div>
+
+        <!-- fila 2 -->
+        <div class="col-md-6">
+          <label class="form-label">Nombre *</label>
+          <input class="form-control" formControlName="nombre" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Apellido *</label>
+          <input class="form-control" formControlName="apellido" />
+        </div>
+
+        <!-- fila 3 -->
+        <div class="col-md-6">
+          <label class="form-label">Contraseña *</label>
+          <input class="form-control" type="password" formControlName="password" placeholder="••••••" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Teléfono *</label>
+          <input class="form-control" formControlName="telefonoMovil" placeholder="555-1234567" />
+        </div>
+
+        <!-- fila 4 -->
+        <div class="col-md-6">
+          <label class="form-label">Nacimiento *</label>
+          <input class="form-control" type="date" formControlName="fechaNacimiento" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Género *</label>
+          <select class="form-select" formControlName="idGenero">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let g of (generos$ | async); trackBy: trackGenero" [ngValue]="g.idGenero">
+              {{ g.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- fila 5 -->
+        <div class="col-md-6">
+          <label class="form-label">Estatus *</label>
+          <select class="form-select" formControlName="idStatusUsuario">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let e of (estatus$ | async); trackBy: trackEstatus" [ngValue]="e.IdStatusUsuario">
+              {{ e.Nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Sucursal *</label>
+          <select class="form-select" formControlName="idSucursal">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let s of (sucursales$ | async); trackBy: trackSucursal" [ngValue]="s.IdSucursal">
+              {{ s.Nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- fila 6 -->
+        <div class="col-md-6">
+          <label class="form-label">Rol *</label>
+          <select class="form-select" formControlName="idRole">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let r of (roles$ | async); trackBy: trackRol" [ngValue]="r.IdRole">
+              {{ r.Nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-6"></div>
+
+        <!-- hidden -->
+        <div class="col-12">
+          <input class="form-control" style="display:none" formControlName="fechaCreacion" />
+          <input class="form-control" style="display:none" formControlName="usuarioCreacion" />
+        </div>
+
+        <!-- fila 7 -->
+        <div class="col-12">
+          <label class="form-label">Pregunta</label>
+          <input class="form-control" formControlName="pregunta" placeholder="¿Nombre de tu primera mascota?" />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Respuesta</label>
+          <input class="form-control" formControlName="respuesta" />
+        </div>
+      </div>
+
+      <!-- acciones (como en login: botón grande y link secundario) -->
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="mode()==='crear' || form.invalid">Guardar</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="cancelar()" >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
