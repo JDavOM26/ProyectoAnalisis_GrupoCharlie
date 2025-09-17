@@ -1,11 +1,6 @@
-import { EmpresaService } from './../../Service/empresa.service';
-import { Empresa } from './../../Models/empresa.model';
-import { Sucursal } from './../../Models/sucursal.model';
-import { SucursalService } from './../../Service/sucursal.service';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-
 import { SucursalService } from '../../Service/sucursal.service';
 import { Sucursal } from '../../Models/sucursal.model';
 import { Observable, BehaviorSubject, switchMap, startWith, map, combineLatest } from 'rxjs';
@@ -13,7 +8,6 @@ import { EmpresaService } from '../../Service/empresa.service';
 import { Empresa } from '../../Models/empresa.model';
 import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
 import { Permisos } from '../../Models/menu.perm.model';
-
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -31,14 +25,12 @@ export class SucursalComponent implements OnInit {
   selectedIdEmpresa = signal<string | null>(null);
   permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
-
   constructor(
     private fb: FormBuilder, 
     private svc: SucursalService,
     private svcEmpresa: EmpresaService,
     private menuSvc: MenuDinamicoService,
   ) {}
-
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
@@ -59,18 +51,12 @@ export class SucursalComponent implements OnInit {
       FechaModificacion: [''],
       UsuarioModificacion: [''],
       IdUsuario: ['']
-
     });
     
     this.sucursales$ = this.refresh$.pipe(
       startWith(undefined),
-      switchMap(() => this.svc.list({ search: this.search() })),
-      catchError(err => {
-        console.error('Error cargando las sucursales', err);
-        return of([] as Sucursal[]);
-      })
+      switchMap(() => this.svc.list({ search: this.search() }))
     );
-
     
     this.empresas$ = this.refresh$.pipe(
       startWith(undefined),
@@ -95,8 +81,6 @@ export class SucursalComponent implements OnInit {
     this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
     console.log('Permisos desde localStorage:', this.permisos);
 
-
-
     if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
       this.menuSvc.getPermisos(pageKey).subscribe(p => {
         this.permisos = p;
@@ -112,7 +96,6 @@ export class SucursalComponent implements OnInit {
   nuevo() {
     this.mode.set('crear');
     this.selectedId.set(null);
-
     this.selectedIdEmpresa.set(null);
     this.form.reset({
       IdSucursal: '', 
@@ -120,20 +103,17 @@ export class SucursalComponent implements OnInit {
       Direccion: '',
       IdEmpresa: ''
     });
-
     this.form.enable();
   }
 
   ver(row: Sucursal) {
     this.mode.set('ver');
-
     this.selectedId.set(row.IdSucursal.toString());
     this.selectedIdEmpresa.set(row.IdEmpresa.toString());
     this.form.enable();
     this.form.patchValue(row);
     this.form.get('IdSucursal')?.disable(); // no editar llave
     this.form.get('IdEmpresa')?.disable(); // no editar llave
-
     Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
   }
 
@@ -146,7 +126,6 @@ export class SucursalComponent implements OnInit {
     this.selectedIdEmpresa.set(row.IdEmpresa);
     this.form.patchValue(row);
     Object.keys(this.form.controls).forEach(c => { if (c !== 'IdSucursal' && c !=='IdEmpresa') this.form.get(c)?.enable(); });
-
   }
 
   cancelar() {
@@ -172,25 +151,12 @@ export class SucursalComponent implements OnInit {
     } else if (this.mode() === 'editar' && this.selectedId()) {
       this.svc.update(this.selectedId()!, payload).subscribe(() => {
         this.cancelar(); this.refresh$.next();
-
       });
-}
-}
-  eliminar(row: Sucursal) {
-
-    if (!confirm(`¿Eliminar Sucursal: ${row.Nombre}?`)) return;
-    this.svc.delete(row.IdSucursal).subscribe(() => this.refresh$.next());
-
+    }
   }
 
-  private formatDate(date: any): string | null {
-  if (!date) return null;
-
-  // Si ya es string (por ejemplo "2025-08-27"), devolverlo tal cual
-  if (typeof date === 'string') return date.substring(0, 10);
-
-  // Si es un objeto Date
-  const d = new Date(date);
-  return d.toISOString().substring(0, 10); // "YYYY-MM-DD"
-}
+  eliminar(row: Sucursal) {
+    if (!confirm(`¿Eliminar Sucursal: ${row.Nombre}?`)) return;
+    this.svc.delete(row.IdSucursal).subscribe(() => this.refresh$.next());
+  }
 }

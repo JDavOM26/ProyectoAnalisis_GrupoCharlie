@@ -1,4 +1,3 @@
-
 import { Rol } from './../Models/rol.model';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
@@ -7,7 +6,6 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 
 const ROL_URL = 'http://localhost:8080/api/auth';
 
-
 @Injectable({ providedIn: 'root' })
 export class RolService {
   constructor(private http: HttpClient) {}
@@ -15,9 +13,8 @@ export class RolService {
   list(q?: { search?: string; page?: number; size?: number }): Observable<Rol[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
-    if (q?.page != null) params = params.set('page', q.page);
-    if (q?.size != null) params = params.set('size', q.size);
-
+    if (q?.page   != null) params = params.set('page',  q.page);
+    if (q?.size   != null) params = params.set('size',  q.size);
 
     return this.http.get<any>(ROL_URL+'/obtener-roles', {
       params,
@@ -46,7 +43,6 @@ export class RolService {
         return throwError(() => err);
       })
     );
-
   }
 
   private authHeaders(multipart = false): HttpHeaders {
@@ -58,7 +54,6 @@ export class RolService {
     console.log('Autorizacion:', headers);
     return headers;
   }
-
 
   getById(id: string): Observable<Rol> {
     return this.http.get<any>(`${ROL_URL}/${encodeURIComponent(id)}`).pipe(
@@ -88,17 +83,8 @@ export class RolService {
       headers: this.authHeaders(),
       responseType: 'text' as 'json' 
     });
-
   }
 
-  getById(id: string): Observable<Rol> {
-    return this.http.get<any>(
-      `${BASE}/${encodeURIComponent(id)}`,
-      { headers: this.authHeaders(true) }              // <= token aquí
-    ).pipe(map(this.toFront));
-  }
-
-  // --- MAPEOS ---
 
 
   private toFront = (r: any): Rol => ({
@@ -120,7 +106,6 @@ export class RolService {
       fechaModificacion:  s.FechaModificacion,
       usuarioModificacion: s.UsuarioModificacion,
       idUsuario: s.IdUsuario
-
     };
   }
 }

@@ -93,7 +93,7 @@ public class PasswordRecoveryController {
                 		idUsuario,
                         direccionIp,
                         httpUserAgent,
-                        "USUARIO_INCORRECTO",
+                        "RESPUESTA_INCORRECTA",
                         sesion);
 
                 return ResponseEntity.status(HttpStatus.LOCKED)
@@ -118,7 +118,7 @@ public class PasswordRecoveryController {
                     .orElseThrow(
                             () -> new RuntimeException("Credenciales invalidas"));
 
-            userService.manejarIntentoExitoso(idUsuario, sesion);
+            userService.manejarIntentoExitoso(idUsuario);
             PasswordRecoveryResponseDto respuesta = new PasswordRecoveryResponseDto();
             respuesta.setPregunta(usuario.getPregunta());
             return new ResponseEntity<>(respuesta, HttpStatus.OK);
@@ -218,7 +218,7 @@ public class PasswordRecoveryController {
                 return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
             }
 
-            userService.manejarIntentoExitoso(answerDto.getIdUsuario(), sesion);
+            userService.manejarIntentoExitoso(answerDto.getIdUsuario());
 
             return new ResponseEntity<>(true, HttpStatus.OK);
         } catch (Exception e) {

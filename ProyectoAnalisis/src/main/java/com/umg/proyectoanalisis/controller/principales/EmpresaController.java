@@ -8,11 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.umg.proyectoanalisis.dto.requestdto.postdtos.EmpresaPostDto;
 import com.umg.proyectoanalisis.entity.principales.Empresa;
 import com.umg.proyectoanalisis.repository.principales.EmpresaRepository;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth/empresa")
@@ -37,23 +34,16 @@ public class EmpresaController {
 
     // Crear empresa
     @PostMapping("/CrearEmpresa")
-    public ResponseEntity<Empresa> crearEmpresa(@Valid @RequestBody EmpresaPostDto empresaDto) {
+    public ResponseEntity<Empresa> crearEmpresa(@RequestBody Empresa empresa) {
         try {
-            Empresa empresa = new Empresa();
-            empresa.setNombre(empresaDto.getNombre());
-            empresa.setDireccion(empresaDto.getDireccion());
-            empresa.setNit(empresaDto.getNit());
-            empresa.setPasswordCantidadMayusculas(empresaDto.getPasswordCantidadMayusculas());
-            empresa.setPasswordCantidadMinusculas(empresaDto.getPasswordCantidadMinusculas());
-            empresa.setPasswordCantidadCaracteresEspeciales(empresaDto.getPasswordCantidadCaracteresEspeciales());
-            empresa.setPasswordCantidadCaducidadDias(empresaDto.getPasswordCantidadCaducidadDias());
-            empresa.setPasswordLargo(empresaDto.getPasswordLargo());
-            empresa.setPasswordIntentosAntesDeBloquear(empresaDto.getPasswordIntentosAntesDeBloquear());
-            empresa.setPasswordCantidadNumeros(empresaDto.getPasswordCantidadNumeros());
-            empresa.setPasswordCantidadPreguntasValidar(empresaDto.getPasswordCantidadPreguntasValidar());
+            if (empresa.getNombre() == null || empresa.getNombre().isEmpty()
+                    || empresa.getDireccion() == null || empresa.getDireccion().isEmpty()
+                    || empresa.getNit() == null || empresa.getNit().isEmpty()) {
+                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            }
 
             empresa.setFechaCreacion(LocalDateTime.now());
-            empresa.setUsuarioCreacion(empresaDto.getIdUsuario());
+            empresa.setUsuarioCreacion("Administrador");
 
             Empresa empresaGuardada = empresaRepository.save(empresa);
             return new ResponseEntity<>(empresaGuardada, HttpStatus.CREATED);
@@ -63,27 +53,31 @@ public class EmpresaController {
     }
 
     // Actualizar empresa
-    @PutMapping("/ActualizarEmpresa/{idEmpresa}")
-    public ResponseEntity<Empresa> actualizarEmpresa(@PathVariable Integer idEmpresa, @Valid @RequestBody EmpresaPostDto empresaDto) {
+    @PutMapping("/ActualizarEmpresa")
+    public ResponseEntity<Empresa> actualizarEmpresa(@RequestBody Empresa empresa) {
         try {
-            Empresa empresaExistente = empresaRepository.findById(idEmpresa)
-                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+            Empresa empresaExistente = empresaRepository.findById(empresa.getIdEmpresa())
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada con id: " + empresa.getIdEmpresa()));
 
-           
+            if (empresa.getNombre() == null || empresa.getNombre().isEmpty()
+                    || empresa.getDireccion() == null || empresa.getDireccion().isEmpty()
+                    || empresa.getNit() == null || empresa.getNit().isEmpty()) {
+                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            }
 
-            empresaExistente.setNombre(empresaDto.getNombre());
-            empresaExistente.setDireccion(empresaDto.getDireccion());
-            empresaExistente.setNit(empresaDto.getNit());
-            empresaExistente.setPasswordCantidadMayusculas(empresaDto.getPasswordCantidadMayusculas());
-            empresaExistente.setPasswordCantidadMinusculas(empresaDto.getPasswordCantidadMinusculas());
-            empresaExistente.setPasswordCantidadCaracteresEspeciales(empresaDto.getPasswordCantidadCaracteresEspeciales());
-            empresaExistente.setPasswordCantidadCaducidadDias(empresaDto.getPasswordCantidadCaducidadDias());
-            empresaExistente.setPasswordLargo(empresaDto.getPasswordLargo());
-            empresaExistente.setPasswordIntentosAntesDeBloquear(empresaDto.getPasswordIntentosAntesDeBloquear());
-            empresaExistente.setPasswordCantidadNumeros(empresaDto.getPasswordCantidadNumeros());
-            empresaExistente.setPasswordCantidadPreguntasValidar(empresaDto.getPasswordCantidadPreguntasValidar());
+            empresaExistente.setNombre(empresa.getNombre());
+            empresaExistente.setDireccion(empresa.getDireccion());
+            empresaExistente.setNit(empresa.getNit());
+            empresaExistente.setPasswordCantidadMayusculas(empresa.getPasswordCantidadMayusculas());
+            empresaExistente.setPasswordCantidadMinusculas(empresa.getPasswordCantidadMinusculas());
+            empresaExistente.setPasswordCantidadCaracteresEspeciales(empresa.getPasswordCantidadCaracteresEspeciales());
+            empresaExistente.setPasswordCantidadCaducidadDias(empresa.getPasswordCantidadCaducidadDias());
+            empresaExistente.setPasswordLargo(empresa.getPasswordLargo());
+            empresaExistente.setPasswordIntentosAntesDeBloquear(empresa.getPasswordIntentosAntesDeBloquear());
+            empresaExistente.setPasswordCantidadNumeros(empresa.getPasswordCantidadNumeros());
+            empresaExistente.setPasswordCantidadPreguntasValidar(empresa.getPasswordCantidadPreguntasValidar());
             empresaExistente.setFechaModificacion(LocalDateTime.now());
-            empresaExistente.setUsuarioModificacion(empresaDto.getIdUsuario());
+            empresaExistente.setUsuarioModificacion("Administrador");
 
             Empresa empresaActualizada = empresaRepository.save(empresaExistente);
             return new ResponseEntity<>(empresaActualizada, HttpStatus.OK);

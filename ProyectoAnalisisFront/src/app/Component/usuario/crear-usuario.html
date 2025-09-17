@@ -60,8 +60,8 @@
           <label class="form-label">Estatus *</label>
           <select class="form-select" formControlName="idStatusUsuario">
             <option [ngValue]="null" disabled>Seleccione…</option>
-            <option *ngFor="let e of (estatus$ | async); trackBy: trackEstatus" [ngValue]="e.idStatusUsuario">
-              {{ e.nombre }}
+            <option *ngFor="let e of (estatus$ | async); trackBy: trackEstatus" [ngValue]="e.IdStatusUsuario">
+              {{ e.Nombre }}
             </option>
           </select>
         </div>
@@ -69,8 +69,8 @@
           <label class="form-label">Sucursal *</label>
           <select class="form-select" formControlName="idSucursal">
             <option [ngValue]="null" disabled>Seleccione…</option>
-            <option *ngFor="let s of (sucursales$ | async); trackBy: trackSucursal" [ngValue]="s.idSucursal">
-              {{ s.nombre }}
+            <option *ngFor="let s of (sucursales$ | async); trackBy: trackSucursal" [ngValue]="s.IdSucursal">
+              {{ s.Nombre }}
             </option>
           </select>
         </div>
@@ -80,8 +80,8 @@
           <label class="form-label">Rol *</label>
           <select class="form-select" formControlName="idRole">
             <option [ngValue]="null" disabled>Seleccione…</option>
-            <option *ngFor="let r of (roles$ | async); trackBy: trackRol" [ngValue]="r.idRole">
-              {{ r.nombre }}
+            <option *ngFor="let r of (roles$ | async); trackBy: trackRol" [ngValue]="r.IdRole">
+              {{ r.Nombre }}
             </option>
           </select>
         </div>
