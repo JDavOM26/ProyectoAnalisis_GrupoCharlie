@@ -1,26 +1,28 @@
-import { RoleOpcion } from '../Models/role-opcion.model';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
+import { Menu } from '../Models/menu.model';
+import { Opcion } from '../Models/opcion.model';
 //import { provideHttpClient } from '@angular/common/http';
 
-const ROLE_OPCION = 'http://localhost:8080/api/auth';
+const MENU_URL = 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
-export class RoleOpcionService {
+export class MenuService {
   constructor(private http: HttpClient) {}
 
-  list(q?: { search?: string; page?: number; size?: number }): Observable<RoleOpcion[]> {
+  list(q?: { search?: string; page?: number; size?: number }): Observable<Menu[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
     if (q?.page   != null) params = params.set('page',  q.page);
     if (q?.size   != null) params = params.set('size',  q.size);
 
-    return this.http.get<any>(ROLE_OPCION+'/roleOpcion', {
+    return this.http.get<any>(MENU_URL+'/menus', {
       params,
       headers: this.authHeaders(true)
     }).pipe(
       map(resp => {
+
         const rows = Array.isArray(resp) ? resp
                   : Array.isArray(resp?.data) ? resp.data
                   : [];
@@ -29,7 +31,7 @@ export class RoleOpcionService {
       }),
       catchError(err => {
         if (err?.status === 401) {
-          return this.http.get<any>(ROLE_OPCION+'/roleOpcion', {
+          return this.http.get<any>(MENU_URL+'/menus', {
             params,
             headers: this.authHeaders(false)
           }).pipe(
@@ -48,54 +50,43 @@ export class RoleOpcionService {
 
   private authHeaders(multipart = false): HttpHeaders {
     const token = localStorage.getItem('token');
-    console.log('Token retrieved from localStorage:', token);
     if (!token) throw new Error('No hay token en localStorage. Inicia sesión primero.');
 
     let headers = new HttpHeaders({ Authorization: `Bearer ${token}`  });
-    console.log('Autorizacion:', headers);
     return headers;
   }
 
-  getById(id: string): Observable<RoleOpcion> {
-    return this.http.get<any>(`${ROLE_OPCION}/${encodeURIComponent(id)}`).pipe(
-      map(this.toFront)
-    );
-  }
-
-  create(u: RoleOpcion): Observable<RoleOpcion> {
-      u.IdUsuario = localStorage.getItem('username') || 'Sistema';
-    return this.http.post<any>(ROLE_OPCION+'/asignar-opcion-rol', this.toBack(u),{
+  create(u: Menu): Observable<Menu> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.post<any>(MENU_URL+'/crear-menu', this.toBack(u),{
       headers: this.authHeaders()})
       .pipe(map(this.toFront));
   }
-  toFormData(u: RoleOpcion, file: File) {
+  toFormData(u: Menu, file: File) {
     throw new Error('Method not implemented.');
   }
 
-  update(u: RoleOpcion): Observable<RoleOpcion> {
-     u.IdUsuario = localStorage.getItem('username') || 'Sistema';
-    return this.http.put<any>(`${ROLE_OPCION}/actualizar-opcion-rol`, this.toBack(u),{
+  update(id:string,u: Menu): Observable<Menu> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.put<any>(`${MENU_URL}/actualizar-menu/${encodeURIComponent(id)}`, this.toBack(u),{
       headers: this.authHeaders()})
       .pipe(map(this.toFront));
   }
 
-  delete(idRole: string,idOpcion: string): Observable<void> {
-    return this.http.delete<void>(`${ROLE_OPCION}/eliminar-opcion-rol?idRole=${encodeURIComponent(idRole)}&idOpcion=${encodeURIComponent(idOpcion)}`,{
+  delete(idMenu: string): Observable<void> {
+    return this.http.delete<void>(`${MENU_URL}/borrar-menu?idMenu=${encodeURIComponent(idMenu)}`,{
       headers: this.authHeaders(),
-      responseType: 'text' as 'json' 
+      responseType: 'text' as 'json'
     });
   }
 
 
 
-  private toFront = (r: any): RoleOpcion => ({
-    IdRole: r.idRole ?? r.IdRole,
-    IdOpcion: r.idOpcion ?? r.IdOpcion,
-    Alta: r.alta ?? r.Alta,
-    Baja: r.baja ?? r.Baja,
-    Cambio: r.cambio ?? r.Cambio,
-    Imprimir: r.imprimir ?? r.Imprimir,
-    Exportar: r.exportar ?? r.Exportar,
+  private toFront = (r: any): Menu => ({
+    IdMenu: r.idMenu ?? r.IdMenu,
+    IdModulo: r.idModulo ?? r.IdModulo,
+    Nombre: r.nombre ?? r.Nombre,
+    OrdenMenu: r.ordenMenu ?? r.OrdenMenu,
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
     FechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
@@ -103,15 +94,12 @@ export class RoleOpcionService {
     IdUsuario: r.idUsuario ?? r.IdUsuario
   });
 
-  private toBack(s: RoleOpcion): any {
+  private toBack(s: Menu): any {
     return {
-      idRole: s.IdRole,
-      idOpcion: s.IdOpcion,
-      alta: s.Alta,
-      baja: s.Baja,
-      cambio: s.Cambio,
-      imprimir: s.Imprimir,
-      exportar: s.Exportar,
+      idMenu: s.IdMenu,
+      idModulo: s.IdModulo,
+      nombre: s.Nombre,
+      ordenMenu: s.OrdenMenu,
       fechaCreacion: s.FechaCreacion,
       usuarioCreacion: s.UsuarioCreacion,
       fechaModificacion:  s.FechaModificacion,

@@ -1,22 +1,22 @@
-import { RoleOpcion } from '../Models/role-opcion.model';
+import { Modulo } from './../Models/modulo.model';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 //import { provideHttpClient } from '@angular/common/http';
 
-const ROLE_OPCION = 'http://localhost:8080/api/auth';
+const MODULO_URL = 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
-export class RoleOpcionService {
+export class ModuloService {
   constructor(private http: HttpClient) {}
 
-  list(q?: { search?: string; page?: number; size?: number }): Observable<RoleOpcion[]> {
+  list(q?: { search?: string; page?: number; size?: number }): Observable<Modulo[]> {
     let params = new HttpParams();
     if (q?.search) params = params.set('search', q.search);
     if (q?.page   != null) params = params.set('page',  q.page);
     if (q?.size   != null) params = params.set('size',  q.size);
 
-    return this.http.get<any>(ROLE_OPCION+'/roleOpcion', {
+    return this.http.get<any>(MODULO_URL+'/modulos', {
       params,
       headers: this.authHeaders(true)
     }).pipe(
@@ -24,12 +24,11 @@ export class RoleOpcionService {
         const rows = Array.isArray(resp) ? resp
                   : Array.isArray(resp?.data) ? resp.data
                   : [];
-
         return rows.map(this.toFront);
       }),
       catchError(err => {
         if (err?.status === 401) {
-          return this.http.get<any>(ROLE_OPCION+'/roleOpcion', {
+          return this.http.get<any>(MODULO_URL+'/modulos', {
             params,
             headers: this.authHeaders(false)
           }).pipe(
@@ -56,31 +55,31 @@ export class RoleOpcionService {
     return headers;
   }
 
-  getById(id: string): Observable<RoleOpcion> {
-    return this.http.get<any>(`${ROLE_OPCION}/${encodeURIComponent(id)}`).pipe(
+  getById(id: string): Observable<Modulo> {
+    return this.http.get<any>(`${MODULO_URL}/${encodeURIComponent(id)}`).pipe(
       map(this.toFront)
     );
   }
 
-  create(u: RoleOpcion): Observable<RoleOpcion> {
-      u.IdUsuario = localStorage.getItem('username') || 'Sistema';
-    return this.http.post<any>(ROLE_OPCION+'/asignar-opcion-rol', this.toBack(u),{
+  create(u: Modulo): Observable<Modulo> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.post<any>(`${MODULO_URL}/crear-modulo`, this.toBack(u),{
       headers: this.authHeaders()})
-      .pipe(map(this.toFront));
+    .pipe(map(this.toFront));
   }
-  toFormData(u: RoleOpcion, file: File) {
+  toFormData(u: Modulo) {
     throw new Error('Method not implemented.');
   }
 
-  update(u: RoleOpcion): Observable<RoleOpcion> {
-     u.IdUsuario = localStorage.getItem('username') || 'Sistema';
-    return this.http.put<any>(`${ROLE_OPCION}/actualizar-opcion-rol`, this.toBack(u),{
+  update(id: string, u: Modulo): Observable<Modulo> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.put<any>(`${MODULO_URL}/actualizar-modulo/${encodeURIComponent(id)}`, this.toBack(u),{
       headers: this.authHeaders()})
       .pipe(map(this.toFront));
   }
 
-  delete(idRole: string,idOpcion: string): Observable<void> {
-    return this.http.delete<void>(`${ROLE_OPCION}/eliminar-opcion-rol?idRole=${encodeURIComponent(idRole)}&idOpcion=${encodeURIComponent(idOpcion)}`,{
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${MODULO_URL}/borrar-modulo?idModulo=${encodeURIComponent(id)}`,{
       headers: this.authHeaders(),
       responseType: 'text' as 'json' 
     });
@@ -88,14 +87,10 @@ export class RoleOpcionService {
 
 
 
-  private toFront = (r: any): RoleOpcion => ({
-    IdRole: r.idRole ?? r.IdRole,
-    IdOpcion: r.idOpcion ?? r.IdOpcion,
-    Alta: r.alta ?? r.Alta,
-    Baja: r.baja ?? r.Baja,
-    Cambio: r.cambio ?? r.Cambio,
-    Imprimir: r.imprimir ?? r.Imprimir,
-    Exportar: r.exportar ?? r.Exportar,
+  private toFront = (r: any): Modulo => ({
+    IdModulo: r.idModulo ?? r.IdModulo,
+    Nombre: r.nombre ?? r.Nombre,
+    OrdenMenu: r.ordenMenu ?? r.OrdenMenu,
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
     FechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
@@ -103,15 +98,11 @@ export class RoleOpcionService {
     IdUsuario: r.idUsuario ?? r.IdUsuario
   });
 
-  private toBack(s: RoleOpcion): any {
+  private toBack(s: Modulo): any {
     return {
-      idRole: s.IdRole,
-      idOpcion: s.IdOpcion,
-      alta: s.Alta,
-      baja: s.Baja,
-      cambio: s.Cambio,
-      imprimir: s.Imprimir,
-      exportar: s.Exportar,
+      idModulo: s.IdModulo,
+      nombre: s.Nombre,
+      ordenMenu: s.OrdenMenu,
       fechaCreacion: s.FechaCreacion,
       usuarioCreacion: s.UsuarioCreacion,
       fechaModificacion:  s.FechaModificacion,

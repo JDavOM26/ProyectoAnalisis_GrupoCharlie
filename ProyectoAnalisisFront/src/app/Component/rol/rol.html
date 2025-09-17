@@ -3,7 +3,7 @@
   <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
     <h5 class="m-0">Roles</h5>
     <div class="ms-auto d-flex gap-2">
-      <button class="btn btn-sm btn-success" (click)="nuevo()">Nuevo</button>
+      <button class="btn btn-sm btn-success" (click)="nuevo()" [disabled]="!permisos.Alta">Nuevo</button>
       <button class="btn btn-sm btn-primary" (click)="guardar()" [disabled]="mode()==='idle' || mode()==='ver'">Guardar</button>
       <button class="btn btn-sm btn-secondary" (click)="cancelar()" [disabled]="mode()==='idle'">Cancelar</button>
     </div>
@@ -15,6 +15,7 @@
       <form [formGroup]="form" class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Nombre *</label>
+          <input type="hidden" formControlName="IdRol" />
           <input class="form-control" formControlName="Nombre" />
         </div>
       </form>
@@ -37,8 +38,8 @@
               <td>{{r.nombre}}</td>
               <td class="text-end">
                 <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(r)">Ver</button>
-                <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(r)">Editar</button>
-                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(r)">Eliminar</button>
+                <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(r)" [disabled]="!permisos.Cambio">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(r)" [disabled]="!permisos.Baja">Eliminar</button>
               </td>
             </tr>
             <tr *ngIf="!(roles$ | async)?.length">

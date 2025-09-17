@@ -5,9 +5,8 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, throwError } from 'rxjs';
 
 
-// ajusta tu base URL (o usa environment)
 const BASE = 'http://localhost:8080/api/noauth/login';
-const USERS_LIST_URL = 'http://localhost:8080/api/auth/opcion';
+const OPC_URL = 'http://localhost:8080/api/auth';
 
 @Injectable({ providedIn: 'root' })
 export class OpcionService {
@@ -19,32 +18,24 @@ export class OpcionService {
     if (q?.page   != null) params = params.set('page',  q.page);
     if (q?.size   != null) params = params.set('size',  q.size);
 
-    // 1) Intento con Bearer (igual que Postman)
-    return this.http.get<any>(USERS_LIST_URL, {
+    return this.http.get<any>(OPC_URL+'/opcion', {
       params,
       headers: this.authHeaders(true)
     }).pipe(
       map(resp => {
-        // DEBUG
-        console.log('Respuesta cruda opcion:', resp);
-
-        // 2) Normaliza: si es array -> úsalo; si viene como { data: [...] } úsalo; si no, array vacío
         const rows = Array.isArray(resp) ? resp
                   : Array.isArray(resp?.data) ? resp.data
                   : [];
 
         return rows.map(this.toFront);
       }),
-      // 3) Si devuelve 401 (o falla) intentamos SIN Bearer (por si ese endpoint no lo requiere)
       catchError(err => {
         if (err?.status === 401) {
-          console.warn('401 con Bearer; reintentando sin Bearer…');
-          return this.http.get<any>(USERS_LIST_URL, {
+          return this.http.get<any>(OPC_URL+'/opcion', {
             params,
             headers: this.authHeaders(false)
           }).pipe(
             map(resp => {
-              console.log('Respuesta cruda (sin Bearer):', resp);
               const rows = Array.isArray(resp) ? resp
                         : Array.isArray(resp?.data) ? resp.data
                         : [];
@@ -74,36 +65,30 @@ export class OpcionService {
     );
   }
 
-  create(u: Opcion, file?: File): Observable<Opcion> {
-    // Si vas a subir fotografía, usa FormData:
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.post<any>(BASE, fd).pipe(map(this.toFront));
-    }
-    return this.http.post<any>(BASE, this.toBack(u)).pipe(map(this.toFront));
+  create(u: Opcion): Observable<Opcion> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.post<any>(`${OPC_URL}/crear-opcion`, this.toBack(u),{
+      headers: this.authHeaders()})
+      .pipe(map(this.toFront));
   }
-  toFormData(u: Opcion, file: File) {
+  toFormData(u: Opcion) {
     throw new Error('Method not implemented.');
   }
 
-  update(id: string, u: Opcion, file?: File): Observable<Opcion> {
-    if (file) {
-      const fd = this.toFormData(u, file);
-      return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, fd).pipe(map(this.toFront));
-    }
-    return this.http.put<any>(`${BASE}/${encodeURIComponent(id)}`, this.toBack(u)).pipe(map(this.toFront));
+  update(id: string, u: Opcion): Observable<Opcion> {
+    u.IdUsuario = localStorage.getItem('username')?.toString();
+    return this.http.put<any>(`${OPC_URL}/actualizar-opcion/${encodeURIComponent(id)}`, this.toBack(u),{
+      headers: this.authHeaders()})
+      .pipe(map(this.toFront));
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${BASE}/${encodeURIComponent(id)}`);
+    return this.http.delete<void>(`${OPC_URL}/borrar-opcion?idOpcion=${encodeURIComponent(id)}`,{
+      headers: this.authHeaders(),
+      responseType: 'text' as 'json'
+    });
   }
 
-  // Catálogos (ajusta a tus endpoints reales, por ejemplo para empresas relacionadas)
-
-  get() { return this.http.get<{id:number; nombre:string}[]>('http://localhost:8080/api/auth/menus'); }
-
-
-  // ---- helpers: mapeo API <-> Front ----
   private toFront = (r: any): Opcion => ({
     IdOpcion: r.idOpcion ?? r.IdOpcion,
     IdMenu: r.idMenu ?? r.IdMenu,
@@ -113,21 +98,22 @@ export class OpcionService {
     FechaCreacion: r.fechaCreacion ?? r.FechaCreacion,
     UsuarioCreacion: r.usuarioCreacion ?? r.UsuarioCreacion,
     FechaModificacion: r.fechaModificacion ?? r.FechaModificacion,
-    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion
+    UsuarioModificacion: r.usuarioModificacion ?? r.UsuarioModificacion,
+    IdUsuario: r.idUsuario ?? r.IdUsuario
   });
 
   private toBack(s: Opcion): any {
-    // Ajusta al naming de tu API (ej. PascalCase si usas JPA con nombres exactos)
     return {
-      IdOpcion: s.IdOpcion,
-      Nombre: s.Nombre,
-      IdMenu: s.IdMenu,
-      OrdenMenu: s.OrdenMenu,
-      Pagina: s.Pagina,
-      FechaCreacion: s.FechaCreacion,
-      UsuarioCreacion: s.UsuarioCreacion,
-      FechaModificacion:  s.FechaModificacion,
-      UsuarioModificacion: s.UsuarioModificacion
+      idOpcion: s.IdOpcion,
+      nombre: s.Nombre,
+      idMenu: s.IdMenu,
+      ordenMenu: s.OrdenMenu,
+      pagina: s.Pagina,
+      fechaCreacion: s.FechaCreacion,
+      usuarioCreacion: s.UsuarioCreacion,
+      fechaModificacion:  s.FechaModificacion,
+      usuarioModificacion: s.UsuarioModificacion,
+      idUsuario: s.IdUsuario
     };
   }
 }

@@ -3,7 +3,12 @@ import { EstatusUsuario } from './../../Models/estatususuario.model';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable, BehaviorSubject, switchMap, startWith, catchError, of } from 'rxjs';
+
+import { EstatusUsuarioService } from '../../Service/estatususuario.service';
+import { Observable, BehaviorSubject, switchMap, startWith } from 'rxjs';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
+import { Permisos } from '../../Models/menu.perm.model';
+
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -19,10 +24,19 @@ export class EstatusUsuarioComponent implements OnInit {
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
 
+
+  constructor(
+    private fb: FormBuilder, 
+    private svc: EstatusUsuarioService,
+    private menuSvc: MenuDinamicoService
+  ) {}
+
+
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   Estatususuario$!: Observable<EstatusUsuario[]>;
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
 
   fotoFile?: File;
 
@@ -30,8 +44,10 @@ export class EstatusUsuarioComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      idStatusUsuario: [''],
-      Nombre: ['', Validators.required]
+
+      IdStatusUsuario: [''],
+      Nombre: ['', Validators.required],
+
     });
 
     this.Estatususuario$ = this.refresh$.pipe(
@@ -42,15 +58,22 @@ export class EstatusUsuarioComponent implements OnInit {
         return of([] as EstatusUsuario[]);
       })
     );
+
+
+    const pageKey = 'estatususuario'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+      });
+    }
+
     this.form.disable();
   }
 
-  onFile(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files.length) this.fotoFile = input.files[0];
-  }
-
   nuevo() {
+    if (!this.permisos.Alta) return;
     this.mode.set('crear');
     this.selectedId.set(null);
     this.form.reset();
@@ -71,6 +94,7 @@ export class EstatusUsuarioComponent implements OnInit {
   }
 
   editar(row: EstatusUsuario) {
+    if (!this.permisos.Cambio) return;
     this.mode.set('editar');
     this.form.enable();
     this.form.get('idStatusUsuario')?.disable(); // no editar llave
@@ -90,84 +114,36 @@ export class EstatusUsuarioComponent implements OnInit {
     this.fotoFile = undefined;
   }
 
-  private buildCreateBody(): Partial<EstatusUsuario> {
-    const v = this.form.getRawValue();
-    return {
-      idStatusUsuario: v.idStatusUsuario,
-      nombre: v.Nombre,
-    };
-  }
 
+  guardar() {
+    if (this.form.invalid) { 
+      alert('Debe completar los campos requeridos');
+      this.form.markAllAsTouched(); 
+      return; 
+    }
+    
+    const payload: EstatusUsuario = this.form.getRawValue();
 
-guardar() {
-  console.log(this.mode());
-  console.log(this.form.value);
+    if (this.mode() === 'crear') {
+      this.svc.create(payload).subscribe(() => {
+        this.cancelar(); this.refresh$.next();
+      });
+    } else if (this.mode() === 'editar' && this.selectedId()) {
+      this.svc.update(this.selectedId()!, payload).subscribe(() => {
+        this.cancelar(); this.refresh$.next();
+      });
+    }
 
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    return;
-  }
-
-  // Recuperamos el usuario del localStorage
-  const usuario = localStorage.getItem('idUsuario') || 'Sistema';
-
-  if (this.mode() === 'crear') {
-    const body = {
-      ...this.buildCreateBody(),
-      idUsuario: usuario
-    };
-    console.log('CREATE body:', body);
-
-    this.svc.create(body as EstatusUsuario).subscribe({
-      next: (created) => {
-        console.log('Estatus creado:', created);
-        alert('¡Estatus creado correctamente!');
-        this.cancelar();
-        this.refresh$.next();
-      },
-      error: (err) => {
-        console.error('Error al crear el Estatus', err);
-        alert('Error al crear el Estatus. Verificar la informacion.');
-      }
-    });
-
-  } else if (this.mode() === 'editar' && this.selectedId()) {
-    const body = {
-      ...this.buildCreateBody(),
-      idUsuario: usuario
-    };
-    console.log('UPDATE body:', body);
-
-    this.svc.update(this.selectedId()!, body as EstatusUsuario).subscribe({
-      next: (updated) => {
-        console.log('Estatus actualizada:', updated);
-        alert('¡Estatus actualizado correctamente!');
-        this.cancelar();
-        this.refresh$.next();
-      },
-      error: (err) => {
-        console.error('Error al actualizar el Estatus', err);
-        alert('Error al actualizar el Estatus. Verificar la información.');
-      }
-    });
   }
 }
 
 
   eliminar(row: EstatusUsuario) {
-    if (!confirm(`¿Eliminar el Estatus ${row.idStatusUsuario}?`)) return;
 
-    this.svc.delete(row.idStatusUsuario!.toString()).subscribe({
-      next: (msg) => {
-        console.log('Estatus eliminado:', msg);
-        alert('Estatus eliminado exitosamente');
-        this.ngOnInit();
-      },
-      error: (err) => {
-        console.error('Error al eliminar el Estatus:', err);
-        alert(err.error || 'Error al eliminar el Estatus');
-      }
-    });
+    if (!this.permisos.Baja) return;
+    if (!confirm(`¿Eliminar el Estatus ${row.Nombre}?`)) return;
+    this.svc.delete(row.IdStatusUsuario).subscribe(() => this.refresh$.next());
+
   }
 
   private formatDate(date: any): string | null {

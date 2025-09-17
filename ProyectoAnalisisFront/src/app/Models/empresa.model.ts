@@ -1,15 +1,15 @@
 // src/app/models/empresa.model.ts
 export interface Empresa {
-  idEmpresa: number;
-  nombre: string;
-  direccion: string;
-  nit: string;
-  passwordCantidadMayusculas: number;
-  passwordCantidadMinusculas: number;
-  passwordCantidadCaracteresEspeciales: number;
-  passwordCantidadCaducidadDias: number;
-  passwordLargo: number;
-  passwordIntentosAntesDeBloquear: number;
-  passwordCantidadNumeros: number;
-  passwordCantidadPreguntasValidar: number;
+  IdEmpresa: string;
+  Nombre: string;
+  Direccion: string;
+  Nit: string;
+  PasswordCantidadMayusculas: number;
+  PasswordCantidadMinusculas: number;
+  PasswordCantidadCaracteresEspeciales: number;
+  PasswordCantidadCaducidadDias: number;
+  PasswordLargo: number;
+  PasswordIntentosAntesDeBloquear: number;
+  PasswordCantidadNumeros: number;
+  PasswordCantidadPreguntasValidar: number;
 }
