@@ -245,34 +245,34 @@ INSERT INTO `OPCION` (
 )
 VALUES
 (
-    1, 'Empresas', 1, 'empresa.php', NOW(), 'system'  /*   idOpcion = 1   */
+    1, 'Empresas', 1, 'empresa.html', NOW(), 'system'  /*   idOpcion = 1   */
 ),
 (
-    1, 'Sucursales', 2, 'sucursal.php', NOW(), 'system'  /*   idOpcion = 2   */
+    1, 'Sucursales', 2, 'sucursal.html', NOW(), 'system'  /*   idOpcion = 2   */
 ),
 (
-    1, 'Generos', 3, 'genero.php', NOW(), 'system'   /*   idOpcion = 3   */
+    1, 'Generos', 3, 'genero.html', NOW(), 'system'   /*   idOpcion = 3   */
 ),
 (
-    1, 'Estatus Usuario', 4, 'status_usuario.php', NOW(), 'system'  /*   idOpcion = 4   */
+    1, 'Estatus Usuario', 4, 'estatususuario.html', NOW(), 'system'  /*   idOpcion = 4   */
 ),
 (
-    1, 'Roles', 5, 'role.php', NOW(), 'system'  /*   idOpcion = 5   */
+    1, 'Roles', 5, 'rol.html', NOW(), 'system'  /*   idOpcion = 5   */
 ),
 (
-    1, 'Modulos', 6, 'modulo.php', NOW(), 'system'   /*   idOpcion = 6   */
+    1, 'Modulos', 6, 'modulo.html', NOW(), 'system'   /*   idOpcion = 6   */
 ),
 (
-    1, 'Menus', 7, 'menu.php', NOW(), 'system'   /*   idOpcion = 7   */
+    1, 'Menus', 7, 'menu.html', NOW(), 'system'   /*   idOpcion = 7   */
 ),
 (
-    1, 'Opciones', 3, 'opcion.php', NOW(), 'system'   /*   idOpcion = 8   */
+    1, 'Opciones', 3, 'opcion.html', NOW(), 'system'   /*   idOpcion = 8   */
 ),
 (
-    2, 'Usuarios', 3, 'usuario.php', NOW(), 'system'   /*   idOpcion = 9   */
+    2, 'Usuarios', 3, 'usuario.html', NOW(), 'system'   /*   idOpcion = 9   */
 ),
 (
-    2, 'Asignar Opciones a un Role', 3, 'asignacion_opcion_role.php', NOW(), 'system'   /*   idOpcion = 10   */
+    2, 'Asignar Opciones a un Role', 3, 'role-opcion.html', NOW(), 'system'   /*   idOpcion = 10   */
 );
 
 CREATE TABLE `ROLE_OPCION`(

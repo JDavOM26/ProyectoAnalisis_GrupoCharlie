@@ -1,11 +1,13 @@
-import { EmpresaService } from './../../Service/empresa.service';
-import { Empresa } from './../../Models/empresa.model';
-import { Sucursal } from './../../Models/sucursal.model';
-import { SucursalService } from './../../Service/sucursal.service';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Observable, BehaviorSubject, switchMap, startWith, catchError, of } from 'rxjs';
+import { SucursalService } from '../../Service/sucursal.service';
+import { Sucursal } from '../../Models/sucursal.model';
+import { Observable, BehaviorSubject, switchMap, startWith, map, combineLatest } from 'rxjs';
+import { EmpresaService } from '../../Service/empresa.service';
+import { Empresa } from '../../Models/empresa.model';
+import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
+import { Permisos } from '../../Models/menu.perm.model';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -20,159 +22,141 @@ export class SucursalComponent implements OnInit {
   form!: FormGroup;
   mode = signal<Mode>('idle');
   selectedId = signal<string | null>(null);
+  selectedIdEmpresa = signal<string | null>(null);
+  permisos: Permisos = { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
+
+  constructor(
+    private fb: FormBuilder, 
+    private svc: SucursalService,
+    private svcEmpresa: EmpresaService,
+    private menuSvc: MenuDinamicoService,
+  ) {}
 
   // list + filtro
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   sucursales$!: Observable<Sucursal[]>;
-   Empresas$!: Observable<Empresa[]>;
-  fotoFile?: File;
-
-  constructor(private fb: FormBuilder, private svc: SucursalService, private empresaSvc: EmpresaService) {}
+  empresas$!: Observable<Empresa[]>;
+  empresasMap$!: Observable<Record<string, string>>;
+  vm$!: Observable<{ empresasMap: Record<number, string> }>;
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      idSucursal: [''],
+      IdSucursal: [''],
       Nombre: ['', Validators.required],
       Direccion: ['', Validators.required],
-      idEmpresa: ['', Validators.required]
+      IdEmpresa: ['',Validators.required],
+      FechaCreacion: [''],
+      UsuarioCreacion: [''],
+      FechaModificacion: [''],
+      UsuarioModificacion: [''],
+      IdUsuario: ['']
     });
-
+    
     this.sucursales$ = this.refresh$.pipe(
       startWith(undefined),
-      switchMap(() => this.svc.list({ search: this.search() })),
-      catchError(err => {
-        console.error('Error cargando las sucursales', err);
-        return of([] as Sucursal[]);
-      })
+      switchMap(() => this.svc.list({ search: this.search() }))
     );
-    this.Empresas$ = this.empresaSvc.list();
+    
+    this.empresas$ = this.refresh$.pipe(
+      startWith(undefined),
+      switchMap(() => this.svcEmpresa.list({ search: this.search() }))
+    );
+
+    this.empresasMap$ = this.empresas$.pipe(
+      map(empresas => 
+        empresas.reduce((acc, e) => {
+          const key = Number((e as any).IdEmpresa ?? (e as any).idEmpresa);
+          acc[key] = (e as any).Nombre;
+          return acc;
+        }, {} as Record<number, string>)
+      )
+    );
+    
+    this.vm$ = combineLatest([this.empresasMap$]).pipe(
+      map(([empresasMap]) => ({ empresasMap }))
+    );
+
+    const pageKey = 'sucursal'; 
+    this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
+    console.log('Permisos desde localStorage:', this.permisos);
+
+    if (!this.permisos || Object.values(this.permisos).every(v => v === false)) {
+      this.menuSvc.getPermisos(pageKey).subscribe(p => {
+        this.permisos = p;
+        console.log('Permisos desde backend:', p);
+      });
+    }
+
     this.form.disable();
   }
 
-  onFile(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (input.files && input.files.length) this.fotoFile = input.files[0];
-  }
+  trackEmpresa = (_: number, e: Empresa) => e.IdEmpresa;
 
   nuevo() {
     this.mode.set('crear');
     this.selectedId.set(null);
-    this.form.reset();
+    this.selectedIdEmpresa.set(null);
+    this.form.reset({
+      IdSucursal: '', 
+      Nombre: '', 
+      Direccion: '',
+      IdEmpresa: ''
+    });
     this.form.enable();
   }
 
   ver(row: Sucursal) {
     this.mode.set('ver');
-    this.selectedId.set(row.idSucursal!.toString());
+    this.selectedId.set(row.IdSucursal.toString());
+    this.selectedIdEmpresa.set(row.IdEmpresa.toString());
     this.form.enable();
-    this.form.patchValue({
-      idSucursal: row.idSucursal,
-      Nombre: row.nombre,
-      Direccion: row.direccion,
-      idEmpresa: row.idEmpresa
-    });
-      //
-    this.form.get('idSucursal')?.disable(); // no editar llave
+    this.form.patchValue(row);
+    this.form.get('IdSucursal')?.disable(); // no editar llave
+    this.form.get('IdEmpresa')?.disable(); // no editar llave
     Object.keys(this.form.controls).forEach(c => this.form.get(c)?.disable());
   }
 
   editar(row: Sucursal) {
     this.mode.set('editar');
     this.form.enable();
-    this.form.get('idSucursal')?.disable(); // no editar llave
-    this.selectedId.set(row.idSucursal!.toString());
-    this.form.patchValue({
-      idSucursal: row.idSucursal,
-      Nombre: row.nombre,
-      Direccion: row.direccion,
-      idEmpresa: row.idEmpresa
-    });
-    Object.keys(this.form.controls).forEach(c => { if (c !== 'idSucursal') this.form.get(c)?.enable(); });
+    this.form.get('IdSucursal')?.disable(); // no editar llave
+    //this.form.get('IdEmpresa')?.disable(); // no editar llave
+    this.selectedId.set(row.IdSucursal.toString());
+    this.selectedIdEmpresa.set(row.IdEmpresa);
+    this.form.patchValue(row);
+    Object.keys(this.form.controls).forEach(c => { if (c !== 'IdSucursal' && c !=='IdEmpresa') this.form.get(c)?.enable(); });
   }
 
   cancelar() {
     this.mode.set('idle');
     this.selectedId.set(null);
+    this.selectedIdEmpresa.set(null);
     this.form.reset();
     this.form.enable();
-    this.fotoFile = undefined;
   }
 
-  private buildCreateBody(): Partial<Sucursal> {
-    const v = this.form.getRawValue();
-    return {
-      idSucursal: v.idSucursal,
-      nombre: v.Nombre,
-      direccion: v.Direccion,
-      idEmpresa: v.idEmpresa
-    };
-  }
+  guardar() {
+    if (this.form.invalid) { 
+      this.form.markAllAsTouched(); 
+      alert('Ingrese los datos requeridos.');
+      return; 
+    }
+    const payload: Sucursal = this.form.getRawValue();
 
-
-guardar() {
-  console.log(this.mode());
-  console.log(this.form.value);
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    return;
-  }
-  if (this.mode() === 'crear') {
-      const body = this.buildCreateBody();
-      console.log(body);
-      this.svc.create(body as Sucursal).subscribe({
-        next: (created) => {
-          console.log('Sucursak creada:', created);
-          alert('¡Sucursal creada correctamente!');
-          this.cancelar();
-          this.refresh$.next();
-        },
-        error: (err) => {
-          console.error('Error al crear la sucursal', err);
-          alert('Error al crear sucursal. Verificar la informacion.');
-        }
+    if (this.mode() === 'crear') {
+      this.svc.create(payload).subscribe(() => {
+        this.cancelar(); this.refresh$.next();
       });
-} else if (this.mode() === 'editar' && this.selectedId()) {
-      const body = this.buildCreateBody();
-      console.log('UPDATE body:', body);
-      this.svc.update(body as Sucursal).subscribe({
-        next: (updated) => {
-          console.log('Sucursal actualizada:', updated);
-          alert('¡Sucursal actualizada correctamente!');
-          this.cancelar();
-          this.refresh$.next();
-        },
-        error: (err) => {
-          console.error('Error al actualizar sucursal', err);
-          alert('Error al actualizar el sucursal. Verificar la información.');
-        }
+    } else if (this.mode() === 'editar' && this.selectedId()) {
+      this.svc.update(this.selectedId()!, payload).subscribe(() => {
+        this.cancelar(); this.refresh$.next();
       });
-}
-}
+    }
+  }
+
   eliminar(row: Sucursal) {
-    if (!confirm(`¿Eliminar el sucursal ${row.idSucursal}?`)) return;
-
-    this.svc.delete(row.idSucursal!.toString()).subscribe({
-      next: (msg) => {
-        console.log('Sucursal eliminado:', msg);
-        alert('Sucursal eliminado exitosamente');
-        this.ngOnInit();
-      },
-      error: (err) => {
-        console.error('Error al eliminar sucursal:', err);
-        alert(err.error || 'Error al eliminar el sucursal');
-      }
-    });
+    if (!confirm(`¿Eliminar Sucursal: ${row.Nombre}?`)) return;
+    this.svc.delete(row.IdSucursal).subscribe(() => this.refresh$.next());
   }
-
-  private formatDate(date: any): string | null {
-  if (!date) return null;
-
-  // Si ya es string (por ejemplo "2025-08-27"), devolverlo tal cual
-  if (typeof date === 'string') return date.substring(0, 10);
-
-  // Si es un objeto Date
-  const d = new Date(date);
-  return d.toISOString().substring(0, 10); // "YYYY-MM-DD"
-}
 }
