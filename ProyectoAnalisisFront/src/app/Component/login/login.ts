@@ -31,8 +31,9 @@ export class LoginComponent {
   }
 
   onLogin(): void {
-    const { username, password } = this.loginForm.value;
     this.errorMessage = '';
+    const { username, password } = this.loginForm.value;
+
     console.log(username, password);
 
     this.usuarioService.login(
@@ -53,7 +54,6 @@ export class LoginComponent {
         localStorage.setItem('username', this.loginForm.value.username);
         this.router.navigate(['/home']);
       },
-
       error: (err) => {
         console.error('Error al iniciar sesión', err);
         this.errorMessage = err.error || 'Error desconocido en el login. Intenta de nuevo.';
