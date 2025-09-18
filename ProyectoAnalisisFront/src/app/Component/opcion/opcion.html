@@ -1,0 +1,86 @@
+<div class="container-fluid py-3">
+
+  <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+    <h5 class="m-0">Opciones</h5>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-success" (click)="nuevo()" [disabled]="!permisos.Alta">Nuevo</button>
+      <button class="btn btn-sm btn-primary" (click)="guardar()" [disabled]="mode()==='idle' || mode()==='ver'">Guardar</button>
+      <button class="btn btn-sm btn-secondary" (click)="cancelar()" [disabled]="mode()==='idle'">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form [formGroup]="form" class="row g-3">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Menu *</label>
+          <select class="form-select" formControlName="IdMenu">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let r of (menus$ | async); trackBy: trackMenu" [ngValue]="r.IdMenu">
+              {{ r.Nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Nombre *</label>
+          <input class="form-control" style="display: none;" formControlName="IdOpcion" />
+          <input class="form-control" formControlName="Nombre" />
+        </div>
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Orden Menu *</label>
+          <input type="number" class="form-control" formControlName="OrdenMenu" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Pagina *</label>
+          <input class="form-control" formControlName="Pagina" />
+        </div>
+        <div class="col-md-2">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LISTADO -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+               <th>Menu</th>
+              <th>Nombre</th>
+              <th>Orden Menu</th>
+              <th>Pagina</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <ng-container *ngIf="menusMap$ | async as menusMap">
+            <tbody *ngIf="vm$ | async as vm">
+              <tr *ngFor="let s of (opciones$ | async)">
+                <td>{{menusMap[s.IdMenu]}}</td>
+                <td>{{s.Nombre}}</td>
+                <td>{{s.OrdenMenu}}</td>
+                <td>{{s.Pagina}}</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>
+                  <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(s)" [disabled]="!permisos.Cambio">Editar</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(s)" [disabled]="!permisos.Baja">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="!(opciones$ | async)?.length">
+                <td colspan="8" class="text-center text-muted py-4">Sin registros</td>
+              </tr>
+            </tbody>
+          </ng-container>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
