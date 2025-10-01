@@ -24,41 +24,89 @@ public class ConsultasBusquedasService {
 	
 	
 	public Map<String, Object> buscarSaldoCliente(String valor, String tipo) {
-		
-        if (tipo.equals(TIPO_IDPERSONA)) {
-            MapSqlParameterSource params = new MapSqlParameterSource();
-            params.addValue("idPersona", valor);
-            String query = "SELECT * FROM saldo_cuenta WHERE idPersona = :idPersona";
-            try {
-                return npjt.queryForMap(query, params);
-            } catch (Exception e) {
-                return Map.of();
-            }
-        } else if (tipo.equals(TIPO_IDCUENTA)) {
-            MapSqlParameterSource params = new MapSqlParameterSource();
-            params.addValue("idCuenta", valor);
-            String query = "SELECT * FROM saldo_cuenta WHERE idCuenta = :idCuenta";
-            try {
-                return npjt.queryForMap(query, params);
-            } catch (Exception e) {
-                return Map.of();
-            }
-        } else if (tipo.equals(TIPO_NOMBREAPELLIDO)) {
-            MapSqlParameterSource params = new MapSqlParameterSource();
-            params.addValue("nombreApellido", "%" + valor + "%"); 
-            String query = "SELECT sc.* FROM saldo_cuenta sc " +
-                          "INNER JOIN persona p ON sc.idPersona = p.IdPersona " +
-                          "WHERE CONCAT(p.Nombre, ' ', p.Apellido) LIKE :nombreApellido";
-            try {
-                return npjt.queryForMap(query, params);
-            } catch (Exception e) {
-                return Map.of();
-            }
-        }
+	    MapSqlParameterSource params = new MapSqlParameterSource();
+	    
+	    if (tipo.equals(TIPO_IDPERSONA)) {
+	        params.addValue("idPersona", valor);
+	        String query = "SELECT " +
+	                       "sc.IdSaldoCuenta, " +
+	                       "sc.IdPersona, " +
+	                       "sc.IdStatusCuenta, " +
+	                       "sc.IdTipoSaldoCuenta, " +
+	                       "sc.SaldoAnterior AS SaldoInicial, " +
+	                       "sc.Debitos AS Cargos, " +
+	                       "sc.Creditos AS Abonos, " +
+	                       "sc.SaldoAnterior + sc.Debitos - sc.Creditos AS SaldoActual, " +
+	                       "sc.FechaCreacion, " +
+	                       "sc.UsuarioCreacion, " +
+	                       "sc.FechaModificacion, " +
+	                       "sc.UsuarioModificacion " +
+	                       "FROM saldo_cuenta sc " +
+	                       "WHERE sc.IdPersona = :idPersona " +
+	                       "LIMIT 1";
+	        try {
+	            return npjt.queryForMap(query, params);
+	        } catch (Exception e) {
+	            System.err.println("Error querying saldo for idPersona: " + e.getMessage());
+	            e.printStackTrace();
+	            return Map.of();
+	        }
+	    } else if (tipo.equals(TIPO_IDCUENTA)) {
+	        params.addValue("idCuenta", valor);
+	        String query = "SELECT " +
+	                       "sc.IdSaldoCuenta, " +
+	                       "sc.IdPersona, " +
+	                       "sc.IdStatusCuenta, " +
+	                       "sc.IdTipoSaldoCuenta, " +
+	                       "sc.SaldoAnterior AS SaldoInicial, " +
+	                       "sc.Debitos AS Cargos, " +
+	                       "sc.Creditos AS Abonos, " +
+	                       "sc.SaldoAnterior + sc.Debitos - sc.Creditos AS SaldoActual, " +
+	                       "sc.FechaCreacion, " +
+	                       "sc.UsuarioCreacion, " +
+	                       "sc.FechaModificacion, " +
+	                       "sc.UsuarioModificacion " +
+	                       "FROM saldo_cuenta sc " +
+	                       "WHERE sc.IdSaldoCuenta = :idCuenta " +
+	                       "LIMIT 1";
+	        try {
+	            return npjt.queryForMap(query, params);
+	        } catch (Exception e) {
+	            System.err.println("Error querying saldo for idCuenta: " + e.getMessage());
+	            e.printStackTrace();
+	            return Map.of();
+	        }
+	    } else if (tipo.equals(TIPO_NOMBREAPELLIDO)) {
+	        params.addValue("nombreApellido", "%" + valor + "%");
+	        String query = "SELECT " +
+	                       "sc.IdSaldoCuenta, " +
+	                       "sc.IdPersona, " +
+	                       "sc.IdStatusCuenta, " +
+	                       "sc.IdTipoSaldoCuenta, " +
+	                       "sc.SaldoAnterior AS SaldoInicial, " +
+	                       "sc.Debitos AS Cargos, " +
+	                       "sc.Creditos AS Abonos, " +
+	                       "sc.SaldoAnterior + sc.Debitos - sc.Creditos AS SaldoActual, " +
+	                       "sc.FechaCreacion, " +
+	                       "sc.UsuarioCreacion, " +
+	                       "sc.FechaModificacion, " +
+	                       "sc.UsuarioModificacion " +
+	                       "FROM saldo_cuenta sc " +
+	                       "INNER JOIN persona p ON sc.IdPersona = p.IdPersona " +
+	                       "WHERE CONCAT(p.Nombre, ' ', p.Apellido) LIKE :nombreApellido " +
+	                       "LIMIT 1";
+	        try {
+	            return npjt.queryForMap(query, params);
+	        } catch (Exception e) {
+	            System.err.println("Error querying saldo for nombreApellido: " + e.getMessage());
+	            e.printStackTrace();
+	            return Map.of();
+	        }
+	    }
+	    return Map.of();
+	}
 
-        return Map.of(); 
-    }
-	
+     
 	
 	
 	//==================================================================================================
