@@ -3,7 +3,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OpcionService } from '../../Service/opcion.service';
-import { Observable, BehaviorSubject, switchMap, startWith, map } from 'rxjs';
+import { Observable, BehaviorSubject, switchMap, startWith, map, combineLatest } from 'rxjs';
 import { MenuService } from '../../Service/menu.service';
 import { Menu } from '../../Models/menu.model';
 import { Permisos } from '../../Models/menu.perm.model';
@@ -68,15 +68,15 @@ export class OpcionComponent implements OnInit {
     this.menusMap$ = this.menus$.pipe(
       map(menus =>
         menus.reduce((acc, r) => {
-          const key = Number((r as any).IdMenu);
+          const key = Number((r as any).IdMenu ?? (r as any).idMenu);
           acc[key] = (r as any).Nombre;
           return acc;
         }, {} as Record<number, string>)
       )
     );
 
-    this.vm$ = this.menusMap$.pipe(
-      map(menusMap => ({ menusMap }))
+    this.vm$ = combineLatest([this.menusMap$]).pipe(
+      map(([menusMap]) => ({ menusMap }))
     );
 
     const pageKey = 'opcion'; 

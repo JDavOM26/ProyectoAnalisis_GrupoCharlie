@@ -64,7 +64,7 @@
           <ng-container *ngIf="menusMap$ | async as menusMap">
             <tbody *ngIf="vm$ | async as vm">
               <tr *ngFor="let s of (opciones$ | async)">
-                <td>{{menusMap[s.IdMenu]}}</td>
+                <td>{{menusMap[s.IdMenu] || s.IdMenu}}</td>
                 <td>{{s.Nombre}}</td>
                 <td>{{s.OrdenMenu}}</td>
                 <td>{{s.Pagina}}</td>

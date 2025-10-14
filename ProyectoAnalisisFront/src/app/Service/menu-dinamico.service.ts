@@ -15,66 +15,75 @@ const BASE = 'http://localhost:8080/api/auth';
 export class MenuDinamicoService {
   constructor(private http: HttpClient) {}
 
+  // ------------------------
+  // AUTORIZACIÓN
+  // ------------------------
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  
+  // ------------------------
+  // UTILIDADES
+  // ------------------------
   private toBool(v: unknown): boolean {
     if (typeof v === 'boolean') return v;
-    if (typeof v === 'number')  return v !== 0;
-    if (typeof v === 'string')  return v.trim().toLowerCase() === '1' || v.trim().toLowerCase() === 'true';
+    if (typeof v === 'number') return v !== 0;
+    if (typeof v === 'string') return v.trim().toLowerCase() === '1' || v.trim().toLowerCase() === 'true';
     return false;
   }
 
-  
   private normalizeStem(p: string | null | undefined): string {
     return (p || '').replace(/\.html$/i, '').trim().toLowerCase();
   }
 
   private readonly stemToRouteKey: Record<string, string> = {
-    empresa: 'empresas',
-    sucursal: 'sucursales',
-    genero: 'generos',
+    'empresa': 'empresas',
+    'sucursal': 'sucursales',
+    'genero': 'generos',
     'estatususuario': 'estatus-usuario',
-    rol: 'roles',
-    modulo: 'modulos',
-    menu: 'menus',
-    usuario: 'usuarios',
-    opcion: 'opciones',
+    'rol': 'roles',
+    'modulo': 'modulos',
+    'menu': 'menus',
+    'usuario': 'usuarios',
+    'opcion': 'opciones',
     'role-opcion': 'role-opcion'
   };
 
-  
   private routeKeyFromPagina(pagina: string | null | undefined): string {
     const stem = this.normalizeStem(pagina);
     return this.stemToRouteKey[stem] ?? stem;
   }
 
   private getModuloNombre(r: any): string {
-    return (r.Modulo ?? r.modulo ?? 'Sin módulo').toString().trim();
+    return (r.Modulo ?? r.modulo ?? 'Sin modulo').toString().trim();
   }
 
   private getMenuNombre(r: any): string {
-    return (r.Menu ?? r.menu ?? 'Sin menú').toString().trim();
+    return (r.Menu ?? r.menu ?? 'Sin menu').toString().trim();
   }
 
-  private rowToOption(r: MenuRow): OptionNode {
+  // ------------------------
+  // CONVERSIÓN DE FILAS
+  // ------------------------
+  private rowToOption(r: any): OptionNode {
     return {
-      idOpcion: r.IdOpcion,
-      nombre:   r.Opcion,
-      pagina:   r.Pagina,
+      idOpcion: r.IdOpcion ?? r.idOpcion,
+      nombre:   r.Opcion   ?? r.opcion,
+      pagina:   r.Pagina   ?? r.pagina,
       permisos: {
-        Alta:      this.toBool(r.Alta),
-        Baja:      this.toBool(r.Baja),
-        Cambio:    this.toBool(r.Cambio),
-        Imprimir:  this.toBool(r.Imprimir),
-        Exportar:  this.toBool(r.Exportar),
+        Alta:      this.toBool(r.Alta      ?? r.alta),
+        Baja:      this.toBool(r.Baja      ?? r.baja),
+        Cambio:    this.toBool(r.Cambio    ?? r.cambio),
+        Imprimir:  this.toBool(r.Imprimir  ?? r.imprimir),
+        Exportar:  this.toBool(r.Exportar  ?? r.exportar),
       }
     };
   }
 
+  // ------------------------
+  // OBTENER OPCIONES CRUD
+  // ------------------------
   getMenuRows(): Observable<MenuRow[]> {
     const user = localStorage.getItem('username');
     return this.http.get<any[]>(`${BASE}/opciones?idUsuario=${user}`, {
@@ -89,16 +98,19 @@ export class MenuDinamicoService {
         IdOpcion : r.IdOpcion ?? r.idOpcion,
         Opcion   : r.Opcion   ?? r.opcion,
         Pagina   : r.Pagina   ?? r.pagina,
-        Alta     : r.Alta,
-        Baja     : r.Baja,
-        Cambio   : r.Cambio,
-        Imprimir : r.Imprimir,
-        Exportar : r.Exportar,
+        Alta     : r.Alta     ?? r.alta,
+        Baja     : r.Baja     ?? r.baja,
+        Cambio   : r.Cambio   ?? r.cambio,
+        Imprimir : r.Imprimir ?? r.imprimir,
+        Exportar : r.Exportar ?? r.exportar
       }) as MenuRow)),
       tap(rows => console.log('[opciones] normalizado:', rows))
     );
   }
 
+  // ------------------------
+  // CONSTRUIR MENÚ COMPLETO
+  // ------------------------
   getMenuTree(): Observable<ModuleNode[]> {
     return this.getMenuRows().pipe(
       map(rows => {
@@ -119,7 +131,7 @@ export class MenuDinamicoService {
             modulo.menus.push(menu);
           }
 
-          menu!.opciones.push(this.rowToOption(r));
+          menu.opciones.push(this.rowToOption(r));
         }
 
         const modules = Array.from(moduloMap.values())
@@ -131,24 +143,26 @@ export class MenuDinamicoService {
     );
   }
 
+  // ------------------------
+  // MAPA DE PERMISOS
+  // ------------------------
   getPermisosMap(): Observable<Record<string, Permisos>> {
     return this.getMenuRows().pipe(
       map(rows => {
         const mapa: Record<string, Permisos> = {};
 
-        for (const r of rows) {
-          const key = this.routeKeyFromPagina(r.Pagina); 
+        for (const r of rows as any[]) {
+          const key = this.routeKeyFromPagina(r.Pagina ?? r.pagina);
           if (!key) continue;
 
           const next: Permisos = {
-            Alta:      this.toBool(r.Alta),
-            Baja:      this.toBool(r.Baja),
-            Cambio:    this.toBool(r.Cambio),
-            Imprimir:  this.toBool(r.Imprimir),
-            Exportar:  this.toBool(r.Exportar),
+            Alta:      this.toBool(r.Alta      ?? r.alta),
+            Baja:      this.toBool(r.Baja      ?? r.baja),
+            Cambio:    this.toBool(r.Cambio    ?? r.cambio),
+            Imprimir:  this.toBool(r.Imprimir  ?? r.imprimir),
+            Exportar:  this.toBool(r.Exportar  ?? r.exportar),
           };
 
-          
           const prev = mapa[key];
           mapa[key] = prev
             ? {
@@ -160,6 +174,8 @@ export class MenuDinamicoService {
               }
             : next;
         }
+
+        // Guardar permisos en localStorage
         localStorage.setItem('permisosMap', JSON.stringify(mapa));
         return mapa;
       }),
@@ -167,28 +183,31 @@ export class MenuDinamicoService {
     );
   }
 
+  // ------------------------
+  // PERMISOS DESDE LOCALSTORAGE
+  // ------------------------
+  getPermisosFromLocal(pageKey: string): Permisos {
+    const key = (pageKey || '').trim().toLowerCase();
+    const mapaStr = localStorage.getItem('permisosMap');
+    if (!mapaStr) {
+      return { Alta: false, Baja: false, Cambio: false, Imprimir: false, Exportar: false };
+    }
+    const mapa: Record<string, Permisos> = JSON.parse(mapaStr);
+    return mapa[key] ?? { Alta: false, Baja: false, Cambio: false, Imprimir: false, Exportar: false };
+  }
+
+  // ------------------------
+  // PERMISOS DIRECTOS (CON BACKEND)
+  // ------------------------
   getPermisos(pageKey: string): Observable<Permisos> {
-    const key = (pageKey || '').trim().toLowerCase();           
-    const stem = this.normalizeStem(pageKey);                    
+    const key = this.normalizeStem(pageKey);
     return this.getPermisosMap().pipe(
       map(mapa =>
         mapa[key] ??
-        mapa[this.stemToRouteKey[stem] ?? stem] ?? 
-        {
-          Alta: false, Baja: false, Cambio: false, Imprimir: false, Exportar: false
-        }
+        mapa[this.stemToRouteKey[key]] ??
+        { Alta: false, Baja: false, Cambio: false, Imprimir: false, Exportar: false }
       ),
       tap(p => console.log(`[permisos] para "${pageKey}":`, p))
     );
   }
-
-  getPermisosFromLocal(pageKey: string): Permisos {
-  const key = (pageKey || '').trim().toLowerCase();
-  const mapaStr = localStorage.getItem('permisosMap');
-  if (!mapaStr) {
-    return { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
-  }
-  const mapa: Record<string, Permisos> = JSON.parse(mapaStr);
-  return mapa[key] ?? { Alta:false, Baja:false, Cambio:false, Imprimir:false, Exportar:false };
-}
 }

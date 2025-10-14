@@ -19,7 +19,7 @@ export class MenuService {
 
     return this.http.get<any>(MENU_URL+'/menus', {
       params,
-      headers: this.authHeaders(true)
+      headers: this.authHeaders()
     }).pipe(
       map(resp => {
 

@@ -1,7 +1,7 @@
 export interface Menu {
   IdMenu: string; 
   IdModulo: string; 
-  Nombre?: string; 
+  Nombre: string; 
   OrdenMenu?: string; 
   IdUsuario?: string; 
   FechaCreacion?: string; 
