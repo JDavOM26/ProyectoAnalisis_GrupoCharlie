@@ -104,14 +104,13 @@ public class MenuController {
         try {
             List<Map<String, Object>> opciones = userRoleOptionsService.obtenerRoleOptions(idUsuario);
             if (opciones.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return ResponseEntity.noContent().build();
             }
-            return new ResponseEntity<>(opciones, HttpStatus.OK);
+            return ResponseEntity.ok(opciones);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
     // Faltan Imprimir y Exportar
 
 }

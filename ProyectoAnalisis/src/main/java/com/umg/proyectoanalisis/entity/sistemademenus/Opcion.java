@@ -16,8 +16,10 @@ public class Opcion {
     @Column(name = "Idopcion")
     private Integer idOpcion;
 
-    @Column(name = "Idmenu", nullable = false)
-    private Integer idMenu;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    @JoinColumn(name = "Idmenu", nullable = false)
+    private Menu menu;
 
     @Column(name = "Nombre", nullable = false, length = 50)
     private String nombre;

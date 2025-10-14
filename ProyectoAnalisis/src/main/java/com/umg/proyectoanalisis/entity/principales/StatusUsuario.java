@@ -10,22 +10,22 @@ public class StatusUsuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdStatusUsuario")
+    @Column(name = "Idstatususuario")
     private Integer idStatusUsuario;
 
     @Column(name = "Nombre", nullable = false, length = 100)
     private String nombre;
 
-    @Column(name = "FechaCreacion", nullable = false)
+    @Column(name = "Fechacreacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "UsuarioCreacion", nullable = false, length = 100)
+    @Column(name = "Usuariocreacion", nullable = false, length = 100)
     private String usuarioCreacion;
 
-    @Column(name = "FechaModificacion")
+    @Column(name = "Fechamodificacion")
     private LocalDateTime fechaModificacion;
 
-    @Column(name = "UsuarioModificacion", length = 100)
+    @Column(name = "Usuariomodificacion", length = 100)
     private String usuarioModificacion;
 }
 

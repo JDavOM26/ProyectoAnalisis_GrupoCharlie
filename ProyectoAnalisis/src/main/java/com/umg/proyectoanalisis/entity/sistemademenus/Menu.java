@@ -1,5 +1,8 @@
 package com.umg.proyectoanalisis.entity.sistemademenus;
 import java.time.LocalDateTime;
+
+
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,7 +16,7 @@ public class Menu {
     @Column(name = "Idmenu")
     private Integer idMenu;
 
-
+ 
     @Column(name = "Idmodulo", nullable = false)
     private Integer idModulo;
 

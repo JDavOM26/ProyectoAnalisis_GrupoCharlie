@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.umg.proyectoanalisis.dto.requestdto.postdtos.UsuarioPostDto;
 import com.umg.proyectoanalisis.entity.principales.Usuario;
 import com.umg.proyectoanalisis.repository.principales.UsuarioRepository;
 import com.umg.proyectoanalisis.service.UserService;
@@ -54,9 +56,9 @@ public class UsuarioController {
         return userRepository.save(usuario);
     }
 
-    // Registro de Usuarios. Consumo del servicio Logica en el UserService
+   
     @PostMapping("/signup/{idEmpresa}")
-    public ResponseEntity<String> registerUser(@RequestBody Usuario user, @PathVariable int idEmpresa) {
+    public ResponseEntity<String> registerUser(@RequestBody UsuarioPostDto user, @PathVariable int idEmpresa) {
         try {
             boolean registrado = usuarioService.registrarUsuario(user, idEmpresa);
 
