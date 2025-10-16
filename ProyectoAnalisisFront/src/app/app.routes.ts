@@ -11,6 +11,10 @@ import { PasswordRecovery } from './Component/password-recovery/password-recover
 import { CrearUsuarioComponent } from './Component/usuario/crear-usuario';
 import { EmpresaComponent } from './Component/empresa/empresa';
 import { RoleOpcionComponent } from './Component/role-opcion/role-opcion';
+import { AuthGuard } from './Service/auth.guard';
+import { Tipoducumentocomponent } from './Component/tipo_documento/tipo_documento';
+import{estadocivilComponent} from './Component/estadocivil/estadocivil';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'recover', component: PasswordRecovery },
@@ -28,7 +32,12 @@ export const routes: Routes = [
        { path: 'role-opcion', loadComponent: () => import('./Component/role-opcion/role-opcion').then(m => m.RoleOpcionComponent) },
        { path: 'opciones', loadComponent: () => import('./Component/opcion/opcion').then(m => m.OpcionComponent) },
        { path: 'empresas', loadComponent: () => import('./Component/empresa/empresa').then(m => m.EmpresaComponent) },
-      ]
+       { path: 'modulos', loadComponent: () => import('./Component/modulo/modulo').then(m => m.ModuloComponent) },
+       { path: 'menus', loadComponent: () => import('./Component/menu/menu').then(m => m.MenuComponent) },
+       { path: 'tipos-documentos', loadComponent: () => import('./Component/tipo_documento/tipo_documento').then(m => m.Tipoducumentocomponent) },
+       { path: 'estadoscivil', loadComponent: () => import('./Component/estadocivil/estadocivil').then(m => m.estadocivilComponent) },
+      ],
+    canActivate: [AuthGuard]
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' }
