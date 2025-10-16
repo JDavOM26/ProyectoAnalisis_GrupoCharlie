@@ -35,6 +35,9 @@ export const routes: Routes = [
        { path: 'personas', loadComponent: () => import('./Component/persona/persona').then(m => m.PersonaComponent) },
        { path: 'tipo_documento', loadComponent: () => import('./Component/tipo_documento/tipo_documento').then(m => m.Tipoducumentocomponent) },
        { path: 'estadocivil', loadComponent: () => import('./Component/estadocivil/estadocivil').then(m => m.estadocivilComponent) },
+       { path: 'tipo_movimiento_cxc', loadComponent: () => import('./Component/tipo_mov_cxc/tipo_movimiento_cxc').then(m => m.TipoMovimientoCxCComponent) },
+       { path: 'tipo_saldo_cuenta', loadComponent: () => import('./Component/tipo_saldo_cuenta/tipo_saldo_cuenta').then(m => m.TipoSaldoCuentaComponent) },
+       { path: 'saldo_cuenta', loadComponent: () => import('./Component/saldo_cuenta/saldo_cuenta').then(m => m.SaldoCuentaComponent) },
       ],
     canActivate: [AuthGuard]
   },

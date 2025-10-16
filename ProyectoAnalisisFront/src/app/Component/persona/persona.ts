@@ -28,6 +28,7 @@ export class PersonaComponent implements OnInit {
   permisos: Permisos = { Alta: false, Baja: false, Cambio: false, Imprimir: false, Exportar: false };
 
   personas: Persona[] = [];
+  personaFiltered: Persona[] = [];
   totalPages = 0;
   totalElements = 0;
   pageIndex = 0;
@@ -48,7 +49,7 @@ export class PersonaComponent implements OnInit {
     private generoSvc: GeneroService,
     private estadoCivilSvc: EstadoCivilService,
     private menuSvc: MenuDinamicoService
-  ) {}
+  ) { }
 
 
   ngOnInit(): void {
@@ -114,6 +115,22 @@ export class PersonaComponent implements OnInit {
     this.form.disable();
   }
 
+  onSearchChange(event: any): void {
+    const term = event.target.value.toLowerCase().trim()||'';
+
+    if (!term) {
+      this.personaFiltered = [...this.personas];
+      return;
+    }
+
+    this.personaFiltered = this.personas.filter(p => {
+      const nombreCompleto = `${p.Nombre} ${p.Apellido}`.toLowerCase();
+      const correo = (p.CorreoElectronico ?? '').toLowerCase();
+      const telefono = (p.Telefono ?? '').toLowerCase();
+      return nombreCompleto.includes(term) || correo.includes(term) || telefono.includes(term);
+    });
+  }
+
   loadPage(page: number): void {
     this.svc.list({ page, size: this.pageSize }).subscribe({
       next: (data) => {
@@ -121,6 +138,7 @@ export class PersonaComponent implements OnInit {
         this.totalPages = data.totalPages;
         this.totalElements = data.totalElements;
         this.pageIndex = data.pageNumber;
+        this.personaFiltered = [...this.personas];
       },
       error: (err) => console.error('Error cargando página:', err)
     });

@@ -43,7 +43,10 @@ export class HomeComponent implements OnInit {
       'role-opcion': 'role-opcion',
       'persona': 'personas',
       'tipo_documento': 'tipo_documento',
-      'estadocivil': 'estadocivil' 
+      'estadocivil': 'estadocivil',
+      'tipo_movimiento_cxc': 'tipo_movimiento_cxc',
+      'tipo_saldo_cuenta': 'tipo_saldo_cuenta', 
+      'saldo_cuenta': 'saldo_cuenta'
     };
 
     return map[base] ? `/home/${map[base]}` : null;
