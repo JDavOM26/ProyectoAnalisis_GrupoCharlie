@@ -40,7 +40,8 @@ export class HomeComponent implements OnInit {
       'modulo': 'modulos',
       'menu': 'menus',
       'usuario': 'usuarios',
-      'role-opcion': 'role-opcion'
+      'role-opcion': 'role-opcion',
+      'persona': 'personas'  
     };
 
     return map[base] ? `/home/${map[base]}` : null;

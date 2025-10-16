@@ -18,11 +18,11 @@ export interface OptionNode {
   nombre: string;
   pagina: string;
   permisos: {
-    Alta: boolean;
-    Baja: boolean;
-    Cambio: boolean;
-    Imprimir: boolean;
-    Exportar: boolean;
+    Alta: number | boolean;
+    Baja: number | boolean;
+    Cambio: number | boolean;
+    Imprimir: number | boolean;
+    Exportar: number | boolean;
   };
 }
 

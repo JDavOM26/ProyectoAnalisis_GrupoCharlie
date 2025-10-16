@@ -32,6 +32,7 @@ export const routes: Routes = [
        { path: 'empresas', loadComponent: () => import('./Component/empresa/empresa').then(m => m.EmpresaComponent) },
        { path: 'modulos', loadComponent: () => import('./Component/modulo/modulo').then(m => m.ModuloComponent) },
        { path: 'menus', loadComponent: () => import('./Component/menu/menu').then(m => m.MenuComponent) },
+       { path: 'personas', loadComponent: () => import('./Component/persona/persona').then(m => m.PersonaComponent) },
       ],
     canActivate: [AuthGuard]
   },
