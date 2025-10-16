@@ -22,7 +22,7 @@ export const routes: Routes = [
     component: HomeComponent,
     children: [
       // CRUD Usuarios (standalone)
-      { path: 'usuarios', loadComponent: () => import('./Component/usuario/usuario').then(m => m.UsuariosComponent) },
+       { path: 'usuarios', loadComponent: () => import('./Component/usuario/usuario').then(m => m.UsuariosComponent) },
        { path: 'sucursales', loadComponent: () => import('./Component/sucursal/sucursal').then(m => m.SucursalComponent) },
        { path: 'generos', loadComponent: () => import('./Component/genero/genero').then(m => m.GenerocComponent) },
        { path: 'roles', loadComponent: () => import('./Component/rol/rol').then(m => m.RolComponent) },
@@ -33,6 +33,8 @@ export const routes: Routes = [
        { path: 'modulos', loadComponent: () => import('./Component/modulo/modulo').then(m => m.ModuloComponent) },
        { path: 'menus', loadComponent: () => import('./Component/menu/menu').then(m => m.MenuComponent) },
        { path: 'personas', loadComponent: () => import('./Component/persona/persona').then(m => m.PersonaComponent) },
+       { path: 'tipo_documento', loadComponent: () => import('./Component/tipo_documento/tipo_documento').then(m => m.Tipoducumentocomponent) },
+       { path: 'estadocivil', loadComponent: () => import('./Component/estadocivil/estadocivil').then(m => m.estadocivilComponent) },
       ],
     canActivate: [AuthGuard]
   },

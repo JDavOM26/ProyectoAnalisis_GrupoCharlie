@@ -41,7 +41,9 @@ export class HomeComponent implements OnInit {
       'menu': 'menus',
       'usuario': 'usuarios',
       'role-opcion': 'role-opcion',
-      'persona': 'personas'  
+      'persona': 'personas',
+      'tipo_documento': 'tipo_documento',
+      'estadocivil': 'estadocivil' 
     };
 
     return map[base] ? `/home/${map[base]}` : null;

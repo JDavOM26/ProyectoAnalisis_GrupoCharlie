@@ -58,12 +58,10 @@
         <div class="col-md-3">
           <label class="form-label">Estado Civil *</label>
           <select class="form-select" formControlName="IdEstadoCivil">
-            <!--option [ngValue]="null" disabled>Seleccione…</option>
-            <option *ngFor="let g of (generos$ | async); trackBy: trackGenero" [ngValue]="g.idGenero">
-              {{ g.nombre }}
-            </option-->
-            <option [ngValue]="1">Soltero</option>
-            <option [ngValue]="2">Casado</option>
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let g of (estadoCivil$ | async); trackBy: trackEstadoCivil" [ngValue]="g.IdEstadoCivil">
+              {{ g.Nombre }}
+            </option>
           </select>
         </div>
 

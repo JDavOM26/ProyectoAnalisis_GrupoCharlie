@@ -9,6 +9,8 @@ import { GeneroService } from '../../Service/genero.service';
 import { Persona } from '../../Models/persona.model';
 import { Genero } from '../../Models/genero.model';
 import { PersonaService } from '../../Service/persona.service';
+import { EstadoCivilService } from '../../Service/estadocivil.service';
+import { EstadoCivil } from '../../Models/estadocivil.model';
 
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
@@ -31,24 +33,25 @@ export class PersonaComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
 
-  // Observables
   private refresh$ = new BehaviorSubject<void>(undefined);
   search = signal('');
   personas$!: Observable<Persona[]>;
   generos$!: Observable<Genero[]>;
+  estadoCivil$!: Observable<EstadoCivil[]>;
   generosMap$!: Observable<Record<number, string>>;
-  vm$!: Observable<{ personas: Persona[]; generosMap: Record<number, string> }>;
+  estadoCivilMap$!: Observable<Record<number, string>>;
+  vm$!: Observable<{ personas: Persona[]; generosMap: Record<number, string>; estadoCivilMap: Record<number, string> }>;
 
   constructor(
     private fb: FormBuilder,
     private svc: PersonaService,
     private generoSvc: GeneroService,
+    private estadoCivilSvc: EstadoCivilService,
     private menuSvc: MenuDinamicoService
   ) {}
 
 
   ngOnInit(): void {
-    // ===== FORMULARIO =====
     this.form = this.fb.group({
       IdPersona: [''],
       Nombre: ['', Validators.required],
@@ -68,7 +71,6 @@ export class PersonaComponent implements OnInit {
 
     this.loadPage(0);
 
-    // ===== CARGA DE GÉNEROS =====
     this.generos$ = this.refresh$.pipe(
       startWith(undefined),
       switchMap(() => this.generoSvc.list({ search: this.search() }))
@@ -84,12 +86,25 @@ export class PersonaComponent implements OnInit {
       )
     );
 
-    // ===== COMBINA DATOS PARA TABLA =====
-    this.vm$ = combineLatest([this.personas$, this.generosMap$]).pipe(
-      map(([personas, generosMap]) => ({ personas, generosMap }))
+    this.estadoCivil$ = this.refresh$.pipe(
+      startWith(undefined),
+      switchMap(() => this.estadoCivilSvc.list({ search: this.search() }))
     );
 
-    // ===== PERMISOS =====
+    this.estadoCivilMap$ = this.estadoCivil$.pipe(
+      map(estadoCivil =>
+        estadoCivil.reduce((acc, e) => {
+          const key = Number((e as any).IdEstadoCivil ?? (e as any).idEstadoCivil);
+          acc[key] = (e as any).Nombre ?? (e as any).nombre;
+          return acc;
+        }, {} as Record<number, string>)
+      )
+    );
+
+    this.vm$ = combineLatest([this.personas$, this.generosMap$, this.estadoCivilMap$]).pipe(
+      map(([personas, generosMap, estadoCivilMap]) => ({ personas, generosMap, estadoCivilMap }))
+    );
+
     const pageKey = 'persona';
     this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
     if (!this.permisos || Object.values(this.permisos).every(v => !v)) {
@@ -124,14 +139,13 @@ export class PersonaComponent implements OnInit {
   }
 
   trackGenero = (_: number, item: Genero) => item.idGenero ?? item.idGenero;
+  trackEstadoCivil = (_: number, item: any) => item.IdEstadoCivil ?? item.idEstadoCivil;
 
-  // ===== HEADERS =====
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  // ===== CRUD =====
   nuevo() {
     if (!this.permisos.Alta) return;
     this.mode.set('crear');
