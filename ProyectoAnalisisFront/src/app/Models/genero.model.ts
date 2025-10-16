@@ -1,5 +1,5 @@
 export interface Genero {
-  idGenero?: number; // Cambiado de IdSucursal a IdGenero
+  idGenero: number; // Cambiado de IdSucursal a IdGenero
   nombre: string;
    idUsuario?: string;
   FechaCreacion?: string; // ISO datetime

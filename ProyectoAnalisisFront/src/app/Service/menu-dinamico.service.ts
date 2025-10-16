@@ -47,7 +47,8 @@ export class MenuDinamicoService {
     'menu': 'menus',
     'usuario': 'usuarios',
     'opcion': 'opciones',
-    'role-opcion': 'role-opcion'
+    'role-opcion': 'role-opcion',
+    'persona': 'personas'
   };
 
   private routeKeyFromPagina(pagina: string | null | undefined): string {
