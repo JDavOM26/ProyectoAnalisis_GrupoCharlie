@@ -10,11 +10,11 @@ import { Permisos } from '../../Models/menu.perm.model';
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
 @Component({
-  selector: 'tipo_documento',
+  selector: 'tipos_documento',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './tipo_documento.html',
-  styleUrl: './tipo_documento.css'
+  templateUrl: './tipos_documento.html',
+  styleUrl: './tipos_documento.css'
 })
 export class Tipoducumentocomponent implements OnInit {
   form!: FormGroup;
@@ -49,7 +49,7 @@ export class Tipoducumentocomponent implements OnInit {
       switchMap(() => this.svc.list({ search: this.search() }))
     );
 
-    const pageKey = 'tipo_documento';
+    const pageKey = 'tipos_documento';
     this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
     console.log('Permisos desde localStorage:', this.permisos);
 

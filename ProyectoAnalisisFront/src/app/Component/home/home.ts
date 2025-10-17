@@ -42,8 +42,8 @@ export class HomeComponent implements OnInit {
       'usuario': 'usuarios',
       'role-opcion': 'role-opcion',
       'persona': 'personas',
-      'tipo_documento': 'tipo_documento',
-      'estadocivil': 'estadocivil',
+      'tipos_documento': 'tipos_documento',
+      'estado_civil': 'estado_civil',
       'tipo_movimiento_cxc': 'tipo_movimiento_cxc',
       'tipo_saldo_cuenta': 'tipo_saldo_cuenta', 
       'saldo_cuenta': 'saldo_cuenta'
