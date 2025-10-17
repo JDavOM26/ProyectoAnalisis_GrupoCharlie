@@ -10,11 +10,11 @@ import { Permisos } from '../../Models/menu.perm.model';
 type Mode = 'crear' | 'editar' | 'ver' | 'idle';
 
 @Component({
-  selector: 'estadocivil',
+  selector: 'estado_civil',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './estadocivil.html',
-  styleUrl: './estadocivil.css'
+  templateUrl: './estado_civil.html',
+  styleUrl: './estado_civil.css'
 })
 export class estadocivilComponent implements OnInit {
   form!: FormGroup;
@@ -50,7 +50,7 @@ export class estadocivilComponent implements OnInit {
       switchMap(() => this.svc.list({ search: this.search() }))
     );
 
-    const pageKey = 'estadocivil';
+    const pageKey = 'estado_civil';
     this.permisos = this.menuSvc.getPermisosFromLocal(pageKey);
     console.log('Permisos desde localStorage:', this.permisos);
 
