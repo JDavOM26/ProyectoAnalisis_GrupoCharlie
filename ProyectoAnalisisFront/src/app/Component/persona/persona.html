@@ -1,0 +1,137 @@
+<div class="container-fluid py-3">
+
+  <!-- Encabezado -->
+  <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+    <h5 class="m-0">Personas</h5>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-success" (click)="nuevo()" [disabled]="!permisos.Alta">Nuevo</button>
+      <button class="btn btn-sm btn-primary" (click)="guardar()" [disabled]="mode()==='idle' || mode()==='ver'">Guardar</button>
+      <button class="btn btn-sm btn-secondary" (click)="cancelar()" [disabled]="mode()==='idle'">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form [formGroup]="form" class="row g-3">
+
+        <div class="col-md-3">
+          <label class="form-label">Nombre *</label>
+          <input class="form-control" formControlName="Nombre" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Apellido *</label>
+          <input class="form-control" formControlName="Apellido" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Fecha Nacimiento *</label>
+          <input type="date" class="form-control" formControlName="FechaNacimiento" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Genero *</label>
+          <select class="form-select" formControlName="IdGenero">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let g of (generos$ | async); trackBy: trackGenero" [ngValue]="g.idGenero">
+              {{ g.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Dirección *</label>
+          <input class="form-control" formControlName="Direccion" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Teléfono *</label>
+          <input class="form-control" formControlName="Telefono" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Correo electrónico *</label>
+          <input type="email" class="form-control" formControlName="CorreoElectronico" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Estado Civil *</label>
+          <select class="form-select" formControlName="IdEstadoCivil">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let g of (estadoCivil$ | async); trackBy: trackEstadoCivil" [ngValue]="g.IdEstadoCivil">
+              {{ g.Nombre }}
+            </option>
+          </select>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+   <!-- LISTADO -->
+  <div class="card shadow-sm">
+  <div class="card-body">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <input
+        type="text"
+        class="form-control w-25"
+        placeholder="Buscar persona..."
+        (input)="onSearchChange($event)"
+      />
+      <span class="text-muted small">
+        Mostrando {{ personaFiltered.length }} de {{ totalElements }} registros
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of personaFiltered">
+            <td>{{ p.Nombre }}</td>
+            <td>{{ p.Apellido }}</td>
+            <td>{{ p.Telefono }}</td>
+            <td>{{ p.CorreoElectronico }}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(p)">Ver</button>
+              <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(p)" [disabled]="!permisos.Cambio">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="eliminar(p)" [disabled]="!permisos.Baja">Eliminar</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="!personaFiltered?.length">
+            <td colspan="5" class="text-center text-muted py-4">Sin registros</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINADOR -->
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <button class="btn btn-sm btn-outline-primary" (click)="prevPage()" [disabled]="pageIndex === 0">
+        < Anterior
+      </button>
+
+      <div>
+        Página {{ pageIndex + 1 }} de {{ totalPages }}
+        <span class="text-muted ms-2">(Total: {{ totalElements }} registros)</span>
+      </div>
+
+      <button class="btn btn-sm btn-outline-primary" (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
+        Siguiente >
+      </button>
+    </div>
+  </div>
+</div>
+</div>

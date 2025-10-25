@@ -1,0 +1,179 @@
+<div class="container-fluid py-3">
+  <!-- Encabezado -->
+  <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+    <h5 class="m-0">Saldos de Cuentas</h5>
+    <div class="ms-auto d-flex gap-2">
+      <button
+        class="btn btn-sm btn-success"
+        (click)="nuevo()"
+        [disabled]="!permisos.Alta"
+      >
+        Nuevo
+      </button>
+      <button
+        class="btn btn-sm btn-primary"
+        (click)="guardar()"
+        [disabled]="mode() === 'idle' || mode() === 'ver'"
+      >
+        Guardar
+      </button>
+      <button
+        class="btn btn-sm btn-secondary"
+        (click)="cancelar()"
+        [disabled]="mode() === 'idle'"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form [formGroup]="form" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Persona</label>
+          <select class="form-select" formControlName="IdPersona">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option
+              *ngFor="let p of personas$ | async; trackBy: trackPersona"
+              [ngValue]="p.IdPersona"
+            >
+              {{ p.Nombre }} {{ p.Apellido }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Estatus de Cuenta</label>
+          <select class="form-select" formControlName="IdStatusCuenta">
+            <option [ngValue]="1">Activa</option>
+            <option [ngValue]="2">Inactiva</option>
+            <option [ngValue]="3">Suspendida</option>
+            <option [ngValue]="4">Cerrada</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Tipo de Cuenta</label>
+          <select class="form-select" formControlName="IdTipoSaldoCuenta">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option
+              *ngFor="
+                let t of tipoSaldoCuenta$ | async;
+                trackBy: trackTipoSaldoCuenta
+              "
+              [ngValue]="t.IdTipoSaldoCuenta"
+            >
+              {{ t.Nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3"></div>
+
+        <div class="col-md-3">
+          <label class="form-label">Saldo Anterior</label>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="SaldoAnterior"
+          />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Débitos</label>
+          <input type="number" class="form-control" formControlName="Debitos" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Créditos</label>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="Creditos"
+          />
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LISTADO -->
+  <!-- LISTADO -->
+<div class="card shadow-sm">
+  <div class="card-body">
+
+    <!-- 🔍 BARRA DE BÚSQUEDA -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <input
+        type="text"
+        class="form-control w-25"
+        placeholder="Buscar persona..."
+        (input)="onSearchChange($event)"
+      />
+      <span class="text-muted small">Mostrando {{ saldoCuenta.length }} de {{ totalElements }} registros</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Persona</th>
+            <th>Estatus</th>
+            <th>Tipo de Cuenta</th>
+            <th>Saldo Anterior</th>
+            <th>Débitos</th>
+            <th>Créditos</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+
+        <ng-container *ngIf="vm$ | async as vm">
+          <tbody>
+            <tr *ngFor="let s of saldoCuentaFiltered">
+              <td>{{ vm.personasMap[s.IdPersona] || s.IdPersona }}</td>
+              <td>
+                {{
+                  s.IdStatusCuenta == 1 ? 'Activa' :
+                  s.IdStatusCuenta == 2 ? 'Inactiva' :
+                  s.IdStatusCuenta == 3 ? 'Suspendida' :
+                  s.IdStatusCuenta == 4 ? 'Cerrada' : '-'
+                }}
+              </td>
+              <td>{{ vm.tipoSaldoCuentaMap[s.IdTipoSaldoCuenta] || s.IdTipoSaldoCuenta }}</td>
+              <td>{{ s.SaldoAnterior | number:'1.2-2' }}</td>
+              <td>{{ s.Debitos | number:'1.2-2' }}</td>
+              <td>{{ s.Creditos | number:'1.2-2' }}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-1" (click)="ver(s)">Ver</button>
+                <button class="btn btn-sm btn-outline-secondary me-1" (click)="editar(s)" [disabled]="!permisos.Cambio">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="eliminar(s, vm.personasMap[s.IdPersona])" [disabled]="!permisos.Baja">Eliminar</button>
+              </td>
+            </tr>
+
+            <tr *ngIf="!saldoCuentaFiltered?.length">
+              <td colspan="7" class="text-center text-muted py-4">Sin registros</td>
+            </tr>
+          </tbody>
+        </ng-container>
+      </table>
+    </div>
+
+    <!-- PAGINADOR -->
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <button class="btn btn-sm btn-outline-primary" (click)="prevPage()" [disabled]="pageIndex === 0">
+        < Anterior
+      </button>
+
+      <div>
+        Página {{ pageIndex + 1 }} de {{ totalPages }}
+        <span class="text-muted ms-2">(Total: {{ totalElements }} registros)</span>
+      </div>
+
+      <button class="btn btn-sm btn-outline-primary" (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
+        Siguiente >
+      </button>
+    </div>
+  </div>
+</div>
+</div>

@@ -1,0 +1,52 @@
+.degradado-fondo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120px; 
+  background: linear-gradient(to bottom, #857b7b94, rgba(235, 230, 230, 0.788)); 
+  z-index: 5; 
+}
+
+.mi-contenedor-fondo {
+  position: relative;
+  background-image: url('/guate.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  width: 250px;
+  height: auto;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.container {
+  padding-top: 100px; 
+}
+
+.btn-custom {
+  background-color: #10152b; 
+  color: #fff;       
+  border: none;
+}
+
+.btn-custom:hover {
+  background-color: #10152b; 
+}
+
+.enlace-recover {
+  color: #10152b; 
+}
+

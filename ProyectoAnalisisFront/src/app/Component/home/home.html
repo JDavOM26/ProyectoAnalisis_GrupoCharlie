@@ -1,0 +1,79 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm custom-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <img src="/icononavbar.png" alt="Logo Dashboard Seguros" class="navbar-logo">
+    </a>
+    <span class="vertical-divider"></span>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+      aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <!-- Módulos -->
+        <li class="nav-item dropdown" *ngFor="let mod of (menu$ | async)">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            {{ mod.nombre }}
+          </a>
+
+          <ul class="dropdown-menu dropdown-menu-dark custom-dropdown">
+            <!-- Menús -->
+            <li class="dropdown-submenu dropend" *ngFor="let mn of mod.menus">
+              <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                {{ mn.nombre }}
+              </a>
+
+              <!-- Opciones -->
+              <ul class="dropdown-menu dropdown-menu-dark custom-dropdown">
+                <li *ngFor="let op of mn.opciones">
+                  <a class="dropdown-item" [routerLink]="toRoute(op.pagina)" [href]="toHref(op.pagina)">
+                    {{ op.nombre }}
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+
+      </ul>
+
+      <!-- Botones de acción -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- 🔹 Botón Home -->
+        <a class="btn btn-outline-light btn-sm" [routerLink]="'/home'">
+          <i class="bi bi-house-door-fill"></i> Inicio
+        </a>
+
+        <!-- 🔹 Botón Salir -->
+        <a class="btn btn-outline-light btn-sm" (click)="logout()">Salir</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="dashboard-container" *ngIf="router.url === '/home'">
+
+  <div class="charts-container">
+   
+    <div class="chart-card">
+      <h2>Movimientos Mensuales</h2>
+      <div class="chart" *ngIf="movimientosMensuales.length > 0">
+        <div class="bar" *ngFor="let mov of movimientosMensuales"
+          [style.height.%]="calcularAlturaBarra(mov.TotalMovimientos)">
+          <span class="bar-value">Q {{ mov.TotalMovimientos }}</span>
+          <span class="bar-label">{{ obtenerNombreMesCorto(mov.NombreMes) }}</span>
+        </div>
+      </div>
+      <div class="no-data" *ngIf="movimientosMensuales.length === 0">
+        No hay datos disponibles
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <router-outlet></router-outlet>
+</div>
