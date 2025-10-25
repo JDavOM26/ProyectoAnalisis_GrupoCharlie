@@ -63,8 +63,7 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-    <!-- JJWT para manejar JWT -->
-    <dependency>
+     <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt-api</artifactId>
         <version>0.12.6</version>
@@ -112,7 +111,7 @@
   <version>3.0.4</version>
 </dependency>
 
-<!-- iText 7 Core (for PDF generation) -->
+
     <dependency>
         <groupId>com.itextpdf</groupId>
         <artifactId>itext7-core</artifactId>

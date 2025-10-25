@@ -113,6 +113,12 @@ public class BitacoraAccesoService {
         RegistrarAcceso(idUsuario, "Acceso Concedido", direccionIp,
                 httpUserAgent, "LOGIN_EXITOSO", sesion);
     }
+    
+    public void registrarCambioContraseniaExitoso(String idUsuario, String direccionIp,
+            String httpUserAgent, String sesion) {
+        RegistrarAcceso(idUsuario, "Cambio de contraseña exitoso", direccionIp,
+                httpUserAgent, "CAMBIO_CONTRASEÑA_EXITOSO", sesion);
+    }
 
     public void registrarIntentoFallido(String idUsuario, String direccionIp,
             String httpUserAgent, String motivo, String sesion) {

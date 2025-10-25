@@ -166,8 +166,8 @@ public class UserService {
 		}
 	}
 
-	// Validación de contraseña basada en Empresa: ahora solo devuelve true/false
-	private boolean validarPassword(String password, Empresa empresa) {
+
+	public boolean validarPassword(String password, Empresa empresa) {
 		if (password == null)
 			return false;
 
@@ -190,7 +190,7 @@ public class UserService {
 		return true;
 	}
 
-	// Registro de usuario
+	
 	public boolean registrarUsuario(UsuarioPostDto userDto, int idEmpresa) {
 
 		if (usuarioRepository.existsByIdUsuario(userDto.getIdUsuario())) {
@@ -234,4 +234,32 @@ public class UserService {
 		return true;
 	}
 
+	public String obtenerMensajeErrorPassword(String password, Empresa empresa) {
+        if (password == null) {
+            return "La contraseña no puede ser nula.";
+        }
+
+        long mayus = password.chars().filter(Character::isUpperCase).count();
+        long minus = password.chars().filter(Character::isLowerCase).count();
+        long numeros = password.chars().filter(Character::isDigit).count();
+        long especiales = password.chars().filter(ch -> !Character.isLetterOrDigit(ch)).count();
+
+        if (password.length() < empresa.getPasswordLargo()) {
+            return "La contraseña debe tener al menos " + empresa.getPasswordLargo() + " caracteres.";
+        }
+        if (mayus < empresa.getPasswordCantidadMayusculas()) {
+            return "La contraseña debe incluir al menos " + empresa.getPasswordCantidadMayusculas() + " mayúsculas.";
+        }
+        if (minus < empresa.getPasswordCantidadMinusculas()) {
+            return "La contraseña debe incluir al menos " + empresa.getPasswordCantidadMinusculas() + " minúsculas.";
+        }
+        if (numeros < empresa.getPasswordCantidadNumeros()) {
+            return "La contraseña debe incluir al menos " + empresa.getPasswordCantidadNumeros() + " números.";
+        }
+        if (especiales < empresa.getPasswordCantidadCaracteresEspeciales()) {
+            return "La contraseña debe incluir al menos " + empresa.getPasswordCantidadCaracteresEspeciales() + " caracteres especiales.";
+        }
+
+        return null; // No hay error
+    }
 }

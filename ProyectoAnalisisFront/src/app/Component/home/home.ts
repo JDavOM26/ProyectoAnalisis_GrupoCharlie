@@ -41,14 +41,14 @@ export class HomeComponent implements OnInit {
     this.menu$ = this.menuSvc.getMenuTree();
   }
 
-  // Generate default array of all months
+
   private getAllMonths(): MovimientoMensual[] {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months.map((month, index) => ({
-      Mes: (index + 1).toString().padStart(2, '0'), // e.g., "01" for January
+      Mes: (index + 1).toString().padStart(2, '0'), 
       NombreMes: month,
       TotalMovimientos: 0
     }));
@@ -60,10 +60,10 @@ export class HomeComponent implements OnInit {
 
     this.http.get<EstadisticasCompletas>(`${this.apiUrl}/estadisticas-completas`, { headers }).subscribe(
       (data) => {
-        // Initialize with all months
+       
         this.movimientosMensuales = this.getAllMonths();
 
-        // Merge API data with default months
+      
         const apiData = data.movimientosMensuales || [];
         apiData.forEach((apiMonth) => {
           const monthIndex = this.movimientosMensuales.findIndex(
@@ -81,7 +81,7 @@ export class HomeComponent implements OnInit {
       (error) => {
         console.error('Error al cargar estadísticas:', error);
         this.errorMessage = 'No se pudieron cargar las estadísticas. Por favor, intenta de nuevo.';
-        // Still display all months even if API fails
+
         this.movimientosMensuales = this.getAllMonths();
       }
     );
@@ -89,7 +89,7 @@ export class HomeComponent implements OnInit {
 
   calcularAlturaBarra(valor: number): number {
     if (this.movimientosMensuales.length === 0) return 0;
-    const max = Math.max(...this.movimientosMensuales.map((m) => m.TotalMovimientos), 1); // Avoid division by 0
+    const max = Math.max(...this.movimientosMensuales.map((m) => m.TotalMovimientos), 1); 
     return (valor / max) * 100;
   }
 

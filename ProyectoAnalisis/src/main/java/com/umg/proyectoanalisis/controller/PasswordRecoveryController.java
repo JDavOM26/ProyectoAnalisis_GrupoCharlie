@@ -26,227 +26,175 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/noauth")
 public class PasswordRecoveryController {
 
-    @Autowired
-    private PasswordRecoveryService passwordRecoveryService;
+	@Autowired
+	private PasswordRecoveryService passwordRecoveryService;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    BitacoraAccesoService bitacoraAccesoService;
+	@Autowired
+	BitacoraAccesoService bitacoraAccesoService;
 
-    @Autowired
-    private HttpServletRequest httpServletRequest;
+	@Autowired
+	private HttpServletRequest httpServletRequest;
 
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    @PostMapping("/send-email/{idUsuario}")
-    public ResponseEntity<String> sendEmail(@PathVariable String idUsuario) {
-    	
-    	Usuario usuario = usuarioRepository.findById(idUsuario)
-    			.orElseThrow(
-                        () -> new RuntimeException("Credenciales invalidas"));
-        try {
-        	EmailDTO emailDto = new EmailDTO();
-            String passwordTemporal = passwordRecoveryService.actualizarContrasenaTemporal(idUsuario);
-            emailDto.setIdUsuario(idUsuario);
-            emailDto.setAsunto("Restablecer contraseña");
-            emailDto.setPara(usuario.getCorreoElectronico());
-            passwordRecoveryService.sendEmail(emailDto, passwordTemporal);
-            return new ResponseEntity<>("Correo enviado exitosamente", HttpStatus.OK);
-        } catch (MessagingException e) {
-            return new ResponseEntity<>("Error al enviar el correo: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	@PostMapping("/send-email/{idUsuario}")
+	public ResponseEntity<String> sendEmail(@PathVariable String idUsuario) {
 
-    @GetMapping("/obtener-pregunta/{idUsuario}")
-    public ResponseEntity<?> getPregunta(@PathVariable String idUsuario) {
-        String direccionIp = httpServletRequest.getRemoteAddr();
-        String httpUserAgent = httpServletRequest.getHeader("User-agent");
-        String sesion = httpServletRequest.getSession().getId();
-        Usuario usr = usuarioRepository.findByIdUsuario(idUsuario);
+		Usuario usuario = usuarioRepository.findById(idUsuario)
+				.orElseThrow(() -> new RuntimeException("Credenciales invalidas"));
+		try {
+			EmailDTO emailDto = new EmailDTO();
+			String passwordTemporal = passwordRecoveryService.actualizarContrasenaTemporal(idUsuario);
+			emailDto.setIdUsuario(idUsuario);
+			emailDto.setAsunto("Restablecer contraseña");
+			emailDto.setPara(usuario.getCorreoElectronico());
+			passwordRecoveryService.sendEmail(emailDto, passwordTemporal);
+			return new ResponseEntity<>("Correo enviado exitosamente", HttpStatus.OK);
+		} catch (MessagingException e) {
+			return new ResponseEntity<>("Error al enviar el correo: " + e.getMessage(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-        if (usr == null) {
-            String usuarioInexistente = "Usuario no registrado";
-            
-            bitacoraAccesoService.registrarIntentoFallido(
-                    usuarioInexistente,
-                    direccionIp,
-                    httpUserAgent,
-                    "USUARIO_INEXISTENTE",
-                    sesion);
+	@GetMapping("/obtener-pregunta/{idUsuario}")
+	public ResponseEntity<?> getPregunta(@PathVariable String idUsuario) {
+		String direccionIp = httpServletRequest.getRemoteAddr();
+		String httpUserAgent = httpServletRequest.getHeader("User-agent");
+		String sesion = httpServletRequest.getSession().getId();
+		Usuario usr = usuarioRepository.findByIdUsuario(idUsuario);
 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Usuario o password inválido");
-        }
+		if (usr == null) {
+			String usuarioInexistente = "Usuario no registrado";
 
-        // Validación del estado del usuario
-        if (usr.getIdStatusUsuario() != null) {
-            int estado = usr.getIdStatusUsuario();
+			bitacoraAccesoService.registrarIntentoFallido(usuarioInexistente, direccionIp, httpUserAgent,
+					"USUARIO_INEXISTENTE", sesion);
 
-            if (estado == 2) { // ESTADO_BLOQUEADO
-                // Registrar en la bitácora intento fallido, es el mismo método para password
-                // incorrecto
-                bitacoraAccesoService.registrarIntentoFallido(
-                		idUsuario,
-                        direccionIp,
-                        httpUserAgent,
-                        "RESPUESTA_INCORRECTA",
-                        sesion);
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario o password inválido");
+		}
 
-                return ResponseEntity.status(HttpStatus.LOCKED)
-                        .body("Cuenta bloqueada por demasiados intentos fallidos");
-            }
-            if (estado == 3) { // ESTADO_INACTIVO
-                // Registrar en tabla de bitácora
-                bitacoraAccesoService.registrarIntentoFallido(
-                		idUsuario,
-                        direccionIp,
-                        httpUserAgent,
-                        "USUARIO_INACTIVO",
-                        sesion);
+		if (usr.getIdStatusUsuario() != null) {
+			int estado = usr.getIdStatusUsuario();
 
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Cuenta inactiva");
-            }
-        }
-        try {
+			if (estado == 2) {
 
-            Usuario usuario = usuarioRepository.findById(idUsuario)
-                    .orElseThrow(
-                            () -> new RuntimeException("Credenciales invalidas"));
+				bitacoraAccesoService.registrarIntentoFallido(idUsuario, direccionIp, httpUserAgent,
+						"RESPUESTA_INCORRECTA", sesion);
 
-            userService.manejarIntentoExitoso(idUsuario, sesion);
-            PasswordRecoveryResponseDto respuesta = new PasswordRecoveryResponseDto();
-            respuesta.setPregunta(usuario.getPregunta());
-            return new ResponseEntity<>(respuesta, HttpStatus.OK);
-        } catch (Exception e) {
-        
-            try {
-                int nuevosIntentos = userService.manejarIntentoFallido(idUsuario);
-                int maxIntentos = userService.obtenerMaxIntentosFallidos(idUsuario);
+				return ResponseEntity.status(HttpStatus.LOCKED)
+						.body("Cuenta bloqueada por demasiados intentos fallidos");
+			}
+			if (estado == 3) {
+				bitacoraAccesoService.registrarIntentoFallido(idUsuario, direccionIp, httpUserAgent, "USUARIO_INACTIVO",
+						sesion);
 
-             
-                bitacoraAccesoService.registrarIntentoFallido(
-                		idUsuario,
-                        direccionIp,
-                        httpUserAgent,
-                        "USUARIO_INCORRECTO",
-                        sesion);
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cuenta inactiva");
+			}
+		}
+		try {
 
-                String mensaje = String.format("usuario incorrecto. Intentos: %d/%d",
-                        nuevosIntentos, maxIntentos);
+			Usuario usuario = usuarioRepository.findById(idUsuario)
+					.orElseThrow(() -> new RuntimeException("Credenciales invalidas"));
 
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(mensaje);
+			userService.manejarIntentoExitoso(idUsuario, sesion);
+			PasswordRecoveryResponseDto respuesta = new PasswordRecoveryResponseDto();
+			respuesta.setPregunta(usuario.getPregunta());
+			return new ResponseEntity<>(respuesta, HttpStatus.OK);
+		} catch (Exception e) {
 
-            } catch (RuntimeException ex) {
-               
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Usuario no encontrado");
-            } catch (Exception ex) {
-                
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Error interno del servidor");
-            }
-        }
-    }
+			try {
+				int nuevosIntentos = userService.manejarIntentoFallido(idUsuario);
+				int maxIntentos = userService.obtenerMaxIntentosFallidos(idUsuario);
 
-    @PostMapping("/verificar-respuesta")
-    public ResponseEntity<?> verificarRespuesta(@Valid @RequestBody ValidarRespuestaRequestDto answerDto) {
-        String direccionIp = httpServletRequest.getRemoteAddr();
-        String httpUserAgent = httpServletRequest.getHeader("User-agent");
-        String sesion = httpServletRequest.getSession().getId();
-        Usuario usr = usuarioRepository.findByIdUsuario(answerDto.getIdUsuario());
+				bitacoraAccesoService.registrarIntentoFallido(idUsuario, direccionIp, httpUserAgent,
+						"USUARIO_INCORRECTO", sesion);
 
-        if (usr == null) {
-            String usuarioInexistente = "Usuario no registrado";
-            // Registrar en la bitácora intento fallido, es el mismo método para password
-            // incorrecto
-            bitacoraAccesoService.registrarIntentoFallido(
-                    usuarioInexistente,
-                    direccionIp,
-                    httpUserAgent,
-                    "USUARIO_INEXISTENTE",
-                    sesion);
+				String mensaje = String.format("usuario incorrecto. Intentos: %d/%d", nuevosIntentos, maxIntentos);
 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Usuario o password inválido");
-        }
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensaje);
 
-        // Validación del estado del usuario
-        if (usr.getIdStatusUsuario() != null) {
-            int estado = usr.getIdStatusUsuario();
+			} catch (RuntimeException ex) {
 
-            if (estado == 2) { // ESTADO_BLOQUEADO
-                // Registrar en la bitácora intento fallido, es el mismo método para password
-                // incorrecto
-                bitacoraAccesoService.registrarIntentoFallido(
-                        answerDto.getIdUsuario(),
-                        direccionIp,
-                        httpUserAgent,
-                        "RESPUESTA_INCORRECTA",
-                        sesion);
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+			} catch (Exception ex) {
 
-                return ResponseEntity.status(HttpStatus.LOCKED)
-                        .body("Cuenta bloqueada por demasiados intentos fallidos");
-            }
-            if (estado == 3) { // ESTADO_INACTIVO
-                // Registrar en tabla de bitácora
-                bitacoraAccesoService.registrarIntentoFallido(
-                        answerDto.getIdUsuario(),
-                        direccionIp,
-                        httpUserAgent,
-                        "USUARIO_INACTIVO",
-                        sesion);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
+			}
+		}
+	}
 
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Cuenta inactiva");
-            }
-        }
-        try {
+	@PostMapping("/verificar-respuesta")
+	public ResponseEntity<?> verificarRespuesta(@Valid @RequestBody ValidarRespuestaRequestDto answerDto) {
+		String direccionIp = httpServletRequest.getRemoteAddr();
+		String httpUserAgent = httpServletRequest.getHeader("User-agent");
+		String sesion = httpServletRequest.getSession().getId();
+		Usuario usr = usuarioRepository.findByIdUsuario(answerDto.getIdUsuario());
 
-            if (answerDto.getRespuesta() == null || answerDto.getRespuesta().isEmpty()) {
-                return new ResponseEntity<>("Error: debe ingresar una respuesta", HttpStatus.BAD_REQUEST);
-            }
+		if (usr == null) {
+			String usuarioInexistente = "Usuario no registrado";
 
-            boolean isValid = passwordRecoveryService.verificarRespuesta(answerDto);
-            if (!isValid) {
-                isValid = false;
-                return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
-            }
+			bitacoraAccesoService.registrarIntentoFallido(usuarioInexistente, direccionIp, httpUserAgent,
+					"USUARIO_INEXISTENTE", sesion);
 
-            userService.manejarIntentoExitoso(answerDto.getIdUsuario(), sesion);
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario o password inválido");
+		}
 
-            return new ResponseEntity<>(true, HttpStatus.OK);
-        } catch (Exception e) {
+		if (usr.getIdStatusUsuario() != null) {
+			int estado = usr.getIdStatusUsuario();
 
-            try {
-                int nuevosIntentos = userService.manejarIntentoFallido(answerDto.getIdUsuario());
-                int maxIntentos = userService.obtenerMaxIntentosFallidos(answerDto.getIdUsuario());
+			if (estado == 2) {
 
-                // Registrar en la bitácora intento fallido
-                bitacoraAccesoService.registrarIntentoFallido(
-                        answerDto.getIdUsuario(),
-                        direccionIp,
-                        httpUserAgent,
-                        "RESPUESTA_INCORRECTA",
-                        sesion);
+				bitacoraAccesoService.registrarIntentoFallido(answerDto.getIdUsuario(), direccionIp, httpUserAgent,
+						"RESPUESTA_INCORRECTA", sesion);
 
-                String mensaje = String.format("respuesta incorrecta. Intentos: %d/%d",
-                        nuevosIntentos, maxIntentos);
+				return ResponseEntity.status(HttpStatus.LOCKED)
+						.body("Cuenta bloqueada por demasiados intentos fallidos");
+			}
+			if (estado == 3) {
 
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(mensaje);
+				bitacoraAccesoService.registrarIntentoFallido(answerDto.getIdUsuario(), direccionIp, httpUserAgent,
+						"USUARIO_INACTIVO", sesion);
 
-            } catch (RuntimeException ex) {
-                // En caso de error al manejar el intento fallido
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Error en el servidor: " + ex.getMessage());
-            }
-        }
-    }
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cuenta inactiva");
+			}
+		}
+		try {
+
+			if (answerDto.getRespuesta() == null || answerDto.getRespuesta().isEmpty()) {
+				return new ResponseEntity<>("Error: debe ingresar una respuesta", HttpStatus.BAD_REQUEST);
+			}
+
+			boolean isValid = passwordRecoveryService.verificarRespuesta(answerDto);
+			if (!isValid) {
+				isValid = false;
+				return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
+			}
+
+			userService.manejarIntentoExitoso(answerDto.getIdUsuario(), sesion);
+
+			return new ResponseEntity<>(true, HttpStatus.OK);
+		} catch (Exception e) {
+
+			try {
+				int nuevosIntentos = userService.manejarIntentoFallido(answerDto.getIdUsuario());
+				int maxIntentos = userService.obtenerMaxIntentosFallidos(answerDto.getIdUsuario());
+
+				bitacoraAccesoService.registrarIntentoFallido(answerDto.getIdUsuario(), direccionIp, httpUserAgent,
+						"RESPUESTA_INCORRECTA", sesion);
+
+				String mensaje = String.format("respuesta incorrecta. Intentos: %d/%d", nuevosIntentos, maxIntentos);
+
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensaje);
+
+			} catch (RuntimeException ex) {
+
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body("Error en el servidor: " + ex.getMessage());
+			}
+		}
+	}
 
 }

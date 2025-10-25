@@ -1,47 +1,107 @@
 <div class="mi-contenedor-fondo">
-   <div class="degradado-fondo"></div>
-<img src="/Logo.png" alt="Logo" class="logo">
-<div class="container vh-100 d-flex justify-content-center align-items-center">
-  <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
-    <div class="text-center mb-4">
-      <i class="bi bi-shield-lock" style="font-size: 3rem; color: #0d6efd;"></i>
-      <h4 class="mt-2">Iniciar Sesión</h4>
-      <p class="text-muted">Ingrese sus credenciales para continuar</p>
+  <div class="degradado-fondo"></div>
+  <img src="/Logo.png" alt="Logo" class="logo">
+  <div class="container vh-100 d-flex justify-content-center align-items-center">
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
+      <div class="text-center mb-4">
+        <i class="bi bi-shield-lock" style="font-size: 3rem; color: #0d6efd;"></i>
+        <h4 class="mt-2">Iniciar Sesión</h4>
+        <p class="text-muted">Ingrese sus credenciales para continuar</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Usuario -->
+        <div class="mb-3">
+          <label for="username" class="form-label">Usuario</label>
+          <input type="text" id="username" formControlName="username" class="form-control"
+            placeholder="Ingrese su usuario" required>
+          <div *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid" class="text-danger small">
+            El usuario es requerido.
+          </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Contraseña</label>
+          <input type="password" id="password" formControlName="password" class="form-control"
+            placeholder="Ingrese su contraseña" required>
+          <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-danger small">
+            La contraseña es requerida.
+          </div>
+        </div>
+
+        <!-- Botón Iniciar sesión -->
+        <div class="d-grid mb-3">
+          <button type="submit" class="btn btn-custom" [disabled]="loginForm.invalid">Iniciar Sesión</button>
+          <p *ngIf="errorMessage" [ngClass]="{'error-message': !errorMessage.includes('Contraseña actualizada correctamente'), 'success-message': errorMessage.includes('Contraseña actualizada correctamente')}">
+            {{ errorMessage }}
+          </p>
+        </div>
+
+        <!-- Opciones adicionales -->
+        <div class="text-center">
+          <a routerLink="/recover" class="text-decoration-none enlace-recover">¿Olvidaste tu contraseña?</a>
+        </div>
+      </form>
     </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <!-- Usuario -->
-      <div class="mb-3">
-        <label for="username" class="form-label">Usuario</label>
-        <input type="text" id="username" formControlName="username" class="form-control"
-          placeholder="Ingrese su usuario" required>
-        <div *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid" class="text-danger small">
-          El usuario es requerido.
-        </div>
-      </div>
-
-      <!-- Contraseña -->
-      <div class="mb-3">
-        <label for="password" class="form-label">Contraseña</label>
-        <input type="password" id="password" formControlName="password" class="form-control"
-          placeholder="Ingrese su contraseña" required>
-        <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-danger small">
-          La contraseña es requerida.
-        </div>
-      </div>
-
-      <!-- Botón Iniciar sesión -->
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-custom" [disabled]="loginForm.invalid">Iniciar Sesión</button>
-        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-      </div>
-
-      <!-- Opciones adicionales -->
-      <div class="text-center">
-        <a routerLink="/recover" class="text-decoration-none enlace-recover">¿Olvidaste tu contraseña?</a>
-      </div>
-    </form>
   </div>
-</div>
+
+  <!-- Modal personalizado para cambiar contraseña -->
+  <div class="custom-modal" *ngIf="showChangePasswordModal">
+    <div class="custom-modal-content">
+      <div class="custom-modal-header">
+        <h5>Cambiar Contraseña vencida</h5>
+        <button type="button" class="custom-modal-close" (click)="closeChangePasswordModal()">×</button>
+      </div>
+      <div class="custom-modal-body">
+        <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword()">
+          <!-- Usuario -->
+          <div class="mb-3">
+            <label for="modalUsername" class="form-label">Usuario</label>
+            <input type="text" id="modalUsername" formControlName="username" class="form-control"
+              placeholder="Ingrese su usuario" readonly>
+            <div *ngIf="changePasswordForm.get('username')?.touched && changePasswordForm.get('username')?.invalid"
+              class="text-danger small">
+              El usuario es requerido.
+            </div>
+          </div>
+
+          <!-- Contraseña original -->
+          <div class="mb-3">
+            <label for="oldPassword" class="form-label">Contraseña Actual</label>
+            <input type="password" id="oldPassword" formControlName="oldPassword" class="form-control"
+              placeholder="Ingrese su contraseña actual" required>
+            <div *ngIf="changePasswordForm.get('oldPassword')?.touched && changePasswordForm.get('oldPassword')?.invalid"
+              class="text-danger small">
+              La contraseña actual es requerida.
+            </div>
+            <div *ngIf="errorMessage && errorMessage.includes('Contraseña actual incorrecta')" class="text-danger small">
+              {{ errorMessage }}
+            </div>
+          </div>
+
+          <!-- Nueva contraseña -->
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">Nueva Contraseña</label>
+            <input type="password" id="newPassword" formControlName="newPassword" class="form-control"
+              placeholder="Ingrese su nueva contraseña" required>
+            <div *ngIf="changePasswordForm.get('newPassword')?.touched && changePasswordForm.get('newPassword')?.invalid"
+              class="text-danger small">
+              La nueva contraseña es requerida y debe tener al menos 8 caracteres.
+            </div>
+            <div *ngIf="newPasswordError" class="text-danger small">
+              {{ newPasswordError }}
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="closeChangePasswordModal()">Cancelar</button>
+            <button type="submit" class="btn btn-custom" [disabled]="changePasswordForm.invalid">Cambiar Contraseña</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 <app-spinner-component *ngIf="isLoading"></app-spinner-component>

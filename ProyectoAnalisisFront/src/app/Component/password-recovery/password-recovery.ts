@@ -5,9 +5,10 @@ import { PasswordRecoveryAnswerDto } from '../../Models/password-recovery-answer
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { SpinnerComponent } from '../spinner-component/spinner-component';
 @Component({
   selector: 'app-password-recovery',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SpinnerComponent],
   templateUrl: './password-recovery.html',
   styleUrl: './password-recovery.css'
 })
@@ -19,6 +20,7 @@ export class PasswordRecovery {
   isLoading: boolean = false;
   isAnswerValid: boolean | null = null;
   emailSent: boolean = false;
+  
 
   constructor(private recuperacionService: RecuperacioncontraseniaService, private router: Router) { }
 

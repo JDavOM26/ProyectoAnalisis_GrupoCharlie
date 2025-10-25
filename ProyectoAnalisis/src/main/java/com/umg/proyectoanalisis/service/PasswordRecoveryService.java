@@ -44,7 +44,7 @@ public class PasswordRecoveryService {
 
     public void sendEmail(EmailDTO emailDto, String passwordTemporal) throws MessagingException {
         try {
-            // Procesar la plantilla Thymeleaf
+           
             Context context = new Context();
             context.setVariable("idUsuario", emailDto.getIdUsuario());
             context.setVariable("passwordTemporal", passwordTemporal);
@@ -52,15 +52,15 @@ public class PasswordRecoveryService {
             context.setVariable("loginUrl", loginUrl);
             String cuerpoHtml = templateEngine.process("password_recovery_email", context);
 
-            // Crear mensaje MIME para HTML
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(emailDto.getPara());
             helper.setSubject(emailDto.getAsunto());
-            helper.setText(cuerpoHtml, true); // true indica que el contenido es HTML
+            helper.setText(cuerpoHtml, true); 
             helper.setFrom(fromEmail);
 
-            // Enviar correo
+            
             mailSender.send(message);
         } catch (MailException | MessagingException e) {
             throw new MessagingException("Error al enviar el correo: " + e.getMessage(), e);
@@ -83,12 +83,11 @@ public class PasswordRecoveryService {
         boolean esRespuestaCorrecta = respuestaUsuario.equals(respuestaIngresada);
 
         if (!esRespuestaCorrecta) {
-            // IMPORTANTE: Lanzar excepción para que el controlador maneje los intentos
-            // fallidos
+          
             throw new RuntimeException("Respuesta incorrecta");
         }
 
-        return true; // Solo se llega aquí si la respuesta es correcta
+        return true; 
     }
 
     public String actualizarContrasenaTemporal(String idUsuario) {
@@ -96,8 +95,9 @@ public class PasswordRecoveryService {
                 .orElseThrow(() -> new RuntimeException("Credenciales invalidas"));
         String newPassword = generarContrasenaTemporal();
         usuario.setPassword(passwordEncoder.encode(newPassword));
-        usuario.setUltimaFechaCambioPassword(LocalDateTime.now().plusMinutes(30));
-        usuario.setFechaModificacion(LocalDateTime.now());
+        usuario.setUltimaFechaCambioPassword(LocalDateTime.now().minusHours(6));
+        usuario.setRequiereCambiarPassword(2);
+        usuario.setFechaModificacion(LocalDateTime.now().minusHours(6));
         usuario.setUsuarioModificacion("Administrador");
         usuarioRepository.save(usuario);
         return newPassword;

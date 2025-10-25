@@ -5,6 +5,7 @@ import { Usuario } from '../Models/usuario.model';
 
 const LOGIN_URL     = 'http://localhost:8080/api/noauth/login';
 const USERS_BASE    = 'http://localhost:8080/api/auth';
+const NO_AUTH    = 'http://localhost:8080/api/noauth';
 const USERS_LIST_URL= 'http://localhost:8080/api/auth/getAllUsers';
 
 @Injectable({ providedIn: 'root' })
@@ -126,7 +127,7 @@ export class UsuarioService {
     };
   }
 
-  // Login, igual que tenías
+ 
   login(username: string, password: string) {
     const body = { idUsuario: username, password };
     return this.http.post(LOGIN_URL, body, { responseType: 'text' as 'json' }).pipe(
@@ -141,5 +142,13 @@ export class UsuarioService {
         return { username, token };
       })
     );
+  }
+changePassword(username: string, oldPassword: string, newPassword: string): Observable<string> {
+    console.log('Enviando solicitud a /api/noauth/change-password:', { idUsuario: username, oldPassword, newPassword });
+    return this.http.post(`${NO_AUTH}/change-password`, {
+      idUsuario: username,
+      oldPassword,
+      newPassword
+    }, { responseType: 'text' }); // Expect plain text response
   }
 }
