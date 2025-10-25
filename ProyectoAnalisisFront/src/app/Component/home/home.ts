@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
-
 import { MenuDinamicoService } from '../../Service/menu-dinamico.service';
 import { ModuleNode } from '../../Models/menu.perm.model';
 import { HttpClient } from '@angular/common/http';
@@ -17,8 +16,6 @@ interface MovimientoMensual {
   TotalMovimientos: number;
 }
 
-
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -30,114 +27,121 @@ export class HomeComponent implements OnInit {
   menu$!: Observable<ModuleNode[]>;
   fechaActual = new Date();
   Math = Math;
+  errorMessage: string | null = null;
 
-  estadisticas: any = {
-    totalClientes: 0,
-    ingresosTotales: 0,
-    cuentasActivas: 0,
-    totalTransacciones: 0,
-    cambioClientes: 0,
-    cambioIngresos: 0,
-    cambioCuentas: 0,
-    cambioTransacciones: 0
-  };
-
+  estadisticas: any = {};
   movimientosMensuales: MovimientoMensual[] = [];
-
-
-  coloresPie = ['#10152b', '#1a2244', '#2c3e6d', '#3d5a96'];
 
   private apiUrl = 'http://localhost:8080/api/auth/dashboard';
 
-  constructor(private http: HttpClient, public router: Router,
-    private menuSvc: MenuDinamicoService) { }
+  constructor(private http: HttpClient, public router: Router, private menuSvc: MenuDinamicoService) {}
 
   ngOnInit(): void {
     this.cargarEstadisticasCompletas();
     this.menu$ = this.menuSvc.getMenuTree();
   }
 
+  // Generate default array of all months
+  private getAllMonths(): MovimientoMensual[] {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months.map((month, index) => ({
+      Mes: (index + 1).toString().padStart(2, '0'), // e.g., "01" for January
+      NombreMes: month,
+      TotalMovimientos: 0
+    }));
+  }
 
+  cargarEstadisticasCompletas(): void {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
 
+    this.http.get<EstadisticasCompletas>(`${this.apiUrl}/estadisticas-completas`, { headers }).subscribe(
+      (data) => {
+        // Initialize with all months
+        this.movimientosMensuales = this.getAllMonths();
 
-
-
-toRoute(pagina: string | undefined | null): string | null {
-  if (!pagina) return null;
-
-  const base = pagina.replace('.html', '').toLowerCase();
-
-  const map: Record<string, string> = {
-    'empresa': 'empresas',
-    'sucursal': 'sucursales',
-    'genero': 'generos',
-    'rol': 'roles',
-    'estatususuario': 'estatus-usuario',
-    'opcion': 'opciones',
-    'modulo': 'modulos',
-    'menu': 'menus',
-    'usuario': 'usuarios',
-    'role-opcion': 'role-opcion',
-    'persona': 'personas',
-    'tipos_documento': 'tipos_documento',
-    'estado_civil': 'estado_civil',
-    'tipo_movimiento_cxc': 'tipo_movimiento_cxc',
-    'tipo_saldo_cuenta': 'tipo_saldo_cuenta',
-    'saldo_cuenta': 'saldo_cuenta'
-  };
-
-  return map[base] ? `/home/${map[base]}` : null;
-}
-
-
-
-toHref(pagina: string | undefined | null): string | null {
-  if (!pagina) return null;
-  
-  return null;
-}
-
-logout(): void {
-  localStorage.clear();
-  sessionStorage.clear();
-  this.router.navigate(['/login']);
-}
-
-cargarEstadisticasCompletas(): void {
-  const token = localStorage.getItem('token'); 
-  const headers = { Authorization: `Bearer ${token}` };
-
-  this.http.get<EstadisticasCompletas>(`${this.apiUrl}/estadisticas-completas`, { headers })
-    .subscribe(
-      data => {
-        this.estadisticas = {
-        };
-        this.movimientosMensuales = data.movimientosMensuales || [];
-     
+        // Merge API data with default months
+        const apiData = data.movimientosMensuales || [];
+        apiData.forEach((apiMonth) => {
+          const monthIndex = this.movimientosMensuales.findIndex(
+            (m) => m.NombreMes.toLowerCase() === apiMonth.NombreMes.toLowerCase()
+          );
+          if (monthIndex !== -1) {
+            this.movimientosMensuales[monthIndex] = {
+              ...this.movimientosMensuales[monthIndex],
+              Mes: apiMonth.Mes,
+              TotalMovimientos: apiMonth.TotalMovimientos
+            };
+          }
+        });
       },
-      error => {
+      (error) => {
         console.error('Error al cargar estadísticas:', error);
+        this.errorMessage = 'No se pudieron cargar las estadísticas. Por favor, intenta de nuevo.';
+        // Still display all months even if API fails
+        this.movimientosMensuales = this.getAllMonths();
       }
     );
-}
+  }
 
+  calcularAlturaBarra(valor: number): number {
+    if (this.movimientosMensuales.length === 0) return 0;
+    const max = Math.max(...this.movimientosMensuales.map((m) => m.TotalMovimientos), 1); // Avoid division by 0
+    return (valor / max) * 100;
+  }
 
-calcularAlturaBarra(valor: number): number {
-  if (this.movimientosMensuales.length === 0) return 0;
-  const max = Math.max(...this.movimientosMensuales.map(m => m.TotalMovimientos));
-  return max > 0 ? (valor / max) * 100 : 0;
-}
+  obtenerNombreMesCorto(nombreMes: string): string {
+    const meses: { [key: string]: string } = {
+      January: 'Ene',
+      February: 'Feb',
+      March: 'Mar',
+      April: 'Abr',
+      May: 'May',
+      June: 'Jun',
+      July: 'Jul',
+      August: 'Ago',
+      September: 'Sep',
+      October: 'Oct',
+      November: 'Nov',
+      December: 'Dic'
+    };
+    return meses[nombreMes] || nombreMes.substring(0, 3);
+  }
 
-obtenerNombreMesCorto(nombreMes: string): string {
-  const meses: { [key: string]: string } = {
-    'January': 'Ene', 'February': 'Feb', 'March': 'Mar',
-    'April': 'Abr', 'May': 'May', 'June': 'Jun',
-    'July': 'Jul', 'August': 'Ago', 'September': 'Sep',
-    'October': 'Oct', 'November': 'Nov', 'December': 'Dic'
-  };
-  return meses[nombreMes] || nombreMes.substring(0, 3);
-}
+  toRoute(pagina: string | undefined | null): string | null {
+    if (!pagina) return null;
+    const base = pagina.replace('.html', '').toLowerCase();
+    const map: Record<string, string> = {
+      empresa: 'empresas',
+      sucursal: 'sucursales',
+      genero: 'generos',
+      rol: 'roles',
+      estatususuario: 'estatus-usuario',
+      opcion: 'opciones',
+      modulo: 'modulos',
+      menu: 'menus',
+      usuario: 'usuarios',
+      'role-opcion': 'role-opcion',
+      persona: 'personas',
+      tipos_documento: 'tipos_documento',
+      estado_civil: 'estado_civil',
+      tipo_movimiento_cxc: 'tipo_movimiento_cxc',
+      tipo_saldo_cuenta: 'tipo_saldo_cuenta',
+      saldo_cuenta: 'saldo_cuenta'
+    };
+    return map[base] ? `/home/${map[base]}` : null;
+  }
 
+  toHref(pagina: string | undefined | null): string | null {
+    return null;
+  }
 
-
+  logout(): void {
+    localStorage.clear();
+    sessionStorage.clear();
+    this.router.navigate(['/login']);
+  }
 }
