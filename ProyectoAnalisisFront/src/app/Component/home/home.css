@@ -142,9 +142,9 @@
   color: #dc3545;
 }
 
-css/* Navbar Styles */
+css
 .custom-navbar {
-  background-color: #1a1a2e !important; /* Darker, professional navy */
+  background-color: #1a1a2e !important; 
   padding: 12px 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
@@ -159,7 +159,7 @@ css/* Navbar Styles */
   color: #ffffff !important;
   font-size: 1.6rem;
   font-weight: 700;
-  font-family: 'Inter', sans-serif; /* Professional sans-serif font */
+  font-family: 'Inter', sans-serif; 
   letter-spacing: 0.5px;
   transition: color 0.2s ease;
 }
@@ -208,7 +208,7 @@ css/* Navbar Styles */
   color: #ffffff !important;
 }
 
-/* Submenu Styles */
+
 .dropdown-submenu {
   position: relative;
 }
@@ -229,14 +229,14 @@ css/* Navbar Styles */
   display: block;
 }
 
-/* Dashboard Container */
+
 .dashboard-container {
   padding: 30px;
   background: #f5f6f8;
   min-height: calc(100vh - 70px);
 }
 
-/* Chart Card */
+
 .chart-card {
   background: #ffffff;
   padding: 20px;
@@ -267,7 +267,7 @@ css/* Navbar Styles */
   margin-bottom: 30px;
 }
 
-/* Bar Chart */
+
 .chart {
   height: 220px;
   display: flex;
@@ -327,7 +327,7 @@ css/* Navbar Styles */
   font-family: 'Inter', sans-serif;
 }
 
-/* Responsive Adjustments */
+
 @media (max-width: 768px) {
   .charts-container {
     grid-template-columns: 1fr;
