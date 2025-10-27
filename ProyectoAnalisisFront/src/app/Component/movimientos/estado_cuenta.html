@@ -1,0 +1,111 @@
+<div class="container-fluid py-3">
+  <h5>Estado de Cuenta</h5>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form [formGroup]="form" class="row g-3 align-items-end">
+        <div class="col-md-2">
+          <label class="form-label">Buscar por:</label>
+          <select class="form-select" formControlName="tipoBusqueda">
+            <option value="persona">Persona</option>
+            <option value="cuenta">Cuenta</option>
+          </select>
+        </div>
+
+        <div class="col-md-3" *ngIf="modoBusqueda === 'persona'">
+          <label class="form-label">Persona</label>
+          <select class="form-select" formControlName="idPersona">
+            <option [ngValue]="null" disabled>Seleccione...</option>
+            <option *ngFor="let p of personas$ | async" [ngValue]="p.IdPersona">
+              {{ p.Nombre }} {{ p.Apellido }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3" *ngIf="modoBusqueda === 'cuenta'">
+          <label class="form-label">Cuenta</label>
+          <select class="form-select" formControlName="idSaldoCuenta">
+            <option [ngValue]="null" disabled>Seleccione...</option>
+            <ng-container *ngIf="personasMap$ | async as personasMap">
+              <option *ngFor="let c of cuentas$ | async" [ngValue]="c.IdSaldoCuenta">
+                {{ personasMap[c.IdPersona] || "Sin nombre" }}
+              </option>
+            </ng-container>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Año</label>
+          <input type="number" class="form-control" formControlName="anio" />
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Mes</label>
+          <input type="number" min="1" max="12" class="form-control" formControlName="mes"/>
+        </div>
+
+        <div class="col-md-2">
+          <button type="button" class="btn btn-primary w-100" (click)="buscar()">
+            Buscar
+          </button>
+        </div>
+      </form>
+      <div class="mt-3 d-flex justify-content-end gap-2">
+        <button class="btn btn-outline-danger" (click)="exportarPDF()" [disabled]="!movimientos.length">
+          <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+        </button>
+        <button class="btn btn-outline-success" (click)="exportarExcel()" [disabled]="!movimientos.length">
+          <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de resultados -->
+  <div class="card shadow-sm" *ngIf="movimientos.length > 0">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo Movimiento</th>
+              <th>Descripción</th>
+              <th class="text-end">Cargo (Q)</th>
+              <th class="text-end">Abono (Q)</th>
+              <th class="text-end">Saldo Acumulado (Q)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of movimientos">
+              <td>{{ m.Fecha | date : "yyyy-MM-dd HH:mm" }}</td>
+              <td>{{ m.TipoMovimiento }}</td>
+              <td>{{ m.DocumentoReferencia }}</td>
+              <td class="text-end">{{ m.Cargo | number : "1.2-2" }}</td>
+              <td class="text-end">{{ m.Abono | number : "1.2-2" }}</td>
+              <td class="text-end">
+                {{ m.SaldoAcumulado | number : "1.2-2" }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totales -->
+      <div class="mt-3">
+        <strong>Total Cargos:</strong> Q {{ totalCargos | number : "1.2-2" }}
+        <br />
+        <strong>Total Abonos:</strong> Q {{ totalAbonos | number : "1.2-2" }}
+        <br />
+        <strong>Saldo Final:</strong> Q {{ saldoFinal | number : "1.2-2" }}
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="!movimientos.length"
+    class="text-center text-muted mt-3"
+  >
+    Sin resultados para mostrar.
+  </div>
+</div>

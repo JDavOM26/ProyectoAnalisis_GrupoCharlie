@@ -77,7 +77,7 @@ export class SaldoCuentaComponent implements OnInit {
     // ===== Cargar personas =====
     this.personas$ = this.refresh$.pipe(
       startWith(undefined),
-      switchMap(() => this.personaSvc.list({ page: 0, size: 100 })),
+      switchMap(() => this.personaSvc.list({ page: 0, size: 200 })),
       map(result => result.content)
     );
 

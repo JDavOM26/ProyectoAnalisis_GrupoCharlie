@@ -38,6 +38,9 @@ export const routes: Routes = [
        { path: 'tipo_movimiento_cxc', loadComponent: () => import('./Component/tipo_mov_cxc/tipo_movimiento_cxc').then(m => m.TipoMovimientoCxCComponent) },
        { path: 'tipo_saldo_cuenta', loadComponent: () => import('./Component/tipo_saldo_cuenta/tipo_saldo_cuenta').then(m => m.TipoSaldoCuentaComponent) },
        { path: 'saldo_cuenta', loadComponent: () => import('./Component/saldo_cuenta/saldo_cuenta').then(m => m.SaldoCuentaComponent) },
+       { path: 'status-cuenta', loadComponent: () => import('./Component/statusdecuentas/statusdecuentas').then(m => m.statusdecuentasComponent) },
+       { path: 'grabacion_movimientos', loadComponent: () => import('./Component/grabacion_movimientos/grabacion_movimientos').then(m => m.GrabacionMovimientosComponent) },
+       { path: 'estado_cuenta', loadComponent: () => import('./Component/movimientos/estado_cuenta').then(m => m.EstadoCuentaComponent) }
       ],
     canActivate: [AuthGuard]
   },
