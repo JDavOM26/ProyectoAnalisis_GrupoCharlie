@@ -1,0 +1,72 @@
+<div class="container-fluid py-3">
+
+  <!-- Encabezado -->
+  <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+    <h5 class="m-0">Registrar Movimiento</h5>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-success" (click)="guardar()" [disabled]="form.invalid">Registrar</button>
+      <button class="btn btn-sm btn-secondary" (click)="cancelar()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form [formGroup]="form" class="row g-3">
+
+        <!-- Saldo Cuenta -->
+        <div class="col-md-3">
+          <label class="form-label">Persona *</label>
+          <select class="form-select" formControlName="idSaldoCuenta">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <ng-container *ngIf="personasMap$ | async as personasMap">
+              <option *ngFor="let s of (saldoCuenta$ | async); trackBy: trackSaldoCuenta" [ngValue]="s.IdSaldoCuenta">
+                {{ s.IdSaldoCuenta }} - {{ personasMap[s.IdPersona] }}
+              </option>
+            </ng-container>
+          </select>
+        </div>
+
+        <!-- Tipo de Movimiento -->
+        <div class="col-md-3">
+          <label class="form-label">Tipo de Movimiento *</label>
+          <select class="form-select" formControlName="idTipoMovimientoCXC">
+            <option [ngValue]="null" disabled>Seleccione…</option>
+            <option *ngFor="let t of (tiposMovimiento$ | async); trackBy: trackTipoMovimiento" [ngValue]="t.IdTipoMovimientoCXC">
+              {{ t.Nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Fecha -->
+        <div class="col-md-3">
+          <label class="form-label">Fecha Movimiento *</label>
+          <input type="date" class="form-control" formControlName="fechaMovimiento" />
+        </div>
+
+        <!-- Valor -->
+        <div class="col-md-3">
+          <label class="form-label">Valor Movimiento *</label>
+          <div class="input-group">
+            <span class="input-group-text">Q.</span>
+            <input
+              type="number"
+              class="form-control"
+              step="0.01"
+              formControlName="valorMovimiento"
+              placeholder="0.00"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="col-md-6">
+          <label class="form-label">Descripción *</label>
+          <input type="text" class="form-control" formControlName="descripcion" />
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
