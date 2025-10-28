@@ -115,25 +115,30 @@ export class HomeComponent implements OnInit {
     if (!pagina) return null;
     const base = pagina.replace('.html', '').toLowerCase();
     const map: Record<string, string> = {
-      empresa: 'empresas',
-      sucursal: 'sucursales',
-      genero: 'generos',
-      rol: 'roles',
-      estatususuario: 'estatus-usuario',
-      opcion: 'opciones',
-      modulo: 'modulos',
-      menu: 'menus',
-      usuario: 'usuarios',
+       'empresa': 'empresas',
+      'sucursal': 'sucursales',
+      'genero': 'generos',
+      'rol': 'roles',
+      'estatususuario': 'estatus-usuario',
+      'opcion': 'opciones',
+      'modulo': 'modulos',
+      'menu': 'menus',
+      'usuario': 'usuarios',
       'role-opcion': 'role-opcion',
-      persona: 'personas',
-      tipos_documento: 'tipos_documento',
-      estado_civil: 'estado_civil',
-      tipo_movimiento_cxc: 'tipo_movimiento_cxc',
-      tipo_saldo_cuenta: 'tipo_saldo_cuenta',
-      saldo_cuenta: 'saldo_cuenta'
+      'persona': 'personas',
+      'tipos_documento': 'tipos_documento',
+      'estado_civil': 'estado_civil',
+      'tipo_movimiento_cxc': 'tipo_movimiento_cxc',
+      'tipo_saldo_cuenta': 'tipo_saldo_cuenta', 
+      'saldo_cuenta': 'saldo_cuenta',
+      'status_cuenta': 'status-cuenta',
+      'grabacion_movimientos': 'grabacion_movimientos',
+      'estado_cuenta': 'estado_cuenta'
     };
     return map[base] ? `/home/${map[base]}` : null;
   }
+
+  
 
   toHref(pagina: string | undefined | null): string | null {
     return null;
