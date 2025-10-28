@@ -1,0 +1,60 @@
+<div class="container-fluid py-3">
+  <h5 class="m-0 mb-3">Consulta de Saldo por Cliente</h5>
+  <div class="card shadow-sm">
+    <div class="card-body">
+
+      <form [formGroup]="form" (ngSubmit)="consultarSaldo()" class="row g-3 mb-4">
+
+        <div class="col-md-3">
+          <label class="form-label">Tipo de Búsqueda *</label>
+          <select class="form-select" formControlName="tipo">
+            <option *ngFor="let t of tiposBusqueda" [ngValue]="t.value">{{ t.name }}</option>
+          </select>
+          <div *ngIf="form.get('tipo')?.invalid && form.get('tipo')?.touched" class="text-danger small">
+            Requerido.
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Valor *</label>
+          <input type="text" class="form-control" formControlName="valorBusqueda" />
+          <div *ngIf="form.get('valorBusqueda')?.invalid && form.get('valorBusqueda')?.touched" class="text-danger small">
+            Valor de búsqueda requerido.
+          </div>
+        </div>
+
+        <div class="col-md-5 d-flex align-items-end">
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg me-2"
+            [disabled]="cargando() || form.invalid">
+            <span *ngIf="cargando()" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            {{ cargando() ? 'Buscando...' : 'Consultar Saldo' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-lg"
+            (click)="limpiar()">
+            Limpiar
+          </button>
+        </div>
+      </form>
+
+      <div *ngIf="mensajeError()" class="alert alert-danger mt-3" role="alert">
+        {{ mensajeError() }}
+      </div>
+
+      <div *ngIf="resultado()" class="alert alert-info mt-3">
+        <h6>Resultado de la Cuenta</h6>
+        <p class="mb-1"><strong>Persona:</strong> {{ resultado()?.Nombre }} {{ resultado()?.Apellido }}</p>
+        <p class="mb-1"><strong>No. de Cuenta/Saldo:</strong> {{ resultado()?.IdSaldoCuenta }}</p>
+        <p class="mb-1"><strong>Saldo Inicial (Anterior):</strong> {{ resultado()?.SaldoInicial | currency:'USD':'symbol':'1.2-2' }}</p>
+        <p class="mb-1"><strong>Cargos (Débitos):</strong> {{ resultado()?.Cargos | currency:'USD':'symbol':'1.2-2' }}</p>
+        <p class="mb-1"><strong>Abonos (Créditos):</strong> {{ resultado()?.Abonos | currency:'USD':'symbol':'1.2-2' }}</p>
+        <hr/>
+        <p class="mb-0"><strong>Saldo Actual:</strong> <strong>{{ resultado()?.SaldoActual | currency:'USD':'symbol':'1.2-2' }}</strong></p>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -12,6 +12,8 @@ import { CrearUsuarioComponent } from './Component/usuario/crear-usuario';
 import { EmpresaComponent } from './Component/empresa/empresa';
 import { RoleOpcionComponent } from './Component/role-opcion/role-opcion';
 import { AuthGuard } from './Service/auth.guard';
+import { CierreMensualComponent } from './Component/cierremes/cierremes';
+import { ConsultaSaldosComponent } from './Component/saldocliente/saldocliente';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -40,7 +42,9 @@ export const routes: Routes = [
        { path: 'saldo_cuenta', loadComponent: () => import('./Component/saldo_cuenta/saldo_cuenta').then(m => m.SaldoCuentaComponent) },
        { path: 'status-cuenta', loadComponent: () => import('./Component/statusdecuentas/statusdecuentas').then(m => m.statusdecuentasComponent) },
        { path: 'grabacion_movimientos', loadComponent: () => import('./Component/grabacion_movimientos/grabacion_movimientos').then(m => m.GrabacionMovimientosComponent) },
-       { path: 'estado_cuenta', loadComponent: () => import('./Component/movimientos/estado_cuenta').then(m => m.EstadoCuentaComponent) }
+       { path: 'estado_cuenta', loadComponent: () => import('./Component/movimientos/estado_cuenta').then(m => m.EstadoCuentaComponent) },
+       { path: 'cierremes', loadComponent: () => import('./Component/cierremes/cierremes').then(m => m.CierreMensualComponent) },
+       { path: 'saldocliente', loadComponent: () => import('./Component/saldocliente/saldocliente').then(m => m.ConsultaSaldosComponent) }
       ],
     canActivate: [AuthGuard]
   },

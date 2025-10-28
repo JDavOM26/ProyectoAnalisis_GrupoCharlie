@@ -225,7 +225,7 @@ VALUES
 (
     1, 'Procedimientos Almacenados', 4, NOW(), 'system'
 );
-
+select * from usuario where idUsuario = 'Administrador';
 CREATE TABLE `OPCION`(
     `IdOpcion` INT NOT NULL AUTO_INCREMENT,
     `IdMenu` INT NOT NULL,
@@ -1011,6 +1011,18 @@ BEGIN
     WHERE FechaCierre IS NULL
     LIMIT 1;
 
+	-- Validacion de fechas no mayor a la actual
+    IF v_anio <> YEAR(CURDATE()) THEN
+    rollback;
+    SET p_codigo = 4; 
+    END IF;
+    
+    IF v_mes <> MONTH(CURDATE()) THEN
+	    rollback;
+    SET p_codigo = 4; 
+    END IF;
+    
+    
     -- Validar si existe un periodo abierto
     IF v_anio IS NULL OR v_mes IS NULL THEN
         ROLLBACK;
@@ -1233,3 +1245,10 @@ VALUES
 (10, 2, '2025-03-11 13:00:00', 2900.00, 0.00, 0, 'Compra de víveres.', NOW(), 'Administrador'),
 (10, 8, '2025-05-17 14:20:00', 3100.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
 (10, 4, '2025-07-05 08:30:00', 350.00, 0.00, 1, 'Cargo por mantenimiento mensual.', NOW(), 'Administrador');
+
+SET SQL_SAFE_UPDATES = 0;
+CALL sp_cierre_mensual('admin', @resultado);
+SELECT @resultado AS CodigoResultado;
+
+select * from periodo_cierre_mes;
+select * from saldo_cuenta_hist;
