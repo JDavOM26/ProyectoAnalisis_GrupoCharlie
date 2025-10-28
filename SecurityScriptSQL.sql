@@ -983,7 +983,253 @@ values
 (1,20,true,true,true,true,true,now(),'system'),
 (1,21,true,true,true,true,true,now(),'system');
 
+
+-- Cierre mensual de cuentas Procedimiento Almacenado
+DELIMITER //
+CREATE PROCEDURE sp_cierre_mensual(
+    IN p_usuario VARCHAR(100),
+    OUT p_codigo INT
+)
+BEGIN
+    DECLARE v_anio INT;
+    DECLARE v_mes INT;
+    DECLARE v_count INT DEFAULT 0;
+
+    -- Manejador de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SET p_codigo = 0; -- Error general
+    END;
+
+    START TRANSACTION;
+
+    -- 1. Buscar el periodo abierto (FechaCierre IS NULL)
+    SELECT Anio, Mes
+    INTO v_anio, v_mes
+    FROM PERIODO_CIERRE_MES
+    WHERE FechaCierre IS NULL
+    LIMIT 1;
+
+    -- Validar si existe un periodo abierto
+    IF v_anio IS NULL OR v_mes IS NULL THEN
+        ROLLBACK;
+        SET p_codigo = 2; -- No hay periodo abierto
+    ELSE
+        -- 2. Contar registros de SALDO_CUENTA
+        SELECT COUNT(*) INTO v_count FROM SALDO_CUENTA;
+
+        IF v_count = 0 THEN
+            ROLLBACK;
+            SET p_codigo = 3; -- No hay registros que consolidar
+        ELSE
+            -- 3. Insertar datos en SALDO_CUENTA_HIST
+            INSERT INTO SALDO_CUENTA_HIST (
+                Anio, Mes, IdSaldoCuenta, IdPersona, IdStatusCuenta, IdTipoSaldoCuenta,
+                SaldoAnterior, Debitos, Creditos,
+                FechaCreacion, UsuarioCreacion, FechaModificacion, UsuarioModificacion
+            )
+            SELECT
+                v_anio, v_mes,
+                IdSaldoCuenta, IdPersona, IdStatusCuenta, IdTipoSaldoCuenta,
+                SaldoAnterior, Debitos, Creditos,
+                NOW(), p_usuario, FechaModificacion, UsuarioModificacion
+            FROM SALDO_CUENTA;
+
+            -- 4. Actualizar saldos actuales (SaldoAnterior = SaldoActual)
+            UPDATE SALDO_CUENTA
+            SET
+                SaldoAnterior = (SaldoAnterior + Creditos - Debitos),
+                Debitos = 0,
+                Creditos = 0,
+                FechaModificacion = NOW(),
+                UsuarioModificacion = p_usuario;
+
+            -- 5. Marcar el periodo como cerrado
+            UPDATE PERIODO_CIERRE_MES
+            SET FechaCierre = NOW()
+            WHERE Anio = v_anio AND Mes = v_mes;
+
+            COMMIT;
+            SET p_codigo = 1; -- Éxito total
+        END IF;
+    END IF;
+END //
+
+DELIMITER ;
+
+-- Registrar Movimientos de Cuentas Procedimiento Almacenado
+DELIMITER $$
+CREATE PROCEDURE sp_registrar_movimiento_cuenta(
+    IN p_idSaldoCuenta INT,
+    IN p_idTipoMovimientoCXC INT,
+    IN p_fechaMovimiento DATETIME,
+    IN p_valorMovimiento DECIMAL(10,2),
+    IN p_descripcion VARCHAR(75),
+    IN p_usuarioCreacion VARCHAR(100)
+)
+BEGIN
+    DECLARE v_operacion INT;
+    DECLARE v_statusCuenta INT;
+    DECLARE v_mensajeError VARCHAR(200);
+    DECLARE v_fechaActual DATETIME;
+
+    SET v_fechaActual = NOW();
+
+    -- Validar existencia y estado de la cuenta
+    SELECT IdStatusCuenta INTO v_statusCuenta
+    FROM SALDO_CUENTA
+    WHERE IdSaldoCuenta = p_idSaldoCuenta;
+
+    IF v_statusCuenta IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cuenta no existe.';
+    END IF;
+
+    -- Suponiendo que el estado 1 = Activa
+    IF v_statusCuenta <> 1 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cuenta no está activa. No se puede registrar el movimiento.';
+    END IF;
+
+    -- Validar tipo de movimiento
+    SELECT OperacionCuentaCorriente INTO v_operacion
+    FROM TIPO_MOVIMIENTO_CXC
+    WHERE IdTipoMovimientoCXC = p_idTipoMovimientoCXC;
+
+    IF v_operacion IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tipo de movimiento no válido.';
+    END IF;
+
+    -- Validar monto
+    IF p_valorMovimiento <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El valor del movimiento debe ser mayor a cero.';
+    END IF;
+
+    -- Validar fecha
+    IF p_fechaMovimiento > v_fechaActual THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La fecha del movimiento no puede ser futura.';
+    END IF;
+
+    START TRANSACTION;
+
+        -- Actualizar saldo según el tipo de operación
+        IF v_operacion = 2 THEN
+            -- Sumar (crédito)
+            UPDATE SALDO_CUENTA
+            SET Creditos = IFNULL(Creditos,0) + p_valorMovimiento,
+                FechaModificacion = v_fechaActual,
+                UsuarioModificacion = p_usuarioCreacion
+            WHERE IdSaldoCuenta = p_idSaldoCuenta;
+        ELSEIF v_operacion = 1 THEN
+            -- Restar (débito)
+            UPDATE SALDO_CUENTA
+            SET Debitos = IFNULL(Debitos,0) + p_valorMovimiento,
+                FechaModificacion = v_fechaActual,
+                UsuarioModificacion = p_usuarioCreacion
+            WHERE IdSaldoCuenta = p_idSaldoCuenta;
+        END IF;
+
+        -- Registrar el movimiento
+        INSERT INTO MOVIMIENTO_CUENTA (
+            IdSaldoCuenta,
+            IdTipoMovimientoCXC,
+            FechaMovimiento,
+            ValorMovimiento,
+            ValorMovimientoPagado,
+            GeneradoAutomaticamente,
+            Descripcion,
+            FechaCreacion,
+            UsuarioCreacion
+        ) VALUES (
+            p_idSaldoCuenta,
+            p_idTipoMovimientoCXC,
+            p_fechaMovimiento,
+            p_valorMovimiento,
+            p_valorMovimiento, -- Asumimos pagado completo
+            FALSE,
+            p_descripcion,
+            v_fechaActual,
+            p_usuarioCreacion
+        );
+
+    COMMIT;
+END$$
+
+DELIMITER ;
+
+
+-- Muestra
+
 select m.idmodulo, m.Nombre, me.IdMenu, me.Nombre, o.IdOpcion, o.Nombre, o.Pagina 
   from modulo as m inner join menu as me on m.IdModulo = me.IdModulo inner join opcion o on o.IdMenu = me.IdMenu;
  
 select * from persona;
+
+
+-- ======================================
+-- MOVIMIENTOS DE PRUEBA - PROYECTO ANALISIS
+-- Inicia con Nota de Crédito (saldo inicial)
+-- ======================================
+
+INSERT INTO MOVIMIENTO_CUENTA
+(IdSaldoCuenta, IdTipoMovimientoCXC, FechaMovimiento, ValorMovimiento, ValorMovimientoPagado,
+ GeneradoAutomaticamente, Descripcion, FechaCreacion, UsuarioCreacion)
+VALUES
+-- ====== CLIENTE 1 ======
+(1, 7, '2025-01-10 08:30:00', 9500.00, 0.00, 0, 'Abono de inicio de año.', NOW(), 'Administrador'),
+(1, 2, '2025-03-05 09:45:00', 1850.75, 0.00, 0, 'Compra de artículos escolares.', NOW(), 'Administrador'),
+(1, 8, '2025-05-12 15:10:00', 2800.00, 0.00, 0, 'Pago parcial del cliente.', NOW(), 'Administrador'),
+(1, 4, '2025-07-01 08:00:00', 300.00, 0.00, 1, 'Cargo por mantenimiento mensual.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 2 ======
+(2, 7, '2025-01-08 09:00:00', 8200.00, 0.00, 0, 'Abono inicial del año.', NOW(), 'Administrador'),
+(2, 2, '2025-03-10 12:00:00', 2450.00, 0.00, 0, 'Compra de electrodomésticos.', NOW(), 'Administrador'),
+(2, 8, '2025-05-15 16:20:00', 3600.00, 0.00, 0, 'Pago parcial recibido.', NOW(), 'Administrador'),
+(2, 5, '2025-07-20 09:00:00', 200.00, 0.00, 1, 'Cargo por mora.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 3 ======
+(3, 7, '2025-01-12 10:10:00', 7700.00, 0.00, 0, 'Abono de cuenta.', NOW(), 'Administrador'),
+(3, 2, '2025-03-07 13:40:00', 2150.00, 0.00, 0, 'Compra de productos varios.', NOW(), 'Administrador'),
+(3, 8, '2025-05-18 10:30:00', 1900.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(3, 6, '2025-08-09 09:00:00', 100.00, 0.00, 1, 'Bonificación por puntualidad.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 4 ======
+(4, 7, '2025-01-05 08:15:00', 10400.00, 0.00, 0, 'Abono inicial.', NOW(), 'Administrador'),
+(4, 2, '2025-03-09 14:30:00', 2700.00, 0.00, 0, 'Compra en tienda local.', NOW(), 'Administrador'),
+(4, 8, '2025-06-11 09:40:00', 3200.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(4, 4, '2025-07-02 08:00:00', 350.00, 0.00, 1, 'Cargo por mantenimiento.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 5 ======
+(5, 7, '2025-01-06 07:40:00', 6800.00, 0.00, 0, 'Abono de inicio.', NOW(), 'Administrador'),
+(5, 2, '2025-03-11 10:50:00', 1600.00, 0.00, 0, 'Compra de accesorios.', NOW(), 'Administrador'),
+(5, 8, '2025-05-09 14:15:00', 1200.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(5, 6, '2025-08-05 17:00:00', 75.00, 0.00, 1, 'Bonificación mensual.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 6 ======
+(6, 7, '2025-01-09 09:20:00', 9100.00, 0.00, 0, 'Abono de crédito.', NOW(), 'Administrador'),
+(6, 2, '2025-03-08 11:15:00', 1900.00, 0.00, 0, 'Compra en restaurante.', NOW(), 'Administrador'),
+(6, 8, '2025-05-16 13:00:00', 2100.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(6, 4, '2025-07-03 08:30:00', 250.00, 0.00, 1, 'Cargo por mantenimiento.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 7 ======
+(7, 7, '2025-01-10 09:45:00', 9900.00, 0.00, 0, 'Abono inicial.', NOW(), 'Administrador'),
+(7, 2, '2025-03-12 10:00:00', 1700.00, 0.00, 0, 'Compra de alimentos.', NOW(), 'Administrador'),
+(7, 8, '2025-06-18 14:00:00', 2300.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(7, 5, '2025-07-15 08:00:00', 150.00, 0.00, 1, 'Cargo por mora.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 8 ======
+(8, 7, '2025-01-07 10:10:00', 11200.00, 0.00, 0, 'Abono inicial.', NOW(), 'Administrador'),
+(8, 2, '2025-03-09 12:00:00', 2500.00, 0.00, 0, 'Compra de electrónicos.', NOW(), 'Administrador'),
+(8, 8, '2025-05-19 15:00:00', 2700.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(8, 4, '2025-07-04 09:00:00', 400.00, 0.00, 1, 'Cargo por mantenimiento.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 9 ======
+(9, 7, '2025-01-11 08:00:00', 7200.00, 0.00, 0, 'Abono inicial.', NOW(), 'Administrador'),
+(9, 2, '2025-03-10 11:30:00', 1450.00, 0.00, 0, 'Compra de servicios en línea.', NOW(), 'Administrador'),
+(9, 8, '2025-05-20 10:00:00', 1300.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(9, 5, '2025-07-06 09:30:00', 120.00, 0.00, 1, 'Cargo por mora.', NOW(), 'Administrador'),
+
+-- ====== CLIENTE 10 ======
+(10, 7, '2025-01-08 08:50:00', 12500.00, 0.00, 0, 'Abono inicial.', NOW(), 'Administrador'),
+(10, 2, '2025-03-11 13:00:00', 2900.00, 0.00, 0, 'Compra de víveres.', NOW(), 'Administrador'),
+(10, 8, '2025-05-17 14:20:00', 3100.00, 0.00, 0, 'Pago parcial.', NOW(), 'Administrador'),
+(10, 4, '2025-07-05 08:30:00', 350.00, 0.00, 1, 'Cargo por mantenimiento mensual.', NOW(), 'Administrador');
