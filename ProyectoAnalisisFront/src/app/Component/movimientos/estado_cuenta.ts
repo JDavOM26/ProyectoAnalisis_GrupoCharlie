@@ -74,31 +74,33 @@ export class EstadoCuentaComponent implements OnInit {
         return new HttpHeaders({ Authorization: `Bearer ${token}` });
     }
 
-    buscar(): void {
-        this.cargando.set(true);
-        this.movimientos = [];
+   buscar(): void {
+    this.cargando.set(true);
+    this.movimientos = [];  // ← limpia antes
 
-        const tipo = this.form.value.tipoBusqueda === 'persona' ? 'idPersona' : 'idSaldoCuenta';
-        const valorBusqueda = this.form.value.tipoBusqueda === 'persona'
-            ? this.form.value.idPersona
-            : this.form.value.idSaldoCuenta;
+    const tipo = this.form.value.tipoBusqueda === 'persona' ? 'idPersona' : 'idSaldoCuenta';
+    const valorBusqueda = this.form.value.tipoBusqueda === 'persona'
+        ? this.form.value.idPersona
+        : this.form.value.idSaldoCuenta;
 
-        const { anio, mes } = this.form.value;
-        const url = `${this.API_URL}?valorBusqueda=${valorBusqueda}&tipo=${tipo}&anio=${anio}&mes=${mes}`;
+    const { anio, mes } = this.form.value;
+    const url = `${this.API_URL}?valorBusqueda=${valorBusqueda}&tipo=${tipo}&anio=${anio}&mes=${mes}`;
 
-        this.http.get<any[]>(url, { headers: this.authHeaders() }).subscribe({
-            next: (data) => {
-                this.movimientos = data;
-                this.calcularTotales();
-                this.cargando.set(false);
-            },
-            error: (err) => {
-                console.error('Error al obtener movimientos:', err);
-                alert('No se pudieron cargar los movimientos.');
-                this.cargando.set(false);
-            }
-        });
-    }
+    this.http.get<any[]>(url, { headers: this.authHeaders() }).subscribe({
+        next: (data) => {
+            this.movimientos = Array.isArray(data) ? data : [];  // ← NUNCA NULL
+            this.calcularTotales();
+            this.cargando.set(false);
+        },
+        error: (err) => {
+            console.error('Error al obtener movimientos:', err);
+            this.movimientos = [];  // ← fallback seguro
+            this.calcularTotales(); // ← opcional: resetear totales
+            alert('No se pudieron cargar los movimientos.');
+            this.cargando.set(false);
+        }
+    });
+}
 
     calcularTotales() {
         this.totalCargos = this.movimientos.reduce((sum, m) => sum + (m.Cargo || 0), 0);

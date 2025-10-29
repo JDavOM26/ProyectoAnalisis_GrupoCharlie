@@ -3,58 +3,41 @@
   <div class="card shadow-sm">
     <div class="card-body">
 
-      <form [formGroup]="form" class="row g-3 mb-4">
+
+      <form [formGroup]="form" (ngSubmit)="ejecutarCierreMensual()" class="row g-3 mb-4">
+
+     
         <div class="col-md-2">
-          <label class="form-label">Año *</label>
-          <input type="number" class="form-control" formControlName="anio" min="2000" />
-          <div *ngIf="form.get('anio')?.invalid && form.get('anio')?.touched" class="text-danger small">
-            Año requerido.
-          </div>
+          <label class="form-label">Año</label>
+          <input type="text" class="form-control" [value]="anioActual()" readonly />
         </div>
 
+       
         <div class="col-md-2">
-          <label class="form-label">Mes *</label>
-          <select class="form-select" formControlName="mes">
-            <option [ngValue]="null" disabled>Seleccione Mes</option>
-            <option [ngValue]="1">1 - Enero</option>
-            <option [ngValue]="2">2 - Febrero</option>
-            <option [ngValue]="3">3 - Marzo</option>
-            <option [ngValue]="4">4 - Abril</option>
-            <option [ngValue]="5">5 - Mayo</option>
-            <option [ngValue]="6">6 - Junio</option>
-            <option [ngValue]="7">7 - Julio</option>
-            <option [ngValue]="8">8 - Agosto</option>
-            <option [ngValue]="9">9 - Septiembre</option>
-            <option [ngValue]="10">10 - Octubre</option>
-            <option [ngValue]="11">11 - Noviembre</option>
-            <option [ngValue]="12">12 - Diciembre</option>
-          </select>
-          <div *ngIf="form.get('mes')?.invalid && form.get('mes')?.touched" class="text-danger small">
-            Mes requerido.
-          </div>
+          <label class="form-label">Mes</label>
+          <input type="text" class="form-control" [value]="mesActualTexto()" readonly />
         </div>
 
+     
         <div class="col-md-8 d-flex align-items-end">
           <button
-            class="btn btn-lg"
-            [class.btn-success]="!ejecutando()"
-            [class.btn-warning]="ejecutando()"
-            (click)="ejecutarCierreMensual()"
-            [disabled]="ejecutando() || form.invalid">
+            type="submit"
+            class="btn btn-success btn-lg me-2"
+            [disabled]="ejecutando()">
             <span *ngIf="ejecutando()" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             {{ ejecutando() ? 'Procesando...' : 'Ejecutar Cierre' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-lg"
+            (click)="limpiarResultado()">
+            Limpiar
           </button>
         </div>
       </form>
 
-      <button
-        *ngIf="mensaje()"
-        class="btn btn-sm btn-link mb-2"
-        (click)="limpiarResultado()">
-        Limpiar
-      </button>
 
-      <div *ngIf="mensaje()" class="mt-1">
+      <div *ngIf="mensaje()" class="mt-3">
         <div
           class="alert"
           [class.alert-success]="!esError()"

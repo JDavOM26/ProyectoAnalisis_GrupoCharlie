@@ -119,7 +119,7 @@ export class HomeComponent implements OnInit {
       'estado_civil': 'estado_civil', 'tipo_movimiento_cxc': 'tipo_movimiento_cxc',
       'tipo_saldo_cuenta': 'tipo_saldo_cuenta', 'saldo_cuenta': 'saldo_cuenta',
       'status_cuenta': 'status-cuenta', 'grabacion_movimientos': 'grabacion_movimientos',
-      'estado_cuenta': 'estado_cuenta', 'cierre_mes': 'cierremes', 'saldo_cluente': 'saldocliente'
+      'estado_cuenta': 'estado_cuenta', 'cierre_mes': 'cierremes', 'consulta_saldo': 'saldocliente'
     };
     return map[base] ? `/home/${map[base]}` : null;
   }

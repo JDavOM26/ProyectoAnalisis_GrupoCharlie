@@ -23,6 +23,7 @@ export class ConsultaSaldosComponent implements OnInit {
   tiposBusqueda = [
     // El valor (value) debe coincidir con los literales usados en el SQL de Java
     { value: 'idPersona', name: 'ID de Persona' },
+    { value: 'idSaldoCuenta', name: 'ID de cuenta' },
     { value: 'nombreApellido', name: 'Nombre y Apellido' }
   ];
 

@@ -30,7 +30,8 @@ public class ConsultasBusquedasService {
 	            sc.IdSaldoCuenta, sc.IdPersona, sc.IdStatusCuenta, sc.IdTipoSaldoCuenta,
 	            sc.SaldoAnterior AS SaldoInicial, sc.Debitos AS Cargos, sc.Creditos AS Abonos,
 	            sc.SaldoAnterior + sc.Debitos - sc.Creditos AS SaldoActual,
-	            sc.FechaCreacion, sc.UsuarioCreacion, sc.FechaModificacion, sc.UsuarioModificacion
+	            sc.FechaCreacion, sc.UsuarioCreacion, sc.FechaModificacion, sc.UsuarioModificacion,
+	            CONCAT(p.Nombre, ' ', p.Apellido) AS NombreCompleto
 	        FROM saldo_cuenta sc
 	            INNER JOIN persona p ON sc.IdPersona = p.IdPersona
 	        WHERE FIELD(:campo, 'idPersona', 'idSaldoCuenta', 'nombreApellido') > 0

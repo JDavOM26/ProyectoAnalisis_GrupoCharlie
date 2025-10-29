@@ -102,15 +102,15 @@ export class LoginComponent implements OnInit {
 
     this.usuarioService.changePassword(username, oldPassword, newPassword).subscribe({
       next: (response: any) => {
-        console.log('Respuesta del backend:', response); // Debug the raw response
+        console.log('Respuesta del backend:', response); 
         this.isLoading = false;
 
-        // Handle response as string or object
+      
         let responseMessage = typeof response === 'string' ? response : response?.message || JSON.stringify(response);
-        responseMessage = responseMessage.trim(); // Remove any extra whitespace
+        responseMessage = responseMessage.trim(); 
 
         if (responseMessage === 'Contraseña actualizada correctamente.') {
-          this.showChangePasswordModal = false; // Close the modal
+          this.showChangePasswordModal = false; 
           this.errorMessage = 'Contraseña actualizada correctamente. Por favor, inicia sesión nuevamente.';
           this.changePasswordForm.reset();
           console.log('Cambio de contraseña exitoso, modal cerrado, mensaje:', this.errorMessage);
@@ -124,9 +124,9 @@ export class LoginComponent implements OnInit {
         console.error('Error al cambiar contraseña:', err);
         const errorMsg = typeof err.error === 'string' ? err.error : err.message || 'Error al cambiar la contraseña. Intenta de nuevo.';
         if (errorMsg.includes('La contraseña debe') || errorMsg.includes('La contraseña no puede ser nula')) {
-          this.newPasswordError = errorMsg; // Show below new password input
+          this.newPasswordError = errorMsg; 
         } else {
-          this.errorMessage = errorMsg; // Other errors below buttons
+          this.errorMessage = errorMsg;
         }
       }
     });

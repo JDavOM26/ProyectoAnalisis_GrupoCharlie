@@ -13,6 +13,7 @@ export interface SaldoCliente {
   // Información de la persona (de la tabla JOIN persona p)
   Nombre?: string;
   Apellido?: string;
+  NombreCompleto?: string;
 
   // Otros campos
   FechaCreacion?: string;

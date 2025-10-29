@@ -46,7 +46,7 @@
 
       <div *ngIf="resultado()" class="alert alert-info mt-3">
         <h6>Resultado de la Cuenta</h6>
-        <p class="mb-1"><strong>Persona:</strong> {{ resultado()?.Nombre }} {{ resultado()?.Apellido }}</p>
+        <p class="mb-1"><strong>Persona:</strong> {{ resultado()?.NombreCompleto}}</p>
         <p class="mb-1"><strong>No. de Cuenta/Saldo:</strong> {{ resultado()?.IdSaldoCuenta }}</p>
         <p class="mb-1"><strong>Saldo Inicial (Anterior):</strong> {{ resultado()?.SaldoInicial | currency:'USD':'symbol':'1.2-2' }}</p>
         <p class="mb-1"><strong>Cargos (Débitos):</strong> {{ resultado()?.Cargos | currency:'USD':'symbol':'1.2-2' }}</p>

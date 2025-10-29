@@ -1,7 +1,7 @@
 import { CierreMesService } from '../../Service/cierremes.service';
-import { Component, OnInit, signal } from '@angular/core'; // Añadir OnInit
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'; // Importar ReactiveFormsModule y relacionados
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CierreMes } from '../../Models/cierremes.model';
 import { catchError, throwError } from 'rxjs';
 
@@ -18,33 +18,42 @@ export class CierreMensualComponent implements OnInit {
   mensaje = signal('');
   esError = signal(false);
 
+ 
+  anioActual = signal(0);
+  mesActual = signal(0);
+  mesActualTexto = signal('');
+
+  private meses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
   constructor(
     private fb: FormBuilder,
     private cierreSvc: CierreMesService
   ) {}
 
- ngOnInit(): void {
+  ngOnInit(): void {
     const hoy = new Date();
-    this.form = this.fb.group({
-      anio: [hoy.getFullYear().toString(), [Validators.required]],
-      mes: [(hoy.getMonth() + 1).toString(), [Validators.required, Validators.min(1)]]    });
-}
+    const anio = hoy.getFullYear();
+    const mes = hoy.getMonth() + 1; 
+
+    this.anioActual.set(anio);
+    this.mesActual.set(mes);
+    this.mesActualTexto.set(`${mes} - ${this.meses[mes - 1]}`);
+
+    
+    this.form = this.fb.group({});
+  }
 
   ejecutarCierreMensual() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.mostrarResultado('Por favor, seleccione un Año y Mes válidos.', true);
-      return;
-    }
-
     const usuario = localStorage.getItem('username');
     if (!usuario) {
       this.mostrarResultado('Error: No se encontró el nombre de usuario.', true);
       return;
     }
 
-    const { anio,mes } = this.form.value;
-    if (!confirm(`¿Está seguro de que desea ejecutar el Cierre Mensual para ${mes}/${anio}?`)) {
+    if (!confirm(`¿Está seguro de que desea ejecutar el Cierre Mensual para ${this.mesActualTexto()} ${this.anioActual()}?`)) {
       return;
     }
 
@@ -53,11 +62,11 @@ export class CierreMensualComponent implements OnInit {
     this.esError.set(false);
 
     const payload: CierreMes = {
-    Anio: anio,
-   Mes: mes,
-  IdUsuario: usuario,
-  success: false,
-  message: ''
+      Anio: this.anioActual().toString(),
+      Mes: this.mesActual().toString(),
+      IdUsuario: usuario,
+      success: false,
+      message: ''
     };
 
     this.cierreSvc.ejecutar(payload)
@@ -76,9 +85,6 @@ export class CierreMensualComponent implements OnInit {
             this.mostrarResultado(resp.message, true);
           }
         },
-        error: () => {
-          this.ejecutando.set(false);
-        },
         complete: () => {
           this.ejecutando.set(false);
         }
@@ -94,5 +100,4 @@ export class CierreMensualComponent implements OnInit {
     this.mensaje.set('');
     this.esError.set(false);
   }
-  }
-
+}
